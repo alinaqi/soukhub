@@ -363,8 +363,8 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
                   />
                   <YAxis tick={{ fontSize: 12 }} tickFormatter={(value) => `${(value / 1000).toFixed(0)}K`} />
                   <Tooltip
-                    formatter={(value: number) => [formatCurrency(value), 'Revenue']}
-                    labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                    formatter={(value) => [formatCurrency(value as number), 'Revenue']}
+                    labelFormatter={(label) => new Date(label as string).toLocaleDateString()}
                   />
                   <Area
                     type="monotone"
@@ -392,7 +392,7 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
                   <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                   <YAxis yAxisId="left" tick={{ fontSize: 12 }} />
                   <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1000).toFixed(0)}K`} />
-                  <Tooltip formatter={(value: number, name: string) => [name === 'revenue' ? formatCurrency(value) : value, name === 'revenue' ? 'Revenue' : 'Orders']} />
+                  <Tooltip formatter={(value, name) => [name === 'revenue' ? formatCurrency(value as number) : value, name === 'revenue' ? 'Revenue' : 'Orders']} />
                   <Legend />
                   <Bar yAxisId="left" dataKey="orders" fill="#10b981" name="Orders" radius={[4, 4, 0, 0]} />
                   <Bar yAxisId="right" dataKey="revenue" fill="#3b82f6" name="Revenue" radius={[4, 4, 0, 0]} />
@@ -432,7 +432,7 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
                       />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip formatter={(value) => formatCurrency(value as number)} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
