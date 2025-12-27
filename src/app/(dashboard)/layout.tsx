@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { Header } from '@/components/dashboard/Header';
+import { AIChatWrapper } from '@/components/chat/AIChatWrapper';
 import type { Profile } from '@/types/supabase';
 
 export default async function DashboardLayout({
@@ -37,6 +38,7 @@ export default async function DashboardLayout({
         <Header profile={profile} />
         <main className="flex-1 p-6 bg-muted/30">{children}</main>
       </div>
+      <AIChatWrapper userId={user.id} />
     </div>
   );
 }

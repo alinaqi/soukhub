@@ -62,3 +62,4 @@ next-env.d.ts
 
 # Sample/example data (contains real order data)
 example_data/
+.env*.local

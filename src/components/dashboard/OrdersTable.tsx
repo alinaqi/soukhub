@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { Order } from '@/types/supabase';
 import Link from 'next/link';
+import { OrderDetailModal } from '@/components/orders/OrderDetailModal';
 
 interface OrdersTableProps {
   orders: Order[];
@@ -29,9 +30,30 @@ const MARKETPLACE_ICONS: Record<string, string> = {
   other: '🏪',
 };
 
-export function OrdersTable({ orders }: OrdersTableProps) {
+export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [filter, setFilter] = useState<string>('all');
   const [marketplaceFilter, setMarketplaceFilter] = useState<string>('all');
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const handleUpdateOrder = async (orderId: string, updates: Partial<Order>) => {
+    const response = await fetch(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || 'Failed to update order');
+    }
+
+    const { order: updatedOrder } = await response.json();
+
+    // Update local state
+    setOrders(orders.map(o => o.id === orderId ? updatedOrder : o));
+    setSelectedOrder(null);
+  };
 
   const filteredOrders = orders.filter((order) => {
     if (filter !== 'all' && order.status !== filter) return false;
@@ -123,7 +145,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           </thead>
           <tbody className="divide-y divide-border">
             {filteredOrders.map((order) => (
-              <tr key={order.id} className="hover:bg-muted/30">
+              <tr
+                key={order.id}
+                className="hover:bg-muted/30 cursor-pointer transition-colors"
+                onClick={() => setSelectedOrder(order)}
+              >
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <span>{MARKETPLACE_ICONS[order.marketplace] || '🏪'}</span>
@@ -170,6 +196,15 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Order Detail Modal */}
+      {selectedOrder && (
+        <OrderDetailModal
+          order={selectedOrder}
+          onClose={() => setSelectedOrder(null)}
+          onUpdate={handleUpdateOrder}
+        />
+      )}
     </div>
   );
 }
