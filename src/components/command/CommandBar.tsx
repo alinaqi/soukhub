@@ -85,6 +85,14 @@ export function CommandBar({ userId }: CommandBarProps) {
       keywords: ['supplier', 'vendor', 'source'],
     },
     {
+      id: 'communications',
+      icon: '💬',
+      label: 'Go to Communications',
+      description: 'WhatsApp messaging with suppliers',
+      action: () => router.push('/communications'),
+      keywords: ['whatsapp', 'message', 'chat', 'text', 'sms'],
+    },
+    {
       id: 'products',
       icon: '🏷️',
       label: 'Go to Products',
