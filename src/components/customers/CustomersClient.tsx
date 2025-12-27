@@ -386,7 +386,7 @@ export function CustomersClient({ userId }: { userId: string }) {
                     </div>
                   </div>
 
-                  {customerStats.recent_products.length > 0 && (
+                  {customerStats.recent_products && customerStats.recent_products.length > 0 && (
                     <div className="border-t border-border pt-4">
                       <div className="text-sm text-muted-foreground mb-2">Recent Products</div>
                       <div className="space-y-1">
@@ -437,7 +437,7 @@ export function CustomersClient({ userId }: { userId: string }) {
                 customerName={selectedCustomer.name}
                 orderCount={customerStats.total_orders}
                 isVip={customerStats.is_vip}
-                recentProducts={customerStats.recent_products}
+                recentProducts={customerStats.recent_products || []}
               />
             </div>
           </div>
