@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { whatsappService } from '@/lib/whatsapp-service';
+import { whatsappClient } from '@/lib/whatsapp-client';
 import { logWhatsAppMessage } from '@/lib/whatsapp';
 import { getTable } from '@/lib/supabase/tables';
 
@@ -37,15 +37,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if WhatsApp is connected
-    if (!whatsappService.isReady()) {
+    const isReady = await whatsappClient.isReady();
+    if (!isReady) {
       return NextResponse.json(
         { error: 'WhatsApp is not connected. Please connect first.' },
         { status: 400 }
       );
     }
 
-    // Send the message
-    const result = await whatsappService.sendMessage(phone_number, message);
+    // Send the message via external service
+    const result = await whatsappClient.sendMessage(phone_number, message);
 
     if (!result.success) {
       // Log failed message

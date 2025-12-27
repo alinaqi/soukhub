@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { whatsappService } from '@/lib/whatsapp-service';
+import { whatsappClient } from '@/lib/whatsapp-client';
 
 /**
  * GET /api/whatsapp/status
- * Get current WhatsApp connection status
+ * Get current WhatsApp connection status from external service
  */
 export async function GET() {
   try {
@@ -17,13 +17,13 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const state = whatsappService.getState();
+    const state = await whatsappClient.getStatus();
 
     return NextResponse.json({
       status: state.status,
       qrCode: state.qrCode,
       error: state.error,
-      isReady: whatsappService.isReady(),
+      isReady: state.isReady,
     });
   } catch (error) {
     console.error('WhatsApp status error:', error);
@@ -33,7 +33,7 @@ export async function GET() {
 
 /**
  * POST /api/whatsapp/status
- * Initialize or disconnect WhatsApp
+ * Initialize or disconnect WhatsApp via external service
  */
 export async function POST(request: NextRequest) {
   try {
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const { action } = body;
 
     if (action === 'connect') {
-      const state = await whatsappService.initialize();
+      const state = await whatsappClient.connect();
 
       return NextResponse.json({
         success: true,
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         error: state.error,
       });
     } else if (action === 'disconnect') {
-      await whatsappService.disconnect();
+      await whatsappClient.disconnect();
 
       return NextResponse.json({
         success: true,
