@@ -1,8 +1,7 @@
 -- SoukHub Initial Schema
 -- Multi-channel marketplace management for shop owners
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Note: Using gen_random_uuid() which is built-in to PostgreSQL 13+
 
 -- ============================================
 -- PROFILES (extends Supabase auth.users)
@@ -28,7 +27,7 @@ CREATE TYPE marketplace_type AS ENUM ('amazon', 'cartlow', 'revibe', 'noon', 'ot
 CREATE TYPE connection_status AS ENUM ('pending', 'active', 'error', 'disconnected');
 
 CREATE TABLE marketplace_connections (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   marketplace marketplace_type NOT NULL,
   display_name TEXT NOT NULL,
@@ -46,7 +45,7 @@ CREATE TABLE marketplace_connections (
 -- PRODUCTS (Unified Catalog)
 -- ============================================
 CREATE TABLE products (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   brand TEXT,
@@ -71,7 +70,7 @@ CREATE INDEX idx_products_brand ON products(brand);
 CREATE TYPE product_condition AS ENUM ('new', 'excellent', 'very_good', 'good', 'fair', 'renewed');
 
 CREATE TABLE product_variants (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   product_id UUID NOT NULL REFERENCES products(id) ON DELETE CASCADE,
   sku TEXT NOT NULL,
   name TEXT, -- e.g., "iPhone 15 Pro Max - 256GB - Black - Excellent"
@@ -98,7 +97,7 @@ CREATE INDEX idx_variants_sku ON product_variants(sku);
 CREATE TYPE listing_status AS ENUM ('draft', 'active', 'paused', 'out_of_stock', 'error');
 
 CREATE TABLE marketplace_listings (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   variant_id UUID NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
   connection_id UUID NOT NULL REFERENCES marketplace_connections(id) ON DELETE CASCADE,
   marketplace_sku TEXT, -- SKU in the marketplace
@@ -120,7 +119,7 @@ CREATE INDEX idx_listings_connection ON marketplace_listings(connection_id);
 -- INVENTORY
 -- ============================================
 CREATE TABLE inventory (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   variant_id UUID NOT NULL REFERENCES product_variants(id) ON DELETE CASCADE,
   connection_id UUID REFERENCES marketplace_connections(id) ON DELETE SET NULL, -- NULL = total inventory
   quantity INTEGER NOT NULL DEFAULT 0 CHECK (quantity >= 0),
@@ -148,7 +147,7 @@ CREATE TYPE fulfillment_type AS ENUM ('fbs', 'fbc', 'fbm', 'easy_ship', 'self_sh
 CREATE TYPE payment_method AS ENUM ('card', 'cod', 'tabby', 'tamara', 'payjustnow', 'payflex', 'bank_transfer', 'other');
 
 CREATE TABLE orders (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   connection_id UUID REFERENCES marketplace_connections(id) ON DELETE SET NULL,
   marketplace marketplace_type NOT NULL,
@@ -204,7 +203,7 @@ CREATE INDEX idx_orders_connection ON orders(connection_id);
 -- ORDER ITEMS
 -- ============================================
 CREATE TABLE order_items (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   variant_id UUID REFERENCES product_variants(id) ON DELETE SET NULL,
   marketplace_sku TEXT,
@@ -230,7 +229,7 @@ CREATE TYPE activity_type AS ENUM (
 );
 
 CREATE TABLE activity_log (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   activity_type activity_type NOT NULL,
   title TEXT NOT NULL,

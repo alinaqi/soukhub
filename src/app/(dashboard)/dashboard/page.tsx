@@ -2,6 +2,9 @@ import { createClient } from '@/lib/supabase/server';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { RecentOrders } from '@/components/dashboard/RecentOrders';
 import { MarketplaceBreakdown } from '@/components/dashboard/MarketplaceBreakdown';
+import { Insights } from '@/components/dashboard/Insights';
+import { QuickActions } from '@/components/dashboard/QuickActions';
+import { AnalyticsSummary } from '@/components/dashboard/AnalyticsSummary';
 import type { Order, MarketplaceConnection } from '@/types/supabase';
 
 export default async function DashboardPage() {
@@ -36,13 +39,13 @@ export default async function DashboardPage() {
     .select('*', { count: 'exact', head: true })
     .eq('user_id', user!.id);
 
-  // Fetch recent orders
-  const { data: recentOrdersData } = await supabase
+  // Fetch all orders for analytics (limit to last 500 for performance)
+  const { data: allOrdersData } = await supabase
     .from('orders')
     .select('*')
     .eq('user_id', user!.id)
     .order('order_date', { ascending: false })
-    .limit(5);
+    .limit(500);
 
   // Fetch marketplace connections
   const { data: connectionsData } = await supabase
@@ -57,7 +60,8 @@ export default async function DashboardPage() {
     totalProducts: totalProducts || 0,
   };
 
-  const recentOrders = (recentOrdersData || []) as Order[];
+  const allOrders = (allOrdersData || []) as Order[];
+  const recentOrders = allOrders.slice(0, 5);
   const connections = (connectionsData || []) as MarketplaceConnection[];
 
   return (
@@ -71,11 +75,19 @@ export default async function DashboardPage() {
 
       <StatsCards stats={stats} />
 
+      {/* AI Insights */}
+      <Insights orders={allOrders} connections={connections} stats={stats} />
+
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        {/* Left Column - Orders & Actions */}
+        <div className="lg:col-span-2 space-y-6">
           <RecentOrders orders={recentOrders} />
+          <QuickActions />
         </div>
-        <div>
+
+        {/* Right Column - Analytics & Marketplace */}
+        <div className="space-y-6">
+          <AnalyticsSummary orders={allOrders} />
           <MarketplaceBreakdown connections={connections} />
         </div>
       </div>
