@@ -423,7 +423,7 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
                     paddingAngle={5}
                     dataKey="revenue"
                     nameKey="name"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   >
                     {ordersByMarketplace.map((entry, index) => (
                       <Cell
@@ -475,7 +475,7 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
                     outerRadius={80}
                     dataKey="value"
                     nameKey="name"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                   >
                     {ordersByPayment.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
