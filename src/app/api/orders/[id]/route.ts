@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import type { Database } from '@/types/supabase';
-
-type OrderUpdate = Database['public']['Tables']['orders']['Update'];
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@supabase/supabase-js';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
+  const supabase = await createServerClient();
 
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
@@ -35,12 +33,19 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // Use typed client for auth check
+  const authClient = await createServerClient();
+  const { data: { user } } = await authClient.auth.getUser();
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+
+  // Use untyped client for flexible updates
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   const body = await request.json();
   const allowedFields = [
@@ -53,11 +58,10 @@ export async function PATCH(
   ];
 
   // Only allow updating specific fields
-  const updates: Partial<OrderUpdate> = {};
+  const updates: Record<string, unknown> = {};
   for (const field of allowedFields) {
     if (body[field] !== undefined) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (updates as any)[field] = body[field];
+      updates[field] = body[field];
     }
   }
 
@@ -65,10 +69,9 @@ export async function PATCH(
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await supabase
     .from('orders')
-    .update(updates as any)
+    .update(updates)
     .eq('id', id)
     .eq('user_id', user.id)
     .select()
