@@ -8,22 +8,27 @@ function getTable(supabase: SupabaseClient, table: string) {
   return (supabase as any).from(table);
 }
 
-// Validate UAE phone number format
-function validateUAEPhone(phone: string): boolean {
-  // Remove spaces and dashes
-  const cleaned = phone.replace(/[\s-]/g, '');
-  // UAE format: +971 5X XXX XXXX or 05X XXX XXXX
-  const uaeRegex = /^(\+971|00971|0)?5[0-9]{8}$/;
-  return uaeRegex.test(cleaned);
+// Validate international WhatsApp number format
+function validateWhatsAppNumber(phone: string): boolean {
+  // Remove spaces, dashes, and parentheses
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  // Must start with + and have at least 8 digits after country code
+  // Supports any international format: +1, +44, +49, +971, etc.
+  const internationalRegex = /^\+[1-9]\d{7,14}$/;
+  return internationalRegex.test(cleaned);
 }
 
-// Format phone number to standard format
+// Format phone number to standard format (ensure starts with +)
 function formatPhoneNumber(phone: string): string {
-  const cleaned = phone.replace(/[\s-]/g, '');
-  if (cleaned.startsWith('+971')) return cleaned;
-  if (cleaned.startsWith('00971')) return '+' + cleaned.slice(2);
-  if (cleaned.startsWith('0')) return '+971' + cleaned.slice(1);
-  return '+971' + cleaned;
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  // Already has + prefix
+  if (cleaned.startsWith('+')) return cleaned;
+  // Has 00 international prefix
+  if (cleaned.startsWith('00')) return '+' + cleaned.slice(2);
+  // UAE local format (starts with 0)
+  if (cleaned.startsWith('0') && cleaned.length === 10) return '+971' + cleaned.slice(1);
+  // Assume it needs + prefix
+  return '+' + cleaned;
 }
 
 // GET /api/suppliers - List all suppliers
@@ -116,16 +121,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate phone numbers
-    if (!validateUAEPhone(whatsapp_number)) {
+    if (!validateWhatsAppNumber(whatsapp_number)) {
       return NextResponse.json(
-        { error: 'Invalid UAE WhatsApp number format. Use +971 5X XXX XXXX' },
+        { error: 'Invalid WhatsApp number format. Use international format with + (e.g., +49 123 456 7890)' },
         { status: 400 }
       );
     }
 
-    if (secondary_whatsapp && !validateUAEPhone(secondary_whatsapp)) {
+    if (secondary_whatsapp && !validateWhatsAppNumber(secondary_whatsapp)) {
       return NextResponse.json(
-        { error: 'Invalid secondary WhatsApp number format' },
+        { error: 'Invalid secondary WhatsApp number format. Use international format with +' },
         { status: 400 }
       );
     }

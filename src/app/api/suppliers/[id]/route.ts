@@ -2,20 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { getTable } from '@/lib/supabase/tables';
 
-// Validate UAE phone number format
-function validateUAEPhone(phone: string): boolean {
-  const cleaned = phone.replace(/[\s-]/g, '');
-  const uaeRegex = /^(\+971|00971|0)?5[0-9]{8}$/;
-  return uaeRegex.test(cleaned);
+// Validate international WhatsApp number format
+function validateWhatsAppNumber(phone: string): boolean {
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  // Must start with + and have at least 8 digits after country code
+  const internationalRegex = /^\+[1-9]\d{7,14}$/;
+  return internationalRegex.test(cleaned);
 }
 
-// Format phone number to standard format
+// Format phone number to standard format (ensure starts with +)
 function formatPhoneNumber(phone: string): string {
-  const cleaned = phone.replace(/[\s-]/g, '');
-  if (cleaned.startsWith('+971')) return cleaned;
-  if (cleaned.startsWith('00971')) return '+' + cleaned.slice(2);
-  if (cleaned.startsWith('0')) return '+971' + cleaned.slice(1);
-  return '+971' + cleaned;
+  const cleaned = phone.replace(/[\s\-()]/g, '');
+  if (cleaned.startsWith('+')) return cleaned;
+  if (cleaned.startsWith('00')) return '+' + cleaned.slice(2);
+  if (cleaned.startsWith('0') && cleaned.length === 10) return '+971' + cleaned.slice(1);
+  return '+' + cleaned;
 }
 
 // GET /api/suppliers/[id] - Get a single supplier
@@ -110,16 +111,16 @@ export async function PATCH(
     }
 
     // Validate phone numbers if provided
-    if (body.whatsapp_number && !validateUAEPhone(body.whatsapp_number)) {
+    if (body.whatsapp_number && !validateWhatsAppNumber(body.whatsapp_number)) {
       return NextResponse.json(
-        { error: 'Invalid UAE WhatsApp number format' },
+        { error: 'Invalid WhatsApp number format. Use international format with + (e.g., +49 123 456 7890)' },
         { status: 400 }
       );
     }
 
-    if (body.secondary_whatsapp && !validateUAEPhone(body.secondary_whatsapp)) {
+    if (body.secondary_whatsapp && !validateWhatsAppNumber(body.secondary_whatsapp)) {
       return NextResponse.json(
-        { error: 'Invalid secondary WhatsApp number format' },
+        { error: 'Invalid secondary WhatsApp number format. Use international format with +' },
         { status: 400 }
       );
     }
