@@ -38,6 +38,34 @@ interface StockAdjustment {
 
 type FilterStatus = 'all' | 'low_stock' | 'out_of_stock' | 'in_stock';
 
+interface ExtractedProduct {
+  name: string;
+  sku: string | null;
+  brand: string | null;
+  category: string | null;
+  price: number;
+  condition: string;
+  unitsSold: number;
+  revenue: number;
+  marketplaces: string[];
+  lastOrderDate: string;
+}
+
+interface PopulateResult {
+  success?: boolean;
+  created?: number;
+  skipped?: number;
+  errors?: number;
+  products: ExtractedProduct[];
+  stats: {
+    totalOrders: number;
+    uniqueProducts: number;
+    totalUnitsSold?: number;
+    totalRevenue?: number;
+  };
+  error?: string;
+}
+
 export default function InventoryPage() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +79,10 @@ export default function InventoryPage() {
     reason: '',
   });
   const [saving, setSaving] = useState(false);
+  const [populateModal, setPopulateModal] = useState(false);
+  const [populateLoading, setPopulateLoading] = useState(false);
+  const [populatePreview, setPopulatePreview] = useState<PopulateResult | null>(null);
+  const [populateResult, setPopulateResult] = useState<PopulateResult | null>(null);
 
   const supabase = createClient();
 
@@ -199,6 +231,62 @@ export default function InventoryPage() {
     return { label: 'In Stock', color: 'bg-success/10 text-success' };
   };
 
+  const handlePopulatePreview = async () => {
+    setPopulateLoading(true);
+    setPopulatePreview(null);
+    setPopulateResult(null);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/inventory/populate-from-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, dryRun: true }),
+      });
+
+      const result: PopulateResult = await response.json();
+      setPopulatePreview(result);
+    } catch (err) {
+      console.error('Error previewing:', err);
+    }
+    setPopulateLoading(false);
+  };
+
+  const handlePopulateConfirm = async () => {
+    setPopulateLoading(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    try {
+      const response = await fetch('/api/inventory/populate-from-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id, dryRun: false }),
+      });
+
+      const result: PopulateResult = await response.json();
+      setPopulateResult(result);
+      setPopulatePreview(null);
+
+      if (result.success) {
+        fetchInventory();
+      }
+    } catch (err) {
+      console.error('Error populating:', err);
+    }
+    setPopulateLoading(false);
+  };
+
+  const openPopulateModal = () => {
+    setPopulateModal(true);
+    setPopulatePreview(null);
+    setPopulateResult(null);
+    handlePopulatePreview();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -214,12 +302,20 @@ export default function InventoryPage() {
           <h1 className="text-2xl font-bold">Inventory</h1>
           <p className="text-muted-foreground">Manage stock levels across all products</p>
         </div>
-        <Link
-          href="/import"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          Import Inventory
-        </Link>
+        <div className="flex gap-3">
+          <button
+            onClick={openPopulateModal}
+            className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+          >
+            Populate from Orders
+          </button>
+          <Link
+            href="/import"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Import Inventory
+          </Link>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -483,6 +579,152 @@ export default function InventoryPage() {
               >
                 {saving ? 'Saving...' : 'Confirm'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Populate from Orders Modal */}
+      {populateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-lg border border-border w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-border">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">Populate Inventory from Orders</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Analyze your orders to auto-create products and inventory
+                  </p>
+                </div>
+                <button
+                  onClick={() => setPopulateModal(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1">
+              {populateLoading && !populatePreview && !populateResult && (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4 animate-pulse">🔍</div>
+                  <p className="text-muted-foreground">Analyzing your orders...</p>
+                </div>
+              )}
+
+              {populatePreview?.error && (
+                <div className="text-center py-12">
+                  <div className="text-4xl mb-4">📭</div>
+                  <p className="text-muted-foreground">{populatePreview.error}</p>
+                </div>
+              )}
+
+              {populatePreview && !populatePreview.error && (
+                <div className="space-y-6">
+                  {/* Stats */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="p-4 bg-muted/50 rounded-lg text-center">
+                      <div className="text-2xl font-bold">{populatePreview.stats.totalOrders}</div>
+                      <div className="text-xs text-muted-foreground">Orders Analyzed</div>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg text-center">
+                      <div className="text-2xl font-bold">{populatePreview.stats.uniqueProducts}</div>
+                      <div className="text-xs text-muted-foreground">Products Found</div>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg text-center">
+                      <div className="text-2xl font-bold">{populatePreview.stats.totalUnitsSold?.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">Units Sold</div>
+                    </div>
+                    <div className="p-4 bg-muted/50 rounded-lg text-center">
+                      <div className="text-2xl font-bold">AED {populatePreview.stats.totalRevenue?.toLocaleString()}</div>
+                      <div className="text-xs text-muted-foreground">Revenue</div>
+                    </div>
+                  </div>
+
+                  {/* Product Preview */}
+                  <div>
+                    <h3 className="font-medium mb-3">Products to Create (Top 10)</h3>
+                    <div className="border border-border rounded-lg overflow-hidden">
+                      <table className="w-full text-sm">
+                        <thead className="bg-muted/50">
+                          <tr>
+                            <th className="px-3 py-2 text-left">Product</th>
+                            <th className="px-3 py-2 text-left">SKU</th>
+                            <th className="px-3 py-2 text-center">Sold</th>
+                            <th className="px-3 py-2 text-right">Revenue</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border">
+                          {populatePreview.products.slice(0, 10).map((product, i) => (
+                            <tr key={i}>
+                              <td className="px-3 py-2">
+                                <div className="font-medium">{product.name}</div>
+                                {product.brand && (
+                                  <div className="text-xs text-muted-foreground">{product.brand}</div>
+                                )}
+                              </td>
+                              <td className="px-3 py-2 font-mono text-xs">
+                                {product.sku || '—'}
+                              </td>
+                              <td className="px-3 py-2 text-center">
+                                {product.unitsSold}
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                AED {product.revenue.toFixed(0)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                      {populatePreview.products.length > 10 && (
+                        <div className="px-3 py-2 text-center text-sm text-muted-foreground bg-muted/30">
+                          ... and {populatePreview.products.length - 10} more products
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="bg-primary/5 p-4 rounded-lg text-sm">
+                    <strong>Note:</strong> Products will be created with 0 stock quantity.
+                    You&apos;ll need to set actual stock levels after creation.
+                  </div>
+                </div>
+              )}
+
+              {populateResult && (
+                <div className="text-center py-8">
+                  <div className="text-5xl mb-4">🎉</div>
+                  <h3 className="text-lg font-semibold mb-2">Population Complete!</h3>
+                  <div className="space-y-1 text-muted-foreground mb-6">
+                    <p>Created {populateResult.created} new products</p>
+                    {(populateResult.skipped ?? 0) > 0 && (
+                      <p className="text-sm">{populateResult.skipped} already existed (skipped)</p>
+                    )}
+                    {(populateResult.errors ?? 0) > 0 && (
+                      <p className="text-sm text-warning">{populateResult.errors} failed</p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-border flex gap-4">
+              <button
+                onClick={() => setPopulateModal(false)}
+                className="flex-1 rounded-lg border border-border px-4 py-2 font-medium hover:bg-muted"
+              >
+                {populateResult ? 'Close' : 'Cancel'}
+              </button>
+              {populatePreview && !populatePreview.error && !populateResult && (
+                <button
+                  onClick={handlePopulateConfirm}
+                  disabled={populateLoading}
+                  className="flex-1 rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+                >
+                  {populateLoading ? 'Creating...' : `Create ${populatePreview.stats.uniqueProducts} Products`}
+                </button>
+              )}
             </div>
           </div>
         </div>

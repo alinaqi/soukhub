@@ -118,6 +118,18 @@ const tools: Anthropic.Tool[] = [
       required: ['user_id'],
     },
   },
+  {
+    name: 'populate_inventory_from_orders',
+    description: 'Analyze orders to extract products being sold and populate inventory. Returns a preview of products found with sales data. Use dry_run=true to preview without creating, dry_run=false to actually create products and inventory.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        dry_run: { type: 'boolean', description: 'If true, just preview products without creating. If false, create products and inventory entries.', default: true },
+      },
+      required: ['user_id'],
+    },
+  },
 ];
 
 // Tool implementations
@@ -460,6 +472,235 @@ async function getSuggestions(userId: string) {
   return { suggestions, stats };
 }
 
+// Product field patterns for extraction from raw order data
+const PRODUCT_FIELD_PATTERNS = {
+  name: ['product', 'item', 'title', 'name', 'description', 'product_name', 'item_name', 'product-name'],
+  sku: ['sku', 'asin', 'product_id', 'item_id', 'article', 'barcode', 'upc', 'ean', 'product-id', 'seller-sku'],
+  brand: ['brand', 'manufacturer', 'maker', 'vendor'],
+  category: ['category', 'type', 'department', 'classification', 'product_type', 'product-type'],
+  price: ['price', 'amount', 'cost', 'total', 'unit_price', 'item_price', 'selling_price', 'item-price'],
+  quantity: ['quantity', 'qty', 'units', 'count', 'quantity-purchased'],
+  condition: ['condition', 'quality', 'grade', 'state'],
+};
+
+function findFieldValue(rawData: Record<string, unknown>, patterns: string[]): string | null {
+  if (!rawData) return null;
+  for (const key of Object.keys(rawData)) {
+    const keyLower = key.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const pattern of patterns) {
+      const patternLower = pattern.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (keyLower.includes(patternLower) || patternLower.includes(keyLower)) {
+        const value = rawData[key];
+        if (value !== null && value !== undefined && String(value).trim() !== '') {
+          return String(value).trim();
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function parseNumber(value: string | number | null): number {
+  if (value === null) return 0;
+  if (typeof value === 'number') return value;
+  const cleaned = String(value).replace(/[^0-9.-]/g, '');
+  return parseFloat(cleaned) || 0;
+}
+
+async function populateInventoryFromOrders(userId: string, dryRun = true) {
+  // Fetch all orders with raw_data
+  const { data: orders, error: ordersError } = await supabase
+    .from('orders')
+    .select('id, marketplace, total, order_date, raw_data, status')
+    .eq('user_id', userId)
+    .not('status', 'eq', 'cancelled');
+
+  if (ordersError) {
+    return { error: ordersError.message };
+  }
+
+  if (!orders || orders.length === 0) {
+    return {
+      error: 'No orders found. Import some orders first.',
+      products: [],
+      stats: { totalOrders: 0, uniqueProducts: 0 },
+    };
+  }
+
+  interface ExtractedProduct {
+    name: string;
+    sku: string | null;
+    brand: string | null;
+    category: string | null;
+    price: number;
+    condition: string;
+    unitsSold: number;
+    revenue: number;
+    marketplaces: string[];
+  }
+
+  const productMap = new Map<string, ExtractedProduct>();
+
+  for (const order of orders) {
+    const rawData = order.raw_data as Record<string, unknown> | null;
+
+    let productName = findFieldValue(rawData || {}, PRODUCT_FIELD_PATTERNS.name);
+    const sku = findFieldValue(rawData || {}, PRODUCT_FIELD_PATTERNS.sku);
+    const brand = findFieldValue(rawData || {}, PRODUCT_FIELD_PATTERNS.brand);
+    const category = findFieldValue(rawData || {}, PRODUCT_FIELD_PATTERNS.category);
+    const priceStr = findFieldValue(rawData || {}, PRODUCT_FIELD_PATTERNS.price);
+    const quantityStr = findFieldValue(rawData || {}, PRODUCT_FIELD_PATTERNS.quantity);
+    const conditionStr = findFieldValue(rawData || {}, PRODUCT_FIELD_PATTERNS.condition);
+
+    if (!productName) {
+      if (sku) {
+        productName = `Product ${sku}`;
+      } else if (brand) {
+        productName = `${brand} Product`;
+      } else {
+        continue;
+      }
+    }
+
+    const price = priceStr ? parseNumber(priceStr) : order.total;
+    const quantity = quantityStr ? parseNumber(quantityStr) : 1;
+    const condition = conditionStr?.toLowerCase().includes('new') ? 'new' : 'used';
+    const productKey = sku || productName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
+    if (productMap.has(productKey)) {
+      const existing = productMap.get(productKey)!;
+      existing.unitsSold += quantity;
+      existing.revenue += price * quantity;
+      if (!existing.marketplaces.includes(order.marketplace)) {
+        existing.marketplaces.push(order.marketplace);
+      }
+    } else {
+      productMap.set(productKey, {
+        name: productName,
+        sku,
+        brand,
+        category,
+        price,
+        condition,
+        unitsSold: quantity,
+        revenue: price * quantity,
+        marketplaces: [order.marketplace],
+      });
+    }
+  }
+
+  const extractedProducts = Array.from(productMap.values())
+    .sort((a, b) => b.unitsSold - a.unitsSold)
+    .slice(0, 20); // Limit for chat response
+
+  const stats = {
+    totalOrders: orders.length,
+    uniqueProducts: productMap.size,
+    totalUnitsSold: Array.from(productMap.values()).reduce((sum, p) => sum + p.unitsSold, 0),
+    totalRevenue: Array.from(productMap.values()).reduce((sum, p) => sum + p.revenue, 0),
+  };
+
+  if (dryRun) {
+    return {
+      preview: true,
+      products: extractedProducts,
+      stats,
+      message: `Found ${stats.uniqueProducts} unique products from ${stats.totalOrders} orders. Total units sold: ${stats.totalUnitsSold}. Say "create these products" to add them to inventory.`,
+    };
+  }
+
+  // Create products and inventory
+  let created = 0;
+  let skipped = 0;
+
+  for (const product of extractedProducts) {
+    try {
+      // Check if product already exists
+      if (product.sku) {
+        const { data: existingVariant } = await supabase
+          .from('product_variants')
+          .select('id')
+          .eq('sku', product.sku)
+          .single();
+
+        if (existingVariant) {
+          skipped++;
+          continue;
+        }
+      }
+
+      // Create product
+      const { data: newProduct, error: productError } = await supabase
+        .from('products')
+        .insert({
+          user_id: userId,
+          name: product.name,
+          brand: product.brand,
+          category: product.category,
+          base_price: product.price,
+          is_active: true,
+        } as never)
+        .select('id')
+        .single();
+
+      if (productError || !newProduct) {
+        continue;
+      }
+
+      const productData = newProduct as { id: string };
+
+      // Create variant
+      const { data: newVariant, error: variantError } = await supabase
+        .from('product_variants')
+        .insert({
+          product_id: productData.id,
+          sku: product.sku || `SKU-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          name: product.name,
+          condition: product.condition,
+          price: product.price,
+          is_active: true,
+        } as never)
+        .select('id')
+        .single();
+
+      if (variantError || !newVariant) {
+        continue;
+      }
+
+      const variantData = newVariant as { id: string };
+
+      // Create inventory entry
+      await supabase.from('inventory').insert({
+        variant_id: variantData.id,
+        quantity: 0,
+        reserved: 0,
+        reorder_point: Math.max(5, Math.ceil(product.unitsSold * 0.5)),
+      } as never);
+
+      created++;
+    } catch {
+      continue;
+    }
+  }
+
+  // Log activity
+  await supabase.from('activity_log').insert({
+    user_id: userId,
+    activity_type: 'inventory_updated',
+    title: 'Inventory populated from orders via AI',
+    description: `Created ${created} products from ${orders.length} orders analysis`,
+    metadata: { created, skipped },
+  } as never);
+
+  return {
+    success: true,
+    created,
+    skipped,
+    stats,
+    message: `Created ${created} new products and inventory entries. ${skipped} products were skipped (already exist).`,
+  };
+}
+
 // Process tool calls
 async function processToolCall(name: string, input: Record<string, unknown>) {
   switch (name) {
@@ -496,6 +737,11 @@ async function processToolCall(name: string, input: Record<string, unknown>) {
         input.quantity as number,
         input.reason as string | undefined
       );
+    case 'populate_inventory_from_orders':
+      return await populateInventoryFromOrders(
+        input.user_id as string,
+        input.dry_run !== false
+      );
     default:
       return { error: 'Unknown tool' };
   }
@@ -513,8 +759,9 @@ const SYSTEM_PROMPT = `You are SoukHub AI, an intelligent assistant for multi-ch
 Your capabilities:
 1. **Order Management**: Search orders, view details, and update order statuses (mark as shipped, delivered, process refunds, etc.)
 2. **Inventory Management**: Check stock levels, find low stock items, adjust inventory quantities
-3. **Analytics**: Provide insights about sales performance, return rates, and marketplace comparisons
-4. **Suggestions**: Proactively suggest actions to improve business operations
+3. **Populate Inventory from Orders**: Analyze existing orders to extract products being sold and create inventory entries automatically
+4. **Analytics**: Provide insights about sales performance, return rates, and marketplace comparisons
+5. **Suggestions**: Proactively suggest actions to improve business operations
 
 Key behaviors:
 - Be concise and actionable in your responses
