@@ -1,10 +1,19 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
+
+interface Action {
+  id: string;
+  label: string;
+  type: 'update_order' | 'bulk_update' | 'navigate';
+  data: Record<string, unknown>;
+}
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  actions?: Action[];
 }
 
 interface AIChatWidgetProps {
@@ -32,6 +41,55 @@ export function AIChatWidget({ userId }: AIChatWidgetProps) {
       inputRef.current.focus();
     }
   }, [isOpen]);
+
+  const executeAction = async (action: Action) => {
+    setIsLoading(true);
+    try {
+      if (action.type === 'update_order') {
+        const { orderId, updates } = action.data;
+        const response = await fetch(`/api/orders/${orderId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updates),
+        });
+
+        if (!response.ok) throw new Error('Failed to update order');
+
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Order updated successfully! ${action.label}`,
+        }]);
+      } else if (action.type === 'bulk_update') {
+        const { orderIds, updates } = action.data as { orderIds: string[], updates: Record<string, unknown> };
+
+        const results = await Promise.all(
+          orderIds.map(id =>
+            fetch(`/api/orders/${id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(updates),
+            })
+          )
+        );
+
+        const successCount = results.filter(r => r.ok).length;
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: `Bulk update complete! Updated ${successCount} of ${orderIds.length} orders.`,
+        }]);
+      } else if (action.type === 'navigate') {
+        window.location.href = action.data.url as string;
+      }
+    } catch (error) {
+      console.error('Action error:', error);
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Failed to execute action. Please try again.',
+      }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
@@ -61,7 +119,11 @@ export function AIChatWidget({ userId }: AIChatWidgetProps) {
         throw new Error(data.error);
       }
 
-      setMessages([...newMessages, { role: 'assistant', content: data.response }]);
+      setMessages([...newMessages, {
+        role: 'assistant',
+        content: data.response,
+        actions: data.actions || [],
+      }]);
     } catch (error) {
       console.error('Chat error:', error);
       setMessages([
@@ -160,9 +222,25 @@ export function AIChatWidget({ userId }: AIChatWidgetProps) {
                         : 'bg-muted'
                     }`}
                   >
-                    <div className="text-sm whitespace-pre-wrap">
-                      {message.content}
+                    <div className="text-sm prose prose-sm dark:prose-invert max-w-none [&>p]:my-1 [&>ul]:my-1 [&>ol]:my-1 [&>h1]:text-base [&>h2]:text-sm [&>h3]:text-sm">
+                      <ReactMarkdown>{message.content}</ReactMarkdown>
                     </div>
+
+                    {/* Action Buttons */}
+                    {message.actions && message.actions.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-border/50 flex flex-wrap gap-2">
+                        {message.actions.map((action) => (
+                          <button
+                            key={action.id}
+                            onClick={() => executeAction(action)}
+                            disabled={isLoading}
+                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+                          >
+                            {action.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

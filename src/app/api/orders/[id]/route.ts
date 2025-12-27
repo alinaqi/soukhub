@@ -53,10 +53,11 @@ export async function PATCH(
   ];
 
   // Only allow updating specific fields
-  const updates: OrderUpdate = {};
+  const updates: Partial<OrderUpdate> = {};
   for (const field of allowedFields) {
     if (body[field] !== undefined) {
-      (updates as Record<string, unknown>)[field] = body[field];
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (updates as any)[field] = body[field];
     }
   }
 
@@ -64,9 +65,10 @@ export async function PATCH(
     return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await supabase
     .from('orders')
-    .update(updates)
+    .update(updates as any)
     .eq('id', id)
     .eq('user_id', user.id)
     .select()

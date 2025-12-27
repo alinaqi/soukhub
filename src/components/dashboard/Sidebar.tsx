@@ -54,12 +54,9 @@ export function Sidebar({ profile }: SidebarProps) {
             <span className="text-lg">🤖</span>
             <span className="font-medium text-sm">AI Assistant</span>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">
-            Get insights and recommendations for your business
+          <p className="text-xs text-muted-foreground">
+            Click the chat button in the bottom right to get insights and manage your orders with AI
           </p>
-          <button className="w-full rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-            Coming Soon
-          </button>
         </div>
       </div>
     </aside>

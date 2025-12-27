@@ -246,6 +246,13 @@ async function processToolCall(name: string, input: Record<string, unknown>) {
   }
 }
 
+interface ActionButton {
+  id: string;
+  label: string;
+  type: 'update_order' | 'bulk_update' | 'navigate';
+  data: Record<string, unknown>;
+}
+
 const SYSTEM_PROMPT = `You are SoukHub AI, an intelligent assistant for multi-channel marketplace sellers in the UAE and Middle East. You help sellers manage their orders across Amazon, Cartlow, and Revibe marketplaces.
 
 Your capabilities:
@@ -255,17 +262,134 @@ Your capabilities:
 
 Key behaviors:
 - Be concise and actionable in your responses
-- When showing orders, format them as a clear list with key details
+- Format responses using markdown for better readability (use **bold**, bullet points, etc.)
+- When showing orders, format them as a markdown table or list with key details
 - When updating order status, confirm the action was successful
 - Proactively suggest what the user might want to do next
 - Use AED as the default currency
 - Be helpful with refund processing - guide users through status changes
+- When listing orders that need action, always include order IDs so users can take action
 
 Status flow for orders:
 - pending → confirmed → processing → ready_to_ship → shipped → out_for_delivery → delivered
 - Orders can also be: cancelled, returned, refunded
 
 When the user first messages you, introduce yourself briefly and ask how you can help. If appropriate, fetch their order stats to provide context.`;
+
+// Generate action buttons based on the response and context
+function generateActions(
+  responseText: string,
+  toolResults: Array<{ name: string; result: Record<string, unknown> }>
+): ActionButton[] {
+  const actions: ActionButton[] = [];
+
+  for (const { name, result } of toolResults) {
+    if (name === 'search_orders' && 'orders' in result) {
+      const orders = result.orders as Array<{ id: string; status: string; marketplace_order_id: string }>;
+
+      if (orders.length > 0) {
+        // Check for pending orders that can be marked as shipped
+        const pendingOrders = orders.filter(o => ['pending', 'confirmed', 'processing', 'ready_to_ship'].includes(o.status));
+        if (pendingOrders.length > 0) {
+          actions.push({
+            id: 'bulk-ship-' + Date.now(),
+            label: `Mark ${pendingOrders.length} as Shipped`,
+            type: 'bulk_update',
+            data: {
+              orderIds: pendingOrders.map(o => o.id),
+              updates: { status: 'shipped' },
+            },
+          });
+        }
+
+        // Check for shipped orders that can be delivered
+        const shippedOrders = orders.filter(o => o.status === 'shipped' || o.status === 'out_for_delivery');
+        if (shippedOrders.length > 0) {
+          actions.push({
+            id: 'bulk-deliver-' + Date.now(),
+            label: `Mark ${shippedOrders.length} as Delivered`,
+            type: 'bulk_update',
+            data: {
+              orderIds: shippedOrders.map(o => o.id),
+              updates: { status: 'delivered' },
+            },
+          });
+        }
+
+        // Check for orders that might need refund
+        const deliveredOrders = orders.filter(o => o.status === 'delivered');
+        if (deliveredOrders.length > 0 && responseText.toLowerCase().includes('refund')) {
+          actions.push({
+            id: 'bulk-refund-' + Date.now(),
+            label: `Refund ${deliveredOrders.length} Orders`,
+            type: 'bulk_update',
+            data: {
+              orderIds: deliveredOrders.map(o => o.id),
+              updates: { status: 'refunded' },
+            },
+          });
+        }
+      }
+    }
+
+    if (name === 'get_order_details' && 'order' in result) {
+      const order = result.order as { id: string; status: string };
+      const status = order.status;
+
+      // Add contextual action for single order
+      if (['pending', 'confirmed', 'processing', 'ready_to_ship'].includes(status)) {
+        actions.push({
+          id: 'ship-' + order.id,
+          label: 'Mark as Shipped',
+          type: 'update_order',
+          data: { orderId: order.id, updates: { status: 'shipped' } },
+        });
+      }
+      if (status === 'shipped' || status === 'out_for_delivery') {
+        actions.push({
+          id: 'deliver-' + order.id,
+          label: 'Mark as Delivered',
+          type: 'update_order',
+          data: { orderId: order.id, updates: { status: 'delivered' } },
+        });
+      }
+      if (status === 'delivered') {
+        actions.push({
+          id: 'refund-' + order.id,
+          label: 'Process Refund',
+          type: 'update_order',
+          data: { orderId: order.id, updates: { status: 'refunded' } },
+        });
+        actions.push({
+          id: 'return-' + order.id,
+          label: 'Process Return',
+          type: 'update_order',
+          data: { orderId: order.id, updates: { status: 'returned' } },
+        });
+      }
+      if (!['cancelled', 'returned', 'refunded'].includes(status)) {
+        actions.push({
+          id: 'cancel-' + order.id,
+          label: 'Cancel Order',
+          type: 'update_order',
+          data: { orderId: order.id, updates: { status: 'cancelled' } },
+        });
+      }
+    }
+  }
+
+  // Navigation actions
+  if (responseText.toLowerCase().includes('import') || responseText.toLowerCase().includes('add more orders')) {
+    actions.push({
+      id: 'nav-import',
+      label: 'Import Orders',
+      type: 'navigate',
+      data: { url: '/import' },
+    });
+  }
+
+  return actions.slice(0, 6); // Limit to 6 actions max
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -286,6 +410,9 @@ export async function POST(request: NextRequest) {
       messages,
     });
 
+    // Track all tool results for generating actions
+    const allToolResults: Array<{ name: string; result: Record<string, unknown> }> = [];
+
     // Process tool calls in a loop
     while (response.stop_reason === 'tool_use') {
       const toolUseBlocks = response.content.filter(
@@ -295,6 +422,10 @@ export async function POST(request: NextRequest) {
       const toolResults = await Promise.all(
         toolUseBlocks.map(async (toolUse) => {
           const result = await processToolCall(toolUse.name, toolUse.input as Record<string, unknown>);
+
+          // Track for action generation
+          allToolResults.push({ name: toolUse.name, result: result as Record<string, unknown> });
+
           return {
             type: 'tool_result' as const,
             tool_use_id: toolUse.id,
@@ -322,8 +453,14 @@ export async function POST(request: NextRequest) {
       (block): block is Anthropic.TextBlock => block.type === 'text'
     );
 
+    const responseText = textBlock?.text || 'No response generated';
+
+    // Generate action buttons based on the response and tool results
+    const actions = generateActions(responseText, allToolResults);
+
     return NextResponse.json({
-      response: textBlock?.text || 'No response generated',
+      response: responseText,
+      actions,
       usage: response.usage,
     });
   } catch (error) {
