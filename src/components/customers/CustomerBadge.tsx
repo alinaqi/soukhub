@@ -108,7 +108,7 @@ export function CustomerBadge({ customerId, compact = false }: CustomerBadgeProp
       </div>
 
       {/* Favorite Brands */}
-      {stats.favorite_brands.length > 0 && (
+      {stats.favorite_brands && stats.favorite_brands.length > 0 && (
         <div className="text-xs text-gray-500">
           Favorite: {stats.favorite_brands.join(', ')}
         </div>

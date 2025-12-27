@@ -17,16 +17,19 @@ interface Customer {
 }
 
 interface CustomerStats {
+  customer_id: string;
+  name: string;
+  email?: string;
+  phone?: string;
   total_orders: number;
   total_spent: number;
-  avg_order_value: number;
-  first_order: string | null;
-  last_order: string | null;
-  days_since_first_order: number;
+  first_order_date: string;
+  last_order_date: string;
+  average_order_value: number;
+  favorite_brands: string[];
   is_repeat: boolean;
   is_vip: boolean;
-  segment: string;
-  recent_products: string[];
+  days_since_last_order: number;
 }
 
 export function CustomersClient({ userId }: { userId: string }) {
@@ -81,8 +84,8 @@ export function CustomersClient({ userId }: { userId: string }) {
     try {
       const response = await fetch(`/api/customers/${customerId}/stats`);
       const data = await response.json();
-      if (response.ok) {
-        setCustomerStats(data);
+      if (response.ok && data.stats) {
+        setCustomerStats(data.stats);
       }
     } catch (error) {
       console.error('Failed to fetch customer stats:', error);
@@ -369,31 +372,31 @@ export function CustomersClient({ userId }: { userId: string }) {
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Avg Order</span>
                       <span className="font-medium">
-                        {formatCurrency(customerStats.avg_order_value)}
+                        {formatCurrency(customerStats.average_order_value)}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">First Order</span>
-                      <span>{formatDate(customerStats.first_order)}</span>
+                      <span>{formatDate(customerStats.first_order_date)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Last Order</span>
-                      <span>{formatDate(customerStats.last_order)}</span>
+                      <span>{formatDate(customerStats.last_order_date)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">Segment</span>
-                      <span className="capitalize">{customerStats.segment}</span>
+                      <span className="text-muted-foreground">Last Active</span>
+                      <span>{customerStats.days_since_last_order} days ago</span>
                     </div>
                   </div>
 
-                  {customerStats.recent_products && customerStats.recent_products.length > 0 && (
+                  {customerStats.favorite_brands && customerStats.favorite_brands.length > 0 && (
                     <div className="border-t border-border pt-4">
-                      <div className="text-sm text-muted-foreground mb-2">Recent Products</div>
-                      <div className="space-y-1">
-                        {customerStats.recent_products.slice(0, 3).map((product, i) => (
-                          <div key={i} className="text-sm truncate">
-                            {product}
-                          </div>
+                      <div className="text-sm text-muted-foreground mb-2">Favorite Brands</div>
+                      <div className="flex flex-wrap gap-1">
+                        {customerStats.favorite_brands.slice(0, 3).map((brand, i) => (
+                          <span key={i} className="text-xs px-2 py-1 bg-muted rounded-full">
+                            {brand}
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -437,7 +440,7 @@ export function CustomersClient({ userId }: { userId: string }) {
                 customerName={selectedCustomer.name}
                 orderCount={customerStats.total_orders}
                 isVip={customerStats.is_vip}
-                recentProducts={customerStats.recent_products || []}
+                favoriteBrands={customerStats.favorite_brands || []}
               />
             </div>
           </div>
@@ -475,15 +478,15 @@ function SimpleThankYouNote({
   customerName,
   orderCount,
   isVip,
-  recentProducts,
+  favoriteBrands,
 }: {
   customerName: string;
   orderCount: number;
   isVip: boolean;
-  recentProducts: string[];
+  favoriteBrands: string[];
 }) {
   const firstName = customerName.split(' ')[0];
-  const productMention = recentProducts.length > 0 ? recentProducts[0] : 'your order';
+  const brandMention = favoriteBrands.length > 0 ? favoriteBrands[0] : 'your favorite';
 
   const generateNote = () => {
     if (isVip) {
@@ -491,7 +494,7 @@ function SimpleThankYouNote({
 
 Thank you for being one of our most valued VIP customers! This is your ${orderCount}${getOrdinalSuffix(orderCount)} order with us, and we truly appreciate your continued trust and loyalty.
 
-Your ${productMention} is on its way!
+We love that you're a fan of ${brandMention} products!
 
 As a VIP customer, you're always our priority. If you ever need anything, don't hesitate to reach out.
 
@@ -503,7 +506,7 @@ Your Team`;
 
 Thank you for your order! We're so happy to have you back for your ${orderCount}${getOrdinalSuffix(orderCount)} purchase with us.
 
-Your ${productMention} is being prepared with care.
+We noticed you love ${brandMention} - great choice!
 
 We appreciate your continued support!
 
