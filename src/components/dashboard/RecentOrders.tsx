@@ -74,10 +74,10 @@ export function RecentOrders({ orders }: RecentOrdersProps) {
               </div>
               <span
                 className={`inline-block px-2 py-0.5 text-xs font-medium rounded-full ${
-                  STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-800'
+                  STATUS_COLORS[order.status || 'pending'] || 'bg-gray-100 text-gray-800'
                 }`}
               >
-                {order.status}
+                {order.status || 'pending'}
               </span>
             </div>
           </div>

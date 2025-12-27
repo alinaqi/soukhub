@@ -6,11 +6,17 @@ import type { Profile } from '@/types/supabase';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+  { href: '/operations', label: 'Operations', icon: '⚡' },
   { href: '/orders', label: 'Orders', icon: '📦' },
+  { href: '/packing', label: 'Packing', icon: '📦' },
+  { href: '/shipping', label: 'Shipping', icon: '🚚' },
   { href: '/inventory', label: 'Inventory', icon: '📋' },
-  { href: '/analytics', label: 'Analytics', icon: '📈' },
+  { href: '/suppliers', label: 'Suppliers', icon: '🤝' },
   { href: '/products', label: 'Products', icon: '🏷️' },
+  { href: '/analytics', label: 'Analytics', icon: '📈' },
   { href: '/import', label: 'Import Data', icon: '📥' },
+  { href: '/settings/workflow', label: 'Workflow', icon: '⚙️' },
+  { href: '/settings/team', label: 'Team', icon: '👥' },
 ];
 
 interface SidebarProps {

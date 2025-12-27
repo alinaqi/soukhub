@@ -1,4 +1,9 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+
+export const metadata: Metadata = {
+  title: 'Orders',
+};
 import { OrdersTable } from '@/components/dashboard/OrdersTable';
 import Link from 'next/link';
 

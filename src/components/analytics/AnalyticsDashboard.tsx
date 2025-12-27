@@ -53,13 +53,13 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
   // Calculate key metrics
   const metrics = useMemo(() => {
     const delivered = filteredOrders.filter((o) => o.status === 'delivered');
-    const returned = filteredOrders.filter((o) => ['returned', 'refunded'].includes(o.status));
+    const returned = filteredOrders.filter((o) => o.status && ['returned', 'refunded'].includes(o.status));
     const cancelled = filteredOrders.filter((o) => o.status === 'cancelled');
     const pending = filteredOrders.filter((o) =>
-      ['pending', 'confirmed', 'processing', 'ready_to_ship'].includes(o.status)
+      o.status && ['pending', 'confirmed', 'processing', 'ready_to_ship'].includes(o.status)
     );
     const shipped = filteredOrders.filter((o) =>
-      ['shipped', 'out_for_delivery'].includes(o.status)
+      o.status && ['shipped', 'out_for_delivery'].includes(o.status)
     );
 
     const totalRevenue = delivered.reduce((sum, o) => sum + (o.total || 0), 0);
@@ -150,7 +150,8 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
 
     const counts: Record<string, number> = {};
     filteredOrders.forEach((order) => {
-      counts[order.status] = (counts[order.status] || 0) + 1;
+      const status = order.status || 'unknown';
+      counts[status] = (counts[status] || 0) + 1;
     });
 
     return Object.entries(counts)
@@ -241,16 +242,16 @@ export function AnalyticsDashboard({ orders }: AnalyticsDashboardProps) {
     const byMarketplace: Record<string, { name: string; delivered: number; pending: number; returned: number }> = {};
 
     filteredOrders.forEach((order) => {
-      const mp = order.marketplace;
+      const mp = order.marketplace || 'other';
       if (!byMarketplace[mp]) {
         byMarketplace[mp] = { name: mp.charAt(0).toUpperCase() + mp.slice(1), delivered: 0, pending: 0, returned: 0 };
       }
 
       if (order.status === 'delivered') {
         byMarketplace[mp].delivered += 1;
-      } else if (['pending', 'confirmed', 'processing', 'ready_to_ship', 'shipped', 'out_for_delivery'].includes(order.status)) {
+      } else if (order.status && ['pending', 'confirmed', 'processing', 'ready_to_ship', 'shipped', 'out_for_delivery'].includes(order.status)) {
         byMarketplace[mp].pending += 1;
-      } else if (['returned', 'refunded', 'cancelled'].includes(order.status)) {
+      } else if (order.status && ['returned', 'refunded', 'cancelled'].includes(order.status)) {
         byMarketplace[mp].returned += 1;
       }
     });

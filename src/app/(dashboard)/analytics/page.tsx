@@ -1,4 +1,9 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+
+export const metadata: Metadata = {
+  title: 'Analytics',
+};
 import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 
 export default async function AnalyticsPage() {

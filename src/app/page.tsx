@@ -8,34 +8,91 @@ const FEATURES = [
       'Get intelligent suggestions, automate order updates, and manage your business with natural language commands.',
   },
   {
-    icon: '📊',
-    title: 'Unified Dashboard',
+    icon: '📱',
+    title: 'WhatsApp Integration',
     description:
-      'View all your orders from Amazon, Cartlow, and Revibe in one place. No more switching between platforms.',
-  },
-  {
-    icon: '⚡',
-    title: 'Bulk Actions',
-    description:
-      'Update order statuses, process refunds, and manage shipments for multiple orders with a single click.',
-  },
-  {
-    icon: '📈',
-    title: 'Smart Analytics',
-    description:
-      'Track performance across marketplaces, identify trends, and get actionable insights to grow your business.',
+      'Message suppliers directly via WhatsApp or email. AI understands their replies in English or Arabic.',
   },
   {
     icon: '📦',
-    title: 'Order Management',
+    title: 'Smart Order Routing',
     description:
-      'Track shipments, manage returns and refunds, and keep customers updated - all from one interface.',
+      'Automatically route orders to the right supplier based on brand and product rules you define.',
+  },
+  {
+    icon: '📊',
+    title: 'Sales Analytics',
+    description:
+      'Track hot products, identify slow movers, and get insights on revenue trends and top brands.',
+  },
+  {
+    icon: '👥',
+    title: 'Customer Intelligence',
+    description:
+      'Automatically detect repeat customers, generate thank-you notes, and create referral codes.',
+  },
+  {
+    icon: '🚚',
+    title: 'Packing & Shipping',
+    description:
+      'Streamlined packing station with keyboard shortcuts. Group shipments by marketplace or carrier.',
+  },
+  {
+    icon: '👨‍👩‍👧‍👦',
+    title: 'Team Management',
+    description:
+      'Invite packers and managers with role-based access. PIN login for shared warehouse devices.',
+  },
+  {
+    icon: '⚠️',
+    title: 'Unavailable Handling',
+    description:
+      'When suppliers say no, get options to try alternatives, offer substitutes, or cancel with customer messaging.',
   },
   {
     icon: '🔄',
     title: 'Easy Data Import',
     description:
       'Import your order history from CSV/TSV exports. Support for Amazon, Cartlow, and Revibe formats.',
+  },
+];
+
+const WORKFLOW_FEATURES = [
+  {
+    step: '1',
+    icon: '📥',
+    title: 'Orders Come In',
+    description: 'Import orders from Amazon, Cartlow, or Revibe via CSV upload.',
+  },
+  {
+    step: '2',
+    icon: '🔀',
+    title: 'Auto-Route to Suppliers',
+    description: 'Orders automatically assigned to suppliers based on your brand rules.',
+  },
+  {
+    step: '3',
+    icon: '📱',
+    title: 'WhatsApp Suppliers',
+    description: 'One-click messaging with templated order details. AI parses their replies.',
+  },
+  {
+    step: '4',
+    icon: '📦',
+    title: 'Pack Orders',
+    description: 'Keyboard-driven packing station. Scan, check, pack, print - all in seconds.',
+  },
+  {
+    step: '5',
+    icon: '🚚',
+    title: 'Ship & Handoff',
+    description: 'Group by marketplace/carrier. One-tap handoff to couriers.',
+  },
+  {
+    step: '6',
+    icon: '💝',
+    title: 'Delight Customers',
+    description: 'Auto-generated thank-you notes for repeat customers with referral codes.',
   },
 ];
 
@@ -66,21 +123,21 @@ const MARKETPLACES = [
   },
 ];
 
-const STEPS = [
+const AI_CAPABILITIES = [
   {
-    step: '1',
-    title: 'Create Account',
-    description: 'Sign up in seconds with just your email. No credit card required.',
+    title: 'Supplier Reply Parser',
+    description: 'Understands "yes", "موجود", "no stock", alternatives, and partial confirmations.',
+    example: '"First two yes, third no" → Updates each order correctly',
   },
   {
-    step: '2',
-    title: 'Import Orders',
-    description: 'Upload your order exports from Amazon, Cartlow, or Revibe.',
+    title: 'Natural Language Commands',
+    description: 'Ask questions and take actions in plain English.',
+    example: '"Show pending orders that need attention"',
   },
   {
-    step: '3',
-    title: 'Manage Everything',
-    description: 'Use AI assistant and dashboard to manage all your orders in one place.',
+    title: 'Smart Recommendations',
+    description: 'Get suggestions on what to stock, when to reorder, and which suppliers are reliable.',
+    example: 'iPhone 15 Pro is hot - consider stocking more',
   },
 ];
 
@@ -94,6 +151,17 @@ export default function Home() {
             <div className="flex items-center gap-2">
               <span className="text-2xl">🏪</span>
               <span className="text-xl font-bold">SoukHub</span>
+            </div>
+            <div className="hidden md:flex items-center gap-6">
+              <a href="#features" className="text-sm text-muted-foreground hover:text-foreground">
+                Features
+              </a>
+              <a href="#workflow" className="text-sm text-muted-foreground hover:text-foreground">
+                How it Works
+              </a>
+              <a href="#ai" className="text-sm text-muted-foreground hover:text-foreground">
+                AI Power
+              </a>
             </div>
             <div className="flex items-center gap-4">
               <Link
@@ -123,13 +191,13 @@ export default function Home() {
               <span>Built for UAE Marketplace Sellers</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
-              Manage All Your{' '}
-              <span className="text-primary">Marketplace Orders</span>{' '}
-              in One Place
+              Your Complete{' '}
+              <span className="text-primary">Order-to-Delivery</span>{' '}
+              Command Center
             </h1>
             <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-              SoukHub brings together Amazon, Cartlow, and Revibe orders into a single
-              AI-powered dashboard. Save hours every day with intelligent automation.
+              From order import to supplier messaging to packing and shipping - SoukHub manages
+              your entire fulfillment workflow with AI-powered automation.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -168,8 +236,42 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-24 bg-muted/30">
+      {/* Full Workflow Section */}
+      <section id="workflow" className="py-24 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-1.5 text-sm font-medium text-green-700 mb-4">
+              <span>🔄</span>
+              <span>Complete Workflow</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              From Order to Delivery, Fully Automated
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              Every step of your fulfillment process, streamlined and connected.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {WORKFLOW_FEATURES.map((item) => (
+              <div
+                key={item.step}
+                className="relative rounded-xl border border-border bg-card p-6 hover:shadow-lg transition-shadow"
+              >
+                <div className="absolute -top-3 -left-3 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
+                  {item.step}
+                </div>
+                <div className="text-4xl mb-4">{item.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                <p className="text-muted-foreground">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section id="features" className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
@@ -195,8 +297,279 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Marketplaces Section */}
+      {/* AI Section */}
+      <section id="ai" className="py-24 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20 p-8 sm:p-12">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-sm font-medium text-primary mb-6">
+                  <span>🤖</span>
+                  <span>Powered by Claude AI</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+                  AI That Actually Understands Your Business
+                </h2>
+                <p className="text-lg text-muted-foreground mb-8">
+                  Not just a chatbot - a real AI assistant that understands supplier replies in Arabic and English,
+                  parses availability, and takes action automatically.
+                </p>
+
+                <div className="space-y-6">
+                  {AI_CAPABILITIES.map((cap) => (
+                    <div key={cap.title} className="bg-card/50 rounded-lg p-4 border border-border">
+                      <h4 className="font-semibold mb-1">{cap.title}</h4>
+                      <p className="text-sm text-muted-foreground mb-2">{cap.description}</p>
+                      <div className="text-sm bg-muted rounded px-3 py-1.5 inline-block">
+                        <code>{cap.example}</code>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="relative">
+                <div className="rounded-xl bg-card border border-border p-6 shadow-xl">
+                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-xl">🤖</span>
+                    </div>
+                    <div>
+                      <div className="font-semibold">SoukHub AI</div>
+                      <div className="text-xs text-muted-foreground">Your marketplace assistant</div>
+                    </div>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex justify-end">
+                      <div className="bg-primary text-primary-foreground rounded-lg px-4 py-2 max-w-[80%]">
+                        Supplier replied "first two yes, third خلص"
+                      </div>
+                    </div>
+                    <div className="flex justify-start">
+                      <div className="bg-muted rounded-lg px-4 py-2 max-w-[85%]">
+                        <p className="mb-2">✅ Understood! Updating orders:</p>
+                        <div className="text-sm space-y-1">
+                          <p>• Order #1234 → <span className="text-green-600">Confirmed</span></p>
+                          <p>• Order #1235 → <span className="text-green-600">Confirmed</span></p>
+                          <p>• Order #1236 → <span className="text-red-600">Unavailable</span></p>
+                        </div>
+                        <div className="mt-3 flex gap-2">
+                          <span className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-lg">
+                            Handle Unavailable
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WhatsApp Integration Feature */}
       <section className="py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-1.5 text-sm font-medium text-green-700 mb-6">
+                <span>📱</span>
+                <span>WhatsApp + Email</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+                Message Suppliers Your Way
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Choose WhatsApp for instant messaging or email for detailed records.
+                Templates auto-fill with order details. One click to send.
+              </p>
+              <ul className="space-y-4">
+                {[
+                  'Pre-filled message templates with order details',
+                  'Support for both WhatsApp and email',
+                  'Batch messaging for multiple orders to same supplier',
+                  'Message history tracked per supplier',
+                  'AI parses replies in English and Arabic',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="text-green-600 mt-1">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-card rounded-xl border border-border p-6">
+              <div className="space-y-4">
+                <div className="flex gap-4">
+                  <div className="flex-1 p-4 rounded-lg border-2 border-green-500 bg-green-50 text-center">
+                    <div className="text-3xl mb-2">📱</div>
+                    <div className="font-medium">WhatsApp</div>
+                    <div className="text-xs text-muted-foreground">Instant</div>
+                  </div>
+                  <div className="flex-1 p-4 rounded-lg border-2 border-border text-center">
+                    <div className="text-3xl mb-2">📧</div>
+                    <div className="font-medium">Email</div>
+                    <div className="text-xs text-muted-foreground">With records</div>
+                  </div>
+                </div>
+                <div className="bg-muted rounded-lg p-4 text-sm">
+                  <p className="font-medium mb-2">Preview:</p>
+                  <p className="text-muted-foreground">
+                    Hi Ali Electronics,<br /><br />
+                    New order request:<br />
+                    • iPhone 15 Pro 256GB Black x1<br /><br />
+                    Order: #AMZ-12345<br />
+                    Customer: Dubai, Al Barsha<br /><br />
+                    Please confirm availability. Thanks!
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Packing & Shipping Feature */}
+      <section className="py-24 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div className="order-2 lg:order-1">
+              <div className="bg-card rounded-xl border border-border p-6">
+                <div className="text-center mb-4">
+                  <div className="text-sm text-muted-foreground">PACKING STATION</div>
+                  <div className="text-xl font-bold">Order #AMZ-12345</div>
+                </div>
+                <div className="bg-muted rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span>📱 iPhone 15 Pro 256GB Black</span>
+                    <span className="text-green-600">✓</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground">Customer: Ahmed, Dubai</div>
+                </div>
+                <div className="grid grid-cols-3 gap-2 text-sm">
+                  <div className="bg-green-100 text-green-800 rounded p-2 text-center font-medium">
+                    [P] Packed
+                  </div>
+                  <div className="bg-yellow-100 text-yellow-800 rounded p-2 text-center">
+                    [I] Issue
+                  </div>
+                  <div className="bg-gray-100 text-gray-800 rounded p-2 text-center">
+                    [S] Skip
+                  </div>
+                </div>
+                <div className="text-xs text-center text-muted-foreground mt-4">
+                  Press P or Enter to mark packed
+                </div>
+              </div>
+            </div>
+            <div className="order-1 lg:order-2">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-1.5 text-sm font-medium text-blue-700 mb-6">
+                <span>📦</span>
+                <span>Packer-Optimized</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+                Packing Station Built for Speed
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Your team processes 100+ orders a day. Our packing interface is
+                keyboard-first, barcode-ready, and designed for zero-fatigue operation.
+              </p>
+              <ul className="space-y-4">
+                {[
+                  'Keyboard shortcuts: P=Packed, Enter=Next, L=Print Label',
+                  'Barcode scanner support with mismatch alerts',
+                  'Auto-advance to next order after packing',
+                  'Issue reporting with one keystroke',
+                  'Works on tablets and cheap Android devices',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="text-blue-600 mt-1">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Customer Intelligence */}
+      <section className="py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-yellow-100 px-4 py-1.5 text-sm font-medium text-yellow-700 mb-6">
+                <span>⭐</span>
+                <span>Customer Intelligence</span>
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+                Know Your Customers, Delight Repeat Buyers
+              </h2>
+              <p className="text-lg text-muted-foreground mb-6">
+                Automatically identify VIP and repeat customers. Generate personalized
+                thank-you notes. Create referral codes to drive more sales.
+              </p>
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="text-center p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold">5+</div>
+                  <div className="text-xs text-muted-foreground">Orders = VIP</div>
+                </div>
+                <div className="text-center p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold">2+</div>
+                  <div className="text-xs text-muted-foreground">Orders = Repeat</div>
+                </div>
+                <div className="text-center p-4 bg-muted rounded-lg">
+                  <div className="text-2xl font-bold">10%</div>
+                  <div className="text-xs text-muted-foreground">Referral Discount</div>
+                </div>
+              </div>
+              <ul className="space-y-3">
+                {[
+                  'Auto-detect repeat customers by email, phone, or name',
+                  'VIP badges shown on order cards',
+                  'Personalized thank-you note generator',
+                  'One-click referral code creation',
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <span className="text-yellow-600 mt-1">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="bg-gradient-to-br from-yellow-50 to-white rounded-xl border border-yellow-200 p-6">
+              <div className="text-center mb-4">
+                <span className="text-4xl">⭐ VIP Customer ⭐</span>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-yellow-100">
+                <p className="text-sm whitespace-pre-line">
+                  Hi Ahmed!{'\n\n'}
+                  Thank you for being one of our most valued customers!
+                  This is your 5th order with us, and we truly appreciate your continued trust.{'\n\n'}
+                  Your iPhone 15 Pro is on its way!{'\n'}
+                  Order: #AMZ-12345{'\n\n'}
+                  As a VIP customer, you&apos;re always our priority. Here&apos;s a special discount for your next purchase:{'\n\n'}
+                  Code: AHMED10 (10% off){'\n\n'}
+                  Best regards,{'\n'}
+                  Your Mobile Store Team
+                </p>
+              </div>
+              <div className="flex gap-2 mt-4 justify-center">
+                <button className="px-4 py-2 text-sm bg-yellow-600 text-white rounded-lg">
+                  Print Note
+                </button>
+                <button className="px-4 py-2 text-sm border border-yellow-300 rounded-lg">
+                  Copy
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Marketplaces Section */}
+      <section className="py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
@@ -226,99 +599,76 @@ export default function Home() {
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-24 bg-muted/30">
+      {/* Analytics Preview */}
+      <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-1.5 text-sm font-medium text-purple-700 mb-4">
+              <span>📊</span>
+              <span>Sales Analytics</span>
+            </div>
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              Get Started in Minutes
+              Know What&apos;s Selling, What&apos;s Not
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Simple setup process to get you up and running quickly.
+              Track hot products, identify slow movers, and understand your revenue trends at a glance.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            {STEPS.map((item, index) => (
-              <div key={item.step} className="text-center relative">
-                {index < STEPS.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-border" />
-                )}
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary text-primary-foreground text-2xl font-bold mb-4">
-                  {item.step}
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <span>🔥</span> Hot Products
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>iPhone 15 Pro Max</span>
+                  <span className="text-green-600">↑ 45%</span>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-muted-foreground">{item.description}</p>
+                <div className="flex justify-between text-sm">
+                  <span>Samsung S24 Ultra</span>
+                  <span className="text-green-600">↑ 32%</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>AirPods Pro 2</span>
+                  <span className="text-green-600">↑ 28%</span>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
+            </div>
 
-      {/* AI Assistant Highlight */}
-      <section className="py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 border border-primary/20 p-8 sm:p-12">
-            <div className="grid lg:grid-cols-2 gap-8 items-center">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full bg-primary/20 px-4 py-1.5 text-sm font-medium text-primary mb-6">
-                  <span>🤖</span>
-                  <span>Powered by AI</span>
-                </div>
-                <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-                  Your AI Business Assistant
-                </h2>
-                <p className="text-lg text-muted-foreground mb-6">
-                  Ask questions in plain English. Get instant answers and take action directly
-                  from the chat. Process refunds, update order statuses, and get insights -
-                  all with simple commands.
-                </p>
-                <ul className="space-y-3">
-                  {[
-                    'Show me pending orders that need attention',
-                    'Mark all shipped orders as delivered',
-                    'What should I focus on today?',
-                    'Process refund for order #12345',
-                  ].map((example) => (
-                    <li key={example} className="flex items-center gap-3">
-                      <span className="text-primary">→</span>
-                      <span className="text-muted-foreground">&quot;{example}&quot;</span>
-                    </li>
-                  ))}
-                </ul>
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <span>📈</span> Revenue Trend
+              </h3>
+              <div className="text-3xl font-bold mb-2">AED 45,230</div>
+              <div className="text-sm text-green-600">↑ 23% vs last week</div>
+              <div className="mt-4 h-16 flex items-end gap-1">
+                {[40, 55, 35, 70, 60, 80, 90].map((h, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 bg-primary/70 rounded-t"
+                    style={{ height: `${h}%` }}
+                  />
+                ))}
               </div>
-              <div className="relative">
-                <div className="rounded-xl bg-card border border-border p-6 shadow-xl">
-                  <div className="flex items-center gap-3 mb-4 pb-4 border-b border-border">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <span className="text-xl">🤖</span>
-                    </div>
-                    <div>
-                      <div className="font-semibold">SoukHub AI</div>
-                      <div className="text-xs text-muted-foreground">Your marketplace assistant</div>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-end">
-                      <div className="bg-primary text-primary-foreground rounded-lg px-4 py-2 max-w-[80%]">
-                        Show me pending orders
-                      </div>
-                    </div>
-                    <div className="flex justify-start">
-                      <div className="bg-muted rounded-lg px-4 py-2 max-w-[80%]">
-                        <p className="mb-2">Found 5 pending orders:</p>
-                        <p className="text-sm text-muted-foreground">
-                          • 3 from Amazon<br />
-                          • 2 from Cartlow
-                        </p>
-                        <div className="mt-3 flex gap-2">
-                          <span className="px-3 py-1 text-xs bg-primary text-primary-foreground rounded-lg">
-                            Mark all as Shipped
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            </div>
+
+            <div className="bg-card rounded-xl border border-border p-6">
+              <h3 className="font-semibold mb-4 flex items-center gap-2">
+                <span>🏆</span> Top Brands
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span>Apple</span>
+                  <span className="font-medium">AED 28,500</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Samsung</span>
+                  <span className="font-medium">AED 12,300</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Google</span>
+                  <span className="font-medium">AED 4,430</span>
                 </div>
               </div>
             </div>
@@ -330,10 +680,11 @@ export default function Home() {
       <section className="py-24 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-            Ready to Simplify Your Multi-Channel Business?
+            Ready to Transform Your Fulfillment?
           </h2>
           <p className="text-xl opacity-90 mb-10">
-            Join sellers who are saving hours every day with SoukHub.
+            Join sellers who are saving hours every day with SoukHub&apos;s complete
+            order-to-delivery automation.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -367,11 +718,13 @@ export default function Home() {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <h4 className="font-semibold mb-4">Features</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="/signup" className="hover:text-foreground">Get Started</Link></li>
-                <li><Link href="/login" className="hover:text-foreground">Dashboard</Link></li>
-                <li><span className="text-muted-foreground/50">API (Coming Soon)</span></li>
+                <li>Order Management</li>
+                <li>Supplier Messaging</li>
+                <li>Packing Station</li>
+                <li>Customer Intelligence</li>
+                <li>Sales Analytics</li>
               </ul>
             </div>
             <div>
@@ -387,7 +740,7 @@ export default function Home() {
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="mailto:support@soukhub.com" className="hover:text-foreground">Contact Us</a></li>
-                <li><span className="text-muted-foreground/50">Documentation</span></li>
+                <li><Link href="/login" className="hover:text-foreground">Dashboard</Link></li>
               </ul>
             </div>
           </div>

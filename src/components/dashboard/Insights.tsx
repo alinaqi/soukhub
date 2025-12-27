@@ -32,16 +32,16 @@ function generateInsights(
   // Calculate metrics by marketplace
   const byMarketplace = orders.reduce(
     (acc, order) => {
-      const mp = order.marketplace;
+      const mp = order.marketplace || 'other';
       if (!acc[mp]) {
         acc[mp] = { count: 0, revenue: 0, pending: 0, returned: 0 };
       }
       acc[mp].count++;
       acc[mp].revenue += order.total || 0;
-      if (['pending', 'confirmed', 'processing'].includes(order.status)) {
+      if (order.status && ['pending', 'confirmed', 'processing'].includes(order.status)) {
         acc[mp].pending++;
       }
-      if (['returned', 'refunded'].includes(order.status)) {
+      if (order.status && ['returned', 'refunded'].includes(order.status)) {
         acc[mp].returned++;
       }
       return acc;

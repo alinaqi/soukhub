@@ -9,54 +9,53 @@ After each task, ask: Decision made? >10 tool calls? Feature done?
 
 # Current Session State
 
-*Last updated: 2025-12-27 12:40*
+*Last updated: 2025-12-27 18:37*
 
 ## Active Task
-TODO-001 Complete - Ready for TODO-002 (Supabase Setup)
+Inventory Management feature complete (TODO-008). Dev server running for testing.
 
 ## Current Status
-- **Phase**: Foundation complete
-- **Progress**: Next.js project fully initialized with all tooling
+- **Phase**: implementing / testing
+- **Progress**: Inventory management with populate-from-orders feature complete
 - **Blocking Issues**: None
 
 ## Completed This Session
-- [x] TODO-001: Set up Next.js project with TypeScript and Tailwind
-  - Next.js 16.1 with App Router
-  - TypeScript strict mode
-  - Tailwind CSS v4 with design tokens
-  - ESLint + Prettier
-  - Vitest + React Testing Library
-  - Path aliases (@/*)
-  - All tests passing (4/4)
-  - Build verified
+- [x] TODO-008: Inventory Management
+  - Created inventory page with full CRUD
+  - AI-powered CSV header mapping for imports
+  - Stock adjustment modal (add/remove/set with reasons)
+  - Low stock alerts and filtering
+  - "Populate from Orders" feature to analyze orders and create products
+  - AI chat tools for inventory management
+  - All committed and pushed to feature branch
+
+## Recent Commits
+- `d778b91` feat: Add populate inventory from orders functionality
+- `304e052` feat: Add inventory management with AI-powered CSV mapping
 
 ## Files Modified This Session
 | File | Status | Notes |
 |------|--------|-------|
-| package.json | created | All npm scripts configured |
-| tsconfig.json | created | Strict mode, path aliases |
-| vitest.config.ts | created | Test configuration |
-| .prettierrc | created | Code formatting rules |
-| .prettierignore | created | Prettier exclusions |
-| src/app/globals.css | modified | SoukHub design tokens |
-| src/app/page.tsx | modified | Landing page |
-| src/app/page.test.tsx | created | Page tests |
-| src/test/setup.ts | created | Test setup |
+| src/app/(dashboard)/inventory/page.tsx | modified | Full inventory page with modals |
+| src/app/api/inventory/populate-from-orders/route.ts | created | API for extracting products from orders |
+| src/app/api/chat/route.ts | modified | Added populate_inventory_from_orders tool |
+| src/app/api/map-headers/route.ts | created | AI-powered header mapping |
 
 ## Next Steps
-1. [ ] Commit TODO-001 changes
-2. [ ] Start TODO-002: Set up Supabase with authentication
-3. [ ] Configure database schema for orders and products
-4. [ ] Set up RLS policies for user data isolation
+1. [ ] Test populate from orders feature locally (dev server running at http://localhost:4000)
+2. [ ] Merge PR #3 (feature/inventory-management) when ready
+3. [ ] Consider adding more marketplace integrations
 
 ## Key Context to Preserve
 - Project: SoukHub - AI agent for multi-channel marketplace sellers
 - Stack: Next.js 16.1 + TypeScript + Supabase + Claude AI
-- Marketplace data analyzed: Amazon (TSV), Cartlow (CSV), Revibe (CSV)
-- All 18 atomic todos with test cases in backlog.md
+- Current branch: `feature/inventory-management`
+- PR #3 open with inventory management features
+- Dev server running at http://localhost:4000
 
 ## Resume Instructions
 To continue this work:
-1. Run `npm run dev` to verify app works
-2. Run `npm test` to verify tests pass
-3. Continue with TODO-002: Supabase setup
+1. Dev server already running at http://localhost:4000
+2. Test the inventory features at /inventory
+3. Test "Populate from Orders" button
+4. Merge PR #3 when satisfied

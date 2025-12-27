@@ -46,8 +46,8 @@ export function MarketplaceBreakdown({ connections }: MarketplaceBreakdownProps)
       <h3 className="text-lg font-semibold mb-4">Your Marketplaces</h3>
       <div className="space-y-4">
         {connections.map((connection) => {
-          const info = MARKETPLACE_INFO[connection.marketplace] || MARKETPLACE_INFO.other;
-          const status = STATUS_LABELS[connection.status] || STATUS_LABELS.pending;
+          const info = MARKETPLACE_INFO[connection.marketplace || 'other'] || MARKETPLACE_INFO.other;
+          const status = STATUS_LABELS[connection.status || 'pending'] || STATUS_LABELS.pending;
 
           return (
             <div
