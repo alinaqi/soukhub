@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { Header } from '@/components/dashboard/Header';
-import { AIChatWrapper } from '@/components/chat/AIChatWrapper';
+import { CommandBar } from '@/components/command/CommandBar';
 import { ErrorBoundaryWrapper } from '@/components/ErrorBoundaryWrapper';
 import type { Profile } from '@/types/supabase';
 
@@ -41,7 +41,7 @@ export default async function DashboardLayout({
           <ErrorBoundaryWrapper>{children}</ErrorBoundaryWrapper>
         </main>
       </div>
-      <AIChatWrapper userId={user.id} />
+      <CommandBar userId={user.id} />
     </div>
   );
 }
