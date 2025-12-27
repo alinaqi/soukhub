@@ -749,8 +749,8 @@ export default function Home() {
               © {new Date().getFullYear()} SoukHub. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm text-muted-foreground">
-              <span>Privacy Policy</span>
-              <span>Terms of Service</span>
+              <Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link>
+              <Link href="/terms" className="hover:text-foreground">Terms of Service</Link>
             </div>
           </div>
         </div>
