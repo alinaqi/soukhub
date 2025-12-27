@@ -23,7 +23,7 @@ const ORDER_STATUSES = [
 ];
 
 export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalProps) {
-  const [status, setStatus] = useState(order.status);
+  const [status, setStatus] = useState<string>(order.status);
   const [trackingNumber, setTrackingNumber] = useState(order.tracking_number || '');
   const [carrier, setCarrier] = useState(order.carrier || '');
   const [notes, setNotes] = useState(order.notes || '');
