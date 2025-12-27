@@ -40,6 +40,46 @@ const tools: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'get_inventory_stats',
+    description: 'Get inventory statistics including total SKUs, units, low stock alerts, and out of stock items',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+      },
+      required: ['user_id'],
+    },
+  },
+  {
+    name: 'search_inventory',
+    description: 'Search inventory by SKU, product name, or filter by stock status (low_stock, out_of_stock, in_stock)',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        search: { type: 'string', description: 'Search by SKU or product name' },
+        status: { type: 'string', description: 'Filter by stock status: low_stock, out_of_stock, in_stock' },
+        limit: { type: 'number', description: 'Max number of items to return', default: 10 },
+      },
+      required: ['user_id'],
+    },
+  },
+  {
+    name: 'update_inventory',
+    description: 'Update inventory quantity for a product variant by SKU',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        sku: { type: 'string', description: 'The product SKU' },
+        adjustment_type: { type: 'string', description: 'Type of adjustment: add, remove, or set', enum: ['add', 'remove', 'set'] },
+        quantity: { type: 'number', description: 'The quantity to add, remove, or set to' },
+        reason: { type: 'string', description: 'Reason for the adjustment' },
+      },
+      required: ['user_id', 'sku', 'adjustment_type', 'quantity'],
+    },
+  },
+  {
     name: 'update_order_status',
     description: 'Update the status of an order',
     input_schema: {
@@ -169,6 +209,204 @@ async function getOrderDetails(orderId: string, userId: string) {
   return { order: data };
 }
 
+async function getInventoryStats(userId: string) {
+  const { data: inventory } = await supabase
+    .from('inventory')
+    .select(`
+      quantity,
+      reserved,
+      reorder_point,
+      product_variants!inner (
+        sku,
+        products!inner (
+          user_id
+        )
+      )
+    `)
+    .eq('product_variants.products.user_id', userId);
+
+  if (!inventory) return { error: 'No inventory found' };
+
+  const stats = {
+    totalSKUs: inventory.length,
+    totalUnits: inventory.reduce((sum, i) => sum + i.quantity, 0),
+    totalReserved: inventory.reduce((sum, i) => sum + i.reserved, 0),
+    lowStockCount: 0,
+    outOfStockCount: 0,
+    lowStockItems: [] as Array<{ sku: string; available: number; reorderPoint: number }>,
+    outOfStockItems: [] as Array<{ sku: string }>,
+  };
+
+  inventory.forEach((item) => {
+    const available = item.quantity - item.reserved;
+    const variant = item.product_variants as unknown as { sku: string };
+
+    if (available <= 0) {
+      stats.outOfStockCount++;
+      stats.outOfStockItems.push({ sku: variant.sku });
+    } else if (available <= item.reorder_point) {
+      stats.lowStockCount++;
+      stats.lowStockItems.push({
+        sku: variant.sku,
+        available,
+        reorderPoint: item.reorder_point,
+      });
+    }
+  });
+
+  // Limit the arrays to top 10
+  stats.lowStockItems = stats.lowStockItems.slice(0, 10);
+  stats.outOfStockItems = stats.outOfStockItems.slice(0, 10);
+
+  return stats;
+}
+
+async function searchInventory(userId: string, search?: string, status?: string, limit = 10) {
+  const { data, error } = await supabase
+    .from('inventory')
+    .select(`
+      id,
+      quantity,
+      reserved,
+      reorder_point,
+      warehouse_location,
+      product_variants!inner (
+        sku,
+        name,
+        color,
+        storage,
+        condition,
+        products!inner (
+          name,
+          brand,
+          user_id
+        )
+      )
+    `)
+    .eq('product_variants.products.user_id', userId)
+    .limit(50);
+
+  if (error) return { error: error.message };
+  if (!data) return { items: [], count: 0 };
+
+  let filtered = data.map(item => {
+    const variant = item.product_variants as unknown as {
+      sku: string;
+      name: string | null;
+      color: string | null;
+      storage: string | null;
+      condition: string;
+      products: { name: string; brand: string | null };
+    };
+    const available = item.quantity - item.reserved;
+
+    return {
+      id: item.id,
+      sku: variant.sku,
+      productName: variant.products.name,
+      brand: variant.products.brand,
+      variant: [variant.color, variant.storage, variant.condition].filter(Boolean).join(' / '),
+      available,
+      reserved: item.reserved,
+      total: item.quantity,
+      reorderPoint: item.reorder_point,
+      location: item.warehouse_location,
+      status: available <= 0 ? 'out_of_stock' : available <= item.reorder_point ? 'low_stock' : 'in_stock',
+    };
+  });
+
+  // Apply search filter
+  if (search) {
+    const searchLower = search.toLowerCase();
+    filtered = filtered.filter(item =>
+      item.sku.toLowerCase().includes(searchLower) ||
+      item.productName.toLowerCase().includes(searchLower) ||
+      item.brand?.toLowerCase().includes(searchLower)
+    );
+  }
+
+  // Apply status filter
+  if (status) {
+    filtered = filtered.filter(item => item.status === status);
+  }
+
+  return { items: filtered.slice(0, limit), count: filtered.length };
+}
+
+async function updateInventory(
+  userId: string,
+  sku: string,
+  adjustmentType: 'add' | 'remove' | 'set',
+  quantity: number,
+  reason?: string
+) {
+  // Find the inventory item by SKU
+  const { data: inventoryItem, error: findError } = await supabase
+    .from('inventory')
+    .select(`
+      id,
+      quantity,
+      variant_id,
+      product_variants!inner (
+        sku,
+        products!inner (
+          user_id
+        )
+      )
+    `)
+    .eq('product_variants.sku', sku)
+    .eq('product_variants.products.user_id', userId)
+    .single();
+
+  if (findError || !inventoryItem) {
+    return { error: `SKU "${sku}" not found in inventory` };
+  }
+
+  const currentQty = inventoryItem.quantity;
+  let newQty = currentQty;
+
+  if (adjustmentType === 'add') {
+    newQty = currentQty + quantity;
+  } else if (adjustmentType === 'remove') {
+    newQty = Math.max(0, currentQty - quantity);
+  } else {
+    newQty = quantity;
+  }
+
+  const { error: updateError } = await supabase
+    .from('inventory')
+    .update({ quantity: newQty })
+    .eq('id', inventoryItem.id);
+
+  if (updateError) {
+    return { error: updateError.message };
+  }
+
+  // Log the activity
+  await supabase.from('activity_log').insert({
+    user_id: userId,
+    activity_type: 'inventory_updated',
+    title: `Stock ${adjustmentType}: ${sku}`,
+    description: reason || `${adjustmentType} ${quantity} units via AI assistant`,
+    metadata: {
+      sku,
+      previous_qty: currentQty,
+      new_qty: newQty,
+      adjustment_type: adjustmentType,
+      adjustment_qty: quantity,
+    },
+  } as never);
+
+  return {
+    success: true,
+    sku,
+    previousQuantity: currentQty,
+    newQuantity: newQty,
+    adjustmentType,
+    adjustmentQuantity: quantity,
+  };
+}
+
 async function getSuggestions(userId: string) {
   const stats = await getOrderStats(userId);
   if ('error' in stats) return stats;
@@ -241,6 +479,23 @@ async function processToolCall(name: string, input: Record<string, unknown>) {
       return await getOrderDetails(input.order_id as string, input.user_id as string);
     case 'get_suggestions':
       return await getSuggestions(input.user_id as string);
+    case 'get_inventory_stats':
+      return await getInventoryStats(input.user_id as string);
+    case 'search_inventory':
+      return await searchInventory(
+        input.user_id as string,
+        input.search as string | undefined,
+        input.status as string | undefined,
+        input.limit as number | undefined
+      );
+    case 'update_inventory':
+      return await updateInventory(
+        input.user_id as string,
+        input.sku as string,
+        input.adjustment_type as 'add' | 'remove' | 'set',
+        input.quantity as number,
+        input.reason as string | undefined
+      );
     default:
       return { error: 'Unknown tool' };
   }
@@ -253,26 +508,33 @@ interface ActionButton {
   data: Record<string, unknown>;
 }
 
-const SYSTEM_PROMPT = `You are SoukHub AI, an intelligent assistant for multi-channel marketplace sellers in the UAE and Middle East. You help sellers manage their orders across Amazon, Cartlow, and Revibe marketplaces.
+const SYSTEM_PROMPT = `You are SoukHub AI, an intelligent assistant for multi-channel marketplace sellers in the UAE and Middle East. You help sellers manage their orders and inventory across Amazon, Cartlow, and Revibe marketplaces.
 
 Your capabilities:
 1. **Order Management**: Search orders, view details, and update order statuses (mark as shipped, delivered, process refunds, etc.)
-2. **Analytics**: Provide insights about sales performance, return rates, and marketplace comparisons
-3. **Suggestions**: Proactively suggest actions to improve business operations
+2. **Inventory Management**: Check stock levels, find low stock items, adjust inventory quantities
+3. **Analytics**: Provide insights about sales performance, return rates, and marketplace comparisons
+4. **Suggestions**: Proactively suggest actions to improve business operations
 
 Key behaviors:
 - Be concise and actionable in your responses
 - Format responses using markdown for better readability (use **bold**, bullet points, etc.)
 - When showing orders, format them as a markdown table or list with key details
-- When updating order status, confirm the action was successful
+- When showing inventory, include SKU, product name, available quantity, and status
+- When updating order status or inventory, confirm the action was successful
 - Proactively suggest what the user might want to do next
 - Use AED as the default currency
 - Be helpful with refund processing - guide users through status changes
-- When listing orders that need action, always include order IDs so users can take action
+- When listing orders or inventory items that need action, always include IDs/SKUs so users can take action
 
 Status flow for orders:
 - pending → confirmed → processing → ready_to_ship → shipped → out_for_delivery → delivered
 - Orders can also be: cancelled, returned, refunded
+
+Inventory status:
+- in_stock: Available quantity > reorder point
+- low_stock: Available quantity > 0 but <= reorder point
+- out_of_stock: Available quantity <= 0
 
 When the user first messages you, introduce yourself briefly and ask how you can help. If appropriate, fetch their order stats to provide context.`;
 

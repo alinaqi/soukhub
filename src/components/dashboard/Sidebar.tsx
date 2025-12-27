@@ -7,6 +7,7 @@ import type { Profile } from '@/types/supabase';
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: '📊' },
   { href: '/orders', label: 'Orders', icon: '📦' },
+  { href: '/inventory', label: 'Inventory', icon: '📋' },
   { href: '/analytics', label: 'Analytics', icon: '📈' },
   { href: '/products', label: 'Products', icon: '🏷️' },
   { href: '/import', label: 'Import Data', icon: '📥' },
