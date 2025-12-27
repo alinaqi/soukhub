@@ -101,25 +101,25 @@ const MARKETPLACES = [
     name: 'Amazon UAE',
     logo: '📦',
     description: 'Full support for Amazon seller central exports',
-    color: 'bg-orange-100 text-orange-700',
+    color: 'bg-orange-500/20 text-orange-600 dark:text-orange-400',
   },
   {
     name: 'Cartlow',
     logo: '🛒',
     description: 'FBS and FBC order management',
-    color: 'bg-green-100 text-green-700',
+    color: 'bg-green-500/20 text-green-600 dark:text-green-400',
   },
   {
     name: 'Revibe',
     logo: '📱',
     description: 'Multi-region order tracking',
-    color: 'bg-blue-100 text-blue-700',
+    color: 'bg-blue-500/20 text-blue-600 dark:text-blue-400',
   },
   {
     name: 'Noon',
     logo: '🌙',
     description: 'Coming soon',
-    color: 'bg-yellow-100 text-yellow-700',
+    color: 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400',
   },
 ];
 
@@ -240,7 +240,7 @@ export default function Home() {
       <section id="workflow" className="py-24 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-1.5 text-sm font-medium text-green-700 mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-green-500/20 px-4 py-1.5 text-sm font-medium text-green-600 dark:text-green-400 mb-4">
               <span>🔄</span>
               <span>Complete Workflow</span>
             </div>
@@ -354,7 +354,7 @@ export default function Home() {
                           <p>• Order #1236 → <span className="text-red-600">Unavailable</span></p>
                         </div>
                         <div className="mt-3 flex gap-2">
-                          <span className="px-3 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-lg">
+                          <span className="px-3 py-1 text-xs bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 rounded-lg">
                             Handle Unavailable
                           </span>
                         </div>
@@ -373,7 +373,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-1.5 text-sm font-medium text-green-700 mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-green-500/20 px-4 py-1.5 text-sm font-medium text-green-600 dark:text-green-400 mb-6">
                 <span>📱</span>
                 <span>WhatsApp + Email</span>
               </div>
@@ -402,14 +402,14 @@ export default function Home() {
             <div className="bg-card rounded-xl border border-border p-6">
               <div className="space-y-4">
                 <div className="flex gap-4">
-                  <div className="flex-1 p-4 rounded-lg border-2 border-green-500 bg-green-50 text-center">
+                  <div className="flex-1 p-4 rounded-lg border-2 border-green-500 bg-green-500/10 text-center">
                     <div className="text-3xl mb-2">📱</div>
-                    <div className="font-medium">WhatsApp</div>
+                    <div className="font-medium text-foreground">WhatsApp</div>
                     <div className="text-xs text-muted-foreground">Instant</div>
                   </div>
-                  <div className="flex-1 p-4 rounded-lg border-2 border-border text-center">
+                  <div className="flex-1 p-4 rounded-lg border-2 border-border bg-muted text-center">
                     <div className="text-3xl mb-2">📧</div>
-                    <div className="font-medium">Email</div>
+                    <div className="font-medium text-foreground">Email</div>
                     <div className="text-xs text-muted-foreground">With records</div>
                   </div>
                 </div>
@@ -448,13 +448,13 @@ export default function Home() {
                   <div className="text-sm text-muted-foreground">Customer: Ahmed, Dubai</div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-sm">
-                  <div className="bg-green-100 text-green-800 rounded p-2 text-center font-medium">
+                  <div className="bg-green-500/20 text-green-600 dark:text-green-400 rounded p-2 text-center font-medium">
                     [P] Packed
                   </div>
-                  <div className="bg-yellow-100 text-yellow-800 rounded p-2 text-center">
+                  <div className="bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 rounded p-2 text-center">
                     [I] Issue
                   </div>
-                  <div className="bg-gray-100 text-gray-800 rounded p-2 text-center">
+                  <div className="bg-muted text-muted-foreground rounded p-2 text-center">
                     [S] Skip
                   </div>
                 </div>
@@ -464,7 +464,7 @@ export default function Home() {
               </div>
             </div>
             <div className="order-1 lg:order-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-1.5 text-sm font-medium text-blue-700 mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-blue-500/20 px-4 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 mb-6">
                 <span>📦</span>
                 <span>Packer-Optimized</span>
               </div>
@@ -499,7 +499,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-yellow-100 px-4 py-1.5 text-sm font-medium text-yellow-700 mb-6">
+              <div className="inline-flex items-center gap-2 rounded-full bg-yellow-500/20 px-4 py-1.5 text-sm font-medium text-yellow-600 dark:text-yellow-400 mb-6">
                 <span>⭐</span>
                 <span>Customer Intelligence</span>
               </div>
@@ -538,12 +538,12 @@ export default function Home() {
                 ))}
               </ul>
             </div>
-            <div className="bg-gradient-to-br from-yellow-50 to-white rounded-xl border border-yellow-200 p-6">
+            <div className="bg-card rounded-xl border border-yellow-500/30 p-6">
               <div className="text-center mb-4">
                 <span className="text-4xl">⭐ VIP Customer ⭐</span>
               </div>
-              <div className="bg-white rounded-lg p-4 border border-yellow-100">
-                <p className="text-sm whitespace-pre-line">
+              <div className="bg-yellow-500/10 rounded-lg p-4 border border-yellow-500/20">
+                <p className="text-sm whitespace-pre-line text-foreground">
                   Hi Ahmed!{'\n\n'}
                   Thank you for being one of our most valued customers!
                   This is your 5th order with us, and we truly appreciate your continued trust.{'\n\n'}
@@ -559,7 +559,7 @@ export default function Home() {
                 <button className="px-4 py-2 text-sm bg-yellow-600 text-white rounded-lg">
                   Print Note
                 </button>
-                <button className="px-4 py-2 text-sm border border-yellow-300 rounded-lg">
+                <button className="px-4 py-2 text-sm border border-yellow-500/50 text-foreground rounded-lg hover:bg-yellow-500/10">
                   Copy
                 </button>
               </div>
@@ -603,7 +603,7 @@ export default function Home() {
       <section className="py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 rounded-full bg-purple-100 px-4 py-1.5 text-sm font-medium text-purple-700 mb-4">
+            <div className="inline-flex items-center gap-2 rounded-full bg-purple-500/20 px-4 py-1.5 text-sm font-medium text-purple-600 dark:text-purple-400 mb-4">
               <span>📊</span>
               <span>Sales Analytics</span>
             </div>
