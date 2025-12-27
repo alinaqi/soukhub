@@ -1,0 +1,19 @@
+# Render Blueprint for WhatsApp Service
+# Deploy with: render blueprint launch
+
+services:
+  - type: web
+    name: soukhub-whatsapp
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: WHATSAPP_API_KEY
+        generateValue: true
+    disk:
+      name: whatsapp-session
+      mountPath: /app/whatsapp-session
+      sizeGB: 1
+    healthCheckPath: /health
+    autoDeploy: false
