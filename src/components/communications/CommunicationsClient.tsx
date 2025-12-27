@@ -35,6 +35,7 @@ export function CommunicationsClient({ userId }: { userId: string }) {
   // WhatsApp connection state
   const [waStatus, setWaStatus] = useState<WhatsAppStatus>('disconnected');
   const [qrCode, setQrCode] = useState<string | null>(null);
+  const [waError, setWaError] = useState<string | null>(null);
   const [showSetup, setShowSetup] = useState(false);
 
   // Conversations state
@@ -75,6 +76,7 @@ export function CommunicationsClient({ userId }: { userId: string }) {
       const data = await response.json();
       setWaStatus(data.status);
       setQrCode(data.qrCode);
+      setWaError(data.error);
     } catch (error) {
       console.error('Failed to fetch WhatsApp status:', error);
     }
@@ -112,6 +114,7 @@ export function CommunicationsClient({ userId }: { userId: string }) {
 
   const connectWhatsApp = async () => {
     setConnecting(true);
+    setWaError(null);
     try {
       const response = await fetch('/api/whatsapp/status', {
         method: 'POST',
@@ -121,8 +124,10 @@ export function CommunicationsClient({ userId }: { userId: string }) {
       const data = await response.json();
       setWaStatus(data.status);
       setQrCode(data.qrCode);
+      setWaError(data.error);
     } catch (error) {
       console.error('Failed to connect WhatsApp:', error);
+      setWaError('Failed to connect to WhatsApp service');
     } finally {
       setConnecting(false);
     }
@@ -467,6 +472,38 @@ export function CommunicationsClient({ userId }: { userId: string }) {
                     <li>3. Tap "Link a Device"</li>
                     <li>4. Scan this QR code</li>
                   </ol>
+                </div>
+              ) : waError ? (
+                <div className="text-center space-y-4">
+                  <div className="text-4xl">⚠️</div>
+                  <p className="font-medium text-amber-600">WhatsApp Web Unavailable</p>
+                  <p className="text-sm text-muted-foreground">
+                    {waError}
+                  </p>
+                  <div className="text-left bg-muted/50 rounded-lg p-4 text-sm space-y-3">
+                    <p className="font-medium">Alternatives:</p>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span>1.</span>
+                        <span><strong>Use "Open in WhatsApp"</strong> button to send messages via WhatsApp Web in browser</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span>2.</span>
+                        <span><strong>Run locally</strong> with <code className="bg-muted px-1 rounded">pnpm dev</code> for full WhatsApp Web integration</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span>3.</span>
+                        <span><strong>Deploy on a VPS</strong> (DigitalOcean, Railway) for persistent WhatsApp sessions</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={connectWhatsApp}
+                    disabled={connecting}
+                    className="px-4 py-2 border border-border rounded-lg hover:bg-muted disabled:opacity-50"
+                  >
+                    {connecting ? 'Trying...' : 'Try Again'}
+                  </button>
                 </div>
               ) : (
                 <div className="text-center space-y-4">

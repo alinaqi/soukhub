@@ -22,7 +22,9 @@ export interface WhatsAppState {
 type MessageCallback = (from: string, message: string, timestamp: Date) => void;
 
 // Check if we're in a Node.js environment that can run whatsapp-web.js
-const canRunWhatsApp = typeof window === 'undefined' && process.env.WHATSAPP_ENABLED === 'true';
+// Vercel serverless functions can't run Puppeteer (no persistent browser)
+const isServerless = process.env.VERCEL === '1' || process.env.AWS_LAMBDA_FUNCTION_NAME !== undefined;
+const canRunWhatsApp = typeof window === 'undefined' && process.env.WHATSAPP_ENABLED === 'true' && !isServerless;
 
 class WhatsAppService {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -49,9 +51,15 @@ class WhatsAppService {
   async initialize(): Promise<WhatsAppState> {
     // Check if WhatsApp is enabled
     if (!canRunWhatsApp) {
-      console.log('WhatsApp service running in demo mode. Set WHATSAPP_ENABLED=true to enable.');
-      this.state.status = 'disconnected';
-      this.state.error = 'WhatsApp integration requires WHATSAPP_ENABLED=true in environment';
+      if (isServerless) {
+        console.log('WhatsApp Web cannot run in serverless environment (Vercel/Lambda)');
+        this.state.status = 'disconnected';
+        this.state.error = 'WhatsApp Web requires a persistent server. Serverless environments (Vercel) cannot maintain browser sessions. Consider using WhatsApp Business API or running on a dedicated server.';
+      } else {
+        console.log('WhatsApp service running in demo mode. Set WHATSAPP_ENABLED=true to enable.');
+        this.state.status = 'disconnected';
+        this.state.error = 'WhatsApp integration requires WHATSAPP_ENABLED=true in environment';
+      }
       return this.getState();
     }
 
