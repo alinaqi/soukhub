@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+import { AnalyticsPageClient } from '@/components/analytics/AnalyticsPageClient';
 
 export const metadata: Metadata = {
-  title: 'Analytics',
+  title: 'Analytics & Insights',
 };
-import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard';
 
 export default async function AnalyticsPage() {
   const supabase = await createClient();
@@ -22,13 +22,13 @@ export default async function AnalyticsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Analytics</h1>
+        <h1 className="text-2xl font-bold">Analytics & Insights</h1>
         <p className="text-muted-foreground">
-          Comprehensive insights into your marketplace performance
+          Actionable insights and comprehensive performance analytics
         </p>
       </div>
 
-      <AnalyticsDashboard orders={orders || []} />
+      <AnalyticsPageClient orders={orders || []} />
     </div>
   );
 }
