@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import ReactMarkdown from 'react-markdown';
 
 interface QuickAction {
   id: string;
@@ -10,6 +11,11 @@ interface QuickAction {
   description: string;
   action: () => void;
   keywords: string[];
+}
+
+interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 interface CommandBarProps {
@@ -21,10 +27,11 @@ export function CommandBar({ userId }: CommandBarProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [aiResponse, setAiResponse] = useState<string | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const resultsRef = useRef<HTMLDivElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Navigation actions
   const navigationActions: QuickAction[] = [
@@ -153,9 +160,9 @@ export function CommandBar({ userId }: CommandBarProps) {
         setIsLoading(true);
         try {
           await fetch('/api/customers/sync-from-orders', { method: 'POST' });
-          setAiResponse('✅ Customers synced successfully!');
+          setChatHistory([{ role: 'assistant', content: '✅ Customers synced successfully!' }]);
         } catch {
-          setAiResponse('❌ Failed to sync customers');
+          setChatHistory([{ role: 'assistant', content: '❌ Failed to sync customers' }]);
         } finally {
           setIsLoading(false);
         }
@@ -249,13 +256,6 @@ export function CommandBar({ userId }: CommandBarProps) {
     setSelectedIndex(0);
   }, [query]);
 
-  const handleClose = useCallback(() => {
-    setIsOpen(false);
-    setQuery('');
-    setAiResponse(null);
-    setSelectedIndex(0);
-  }, []);
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -285,31 +285,59 @@ export function CommandBar({ userId }: CommandBarProps) {
   const handleAIQuery = async () => {
     if (!query.trim()) return;
 
+    const userMessage: ChatMessage = { role: 'user', content: query };
+    const updatedHistory = [...chatHistory, userMessage];
+    setChatHistory(updatedHistory);
+    setQuery('');
     setIsLoading(true);
-    setAiResponse(null);
 
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          messages: [{ role: 'user', content: query }],
+          messages: updatedHistory.map(m => ({ role: m.role, content: m.content })),
           userId,
         }),
       });
 
       const data = await response.json();
       if (response.ok) {
-        setAiResponse(data.response || data.message);
+        const assistantMessage: ChatMessage = {
+          role: 'assistant',
+          content: data.response || data.message || 'No response received.',
+        };
+        setChatHistory(prev => [...prev, assistantMessage]);
       } else {
-        setAiResponse('Sorry, I could not process that request.');
+        const errorMessage: ChatMessage = {
+          role: 'assistant',
+          content: data.error || 'Sorry, I could not process that request.',
+        };
+        setChatHistory(prev => [...prev, errorMessage]);
       }
     } catch {
-      setAiResponse('Failed to connect to AI. Please try again.');
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'Failed to connect to AI. Please try again.',
+      };
+      setChatHistory(prev => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Scroll to bottom when chat updates
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatHistory]);
+
+  // Clear chat history when closing
+  const handleClose = useCallback(() => {
+    setIsOpen(false);
+    setQuery('');
+    setChatHistory([]);
+    setSelectedIndex(0);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -349,21 +377,69 @@ export function CommandBar({ userId }: CommandBarProps) {
             </kbd>
           </div>
 
-          {/* AI Response */}
-          {aiResponse && (
-            <div className="p-4 border-b border-border bg-primary/5">
-              <div className="flex items-start gap-3">
-                <span className="text-xl">🤖</span>
-                <div className="flex-1 prose prose-sm dark:prose-invert max-w-none">
-                  <p className="text-sm whitespace-pre-wrap">{aiResponse}</p>
+          {/* Chat History */}
+          {chatHistory.length > 0 && (
+            <div className="max-h-[300px] overflow-y-auto border-b border-border">
+              {chatHistory.map((message, index) => (
+                <div
+                  key={index}
+                  className={`p-4 ${
+                    message.role === 'user'
+                      ? 'bg-muted/50'
+                      : 'bg-primary/5'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl flex-shrink-0">
+                      {message.role === 'user' ? '👤' : '🤖'}
+                    </span>
+                    <div className="flex-1 prose prose-sm dark:prose-invert max-w-none overflow-x-auto">
+                      {message.role === 'assistant' ? (
+                        <ReactMarkdown
+                          components={{
+                            p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                            ul: ({ children }) => <ul className="list-disc pl-4 mb-2">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2">{children}</ol>,
+                            li: ({ children }) => <li className="mb-1">{children}</li>,
+                            strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                            h1: ({ children }) => <h1 className="text-lg font-bold mt-3 mb-2">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-base font-bold mt-3 mb-2">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-sm font-bold mt-2 mb-1">{children}</h3>,
+                            code: ({ children }) => (
+                              <code className="bg-muted px-1 py-0.5 rounded text-xs">{children}</code>
+                            ),
+                            pre: ({ children }) => (
+                              <pre className="bg-muted p-2 rounded overflow-x-auto text-xs">{children}</pre>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                      ) : (
+                        <p className="text-sm">{message.content}</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
+              {isLoading && (
+                <div className="p-4 bg-primary/5">
+                  <div className="flex items-start gap-3">
+                    <span className="text-xl">🤖</span>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="animate-spin">⟳</span>
+                      <span>Thinking...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
             </div>
           )}
 
           {/* Quick Actions / Results */}
-          <div ref={resultsRef} className="max-h-[400px] overflow-y-auto p-2">
-            {isQuestion && !aiResponse ? (
+          <div ref={resultsRef} className="max-h-[300px] overflow-y-auto p-2">
+            {isQuestion && chatHistory.length === 0 ? (
               <div className="p-4 text-center">
                 <button
                   onClick={handleAIQuery}
@@ -377,13 +453,17 @@ export function CommandBar({ userId }: CommandBarProps) {
                   Press Enter or click to ask AI
                 </p>
               </div>
+            ) : chatHistory.length > 0 ? (
+              <div className="p-2">
+                <p className="text-xs text-muted-foreground text-center">
+                  Type a follow-up question or press ESC to close
+                </p>
+              </div>
             ) : filteredActions.length > 0 ? (
               <>
-                {!aiResponse && (
-                  <div className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    {query ? 'Results' : 'Quick Actions'}
-                  </div>
-                )}
+                <div className="px-3 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  {query ? 'Results' : 'Quick Actions'}
+                </div>
                 {filteredActions.map((action, index) => (
                   <button
                     key={action.id}

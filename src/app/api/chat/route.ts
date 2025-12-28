@@ -130,6 +130,39 @@ const tools: Anthropic.Tool[] = [
       required: ['user_id'],
     },
   },
+  {
+    name: 'get_product_sales_analytics',
+    description: 'Analyze product sales data from order items. Returns top-selling products, revenue by product, quantity sold, and sales trends. Use this to answer questions like "which product has most sales", "top selling products", "best performing items".',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        limit: { type: 'number', description: 'Number of top products to return', default: 10 },
+        date_from: { type: 'string', description: 'Start date filter (YYYY-MM-DD format)' },
+        date_to: { type: 'string', description: 'End date filter (YYYY-MM-DD format)' },
+      },
+      required: ['user_id'],
+    },
+  },
+  {
+    name: 'query_orders_data',
+    description: 'Execute a custom query on orders data. Use this for complex analytics questions that other tools cannot answer. Returns aggregated order and order item data.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        query_type: {
+          type: 'string',
+          description: 'Type of query to run',
+          enum: ['sales_by_date', 'sales_by_marketplace', 'customer_order_frequency', 'product_performance', 'revenue_trends'],
+        },
+        date_from: { type: 'string', description: 'Start date filter (YYYY-MM-DD format)' },
+        date_to: { type: 'string', description: 'End date filter (YYYY-MM-DD format)' },
+        group_by: { type: 'string', description: 'Group results by: day, week, month', enum: ['day', 'week', 'month'] },
+      },
+      required: ['user_id', 'query_type'],
+    },
+  },
 ];
 
 // Tool implementations
@@ -701,6 +734,233 @@ async function populateInventoryFromOrders(userId: string, dryRun = true) {
   };
 }
 
+// Get product sales analytics from order items
+async function getProductSalesAnalytics(
+  userId: string,
+  limit: number = 10,
+  dateFrom?: string,
+  dateTo?: string
+) {
+  // Build the query for orders with order_items
+  let query = supabase
+    .from('orders')
+    .select(`
+      id,
+      order_date,
+      total,
+      marketplace,
+      order_items (
+        product_name,
+        quantity,
+        unit_price
+      )
+    `)
+    .eq('user_id', userId);
+
+  if (dateFrom) {
+    query = query.gte('order_date', dateFrom);
+  }
+  if (dateTo) {
+    query = query.lte('order_date', dateTo);
+  }
+
+  const { data: orders, error } = await query;
+
+  if (error || !orders) {
+    return { error: 'Failed to fetch order data' };
+  }
+
+  // Aggregate product sales data
+  const productMap = new Map<string, {
+    name: string;
+    totalQuantity: number;
+    totalRevenue: number;
+    orderCount: number;
+  }>();
+
+  for (const order of orders) {
+    const items = (order as { order_items?: Array<{ product_name: string; quantity: number; unit_price: number }> }).order_items || [];
+    for (const item of items) {
+      const key = item.product_name?.toLowerCase().trim() || 'unknown';
+      const existing = productMap.get(key) || {
+        name: item.product_name || 'Unknown',
+        totalQuantity: 0,
+        totalRevenue: 0,
+        orderCount: 0,
+      };
+      existing.totalQuantity += item.quantity || 1;
+      existing.totalRevenue += (item.unit_price || 0) * (item.quantity || 1);
+      existing.orderCount += 1;
+      productMap.set(key, existing);
+    }
+  }
+
+  // Convert to sorted array
+  const products = Array.from(productMap.values())
+    .sort((a, b) => b.totalQuantity - a.totalQuantity)
+    .slice(0, limit);
+
+  const totalProducts = productMap.size;
+  const totalRevenue = products.reduce((sum, p) => sum + p.totalRevenue, 0);
+  const totalUnits = products.reduce((sum, p) => sum + p.totalQuantity, 0);
+
+  return {
+    success: true,
+    summary: {
+      totalProducts,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      totalUnits,
+      ordersAnalyzed: orders.length,
+    },
+    topProducts: products.map((p, index) => ({
+      rank: index + 1,
+      name: p.name,
+      unitsSold: p.totalQuantity,
+      revenue: Math.round(p.totalRevenue * 100) / 100,
+      orders: p.orderCount,
+    })),
+  };
+}
+
+// Query orders data with various analytics
+async function queryOrdersData(
+  userId: string,
+  queryType: string,
+  dateFrom?: string,
+  dateTo?: string,
+  groupBy?: string
+) {
+  let query = supabase
+    .from('orders')
+    .select(`
+      id,
+      order_date,
+      total,
+      marketplace,
+      status,
+      customer_name,
+      order_items (
+        product_name,
+        quantity,
+        unit_price
+      )
+    `)
+    .eq('user_id', userId);
+
+  if (dateFrom) {
+    query = query.gte('order_date', dateFrom);
+  }
+  if (dateTo) {
+    query = query.lte('order_date', dateTo);
+  }
+
+  const { data: orders, error } = await query;
+
+  if (error || !orders) {
+    return { error: 'Failed to fetch order data' };
+  }
+
+  switch (queryType) {
+    case 'sales_by_date': {
+      const salesByDate = new Map<string, { orders: number; revenue: number }>();
+      for (const order of orders) {
+        const date = new Date(order.order_date).toISOString().split('T')[0];
+        const existing = salesByDate.get(date) || { orders: 0, revenue: 0 };
+        existing.orders += 1;
+        existing.revenue += order.total || 0;
+        salesByDate.set(date, existing);
+      }
+      return {
+        success: true,
+        data: Array.from(salesByDate.entries())
+          .map(([date, stats]) => ({ date, ...stats }))
+          .sort((a, b) => b.date.localeCompare(a.date)),
+      };
+    }
+
+    case 'sales_by_marketplace': {
+      const salesByMarketplace = new Map<string, { orders: number; revenue: number }>();
+      for (const order of orders) {
+        const marketplace = order.marketplace || 'unknown';
+        const existing = salesByMarketplace.get(marketplace) || { orders: 0, revenue: 0 };
+        existing.orders += 1;
+        existing.revenue += order.total || 0;
+        salesByMarketplace.set(marketplace, existing);
+      }
+      return {
+        success: true,
+        data: Array.from(salesByMarketplace.entries())
+          .map(([marketplace, stats]) => ({ marketplace, ...stats }))
+          .sort((a, b) => b.revenue - a.revenue),
+      };
+    }
+
+    case 'customer_order_frequency': {
+      const customerOrders = new Map<string, number>();
+      for (const order of orders) {
+        const customer = order.customer_name || 'unknown';
+        customerOrders.set(customer, (customerOrders.get(customer) || 0) + 1);
+      }
+      const sortedCustomers = Array.from(customerOrders.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 20);
+      return {
+        success: true,
+        data: sortedCustomers.map(([name, orderCount]) => ({ customer: name, orders: orderCount })),
+      };
+    }
+
+    case 'product_performance': {
+      const productStats = new Map<string, { units: number; revenue: number; orders: number }>();
+      for (const order of orders) {
+        const items = (order as { order_items?: Array<{ product_name: string; quantity: number; unit_price: number }> }).order_items || [];
+        for (const item of items) {
+          const name = item.product_name || 'unknown';
+          const existing = productStats.get(name) || { units: 0, revenue: 0, orders: 0 };
+          existing.units += item.quantity || 1;
+          existing.revenue += (item.unit_price || 0) * (item.quantity || 1);
+          existing.orders += 1;
+          productStats.set(name, existing);
+        }
+      }
+      return {
+        success: true,
+        data: Array.from(productStats.entries())
+          .map(([name, stats]) => ({ product: name, ...stats }))
+          .sort((a, b) => b.units - a.units)
+          .slice(0, 20),
+      };
+    }
+
+    case 'revenue_trends': {
+      const revenueByPeriod = new Map<string, number>();
+      for (const order of orders) {
+        const date = new Date(order.order_date);
+        let period: string;
+        if (groupBy === 'month') {
+          period = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        } else if (groupBy === 'week') {
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          period = weekStart.toISOString().split('T')[0];
+        } else {
+          period = date.toISOString().split('T')[0];
+        }
+        revenueByPeriod.set(period, (revenueByPeriod.get(period) || 0) + (order.total || 0));
+      }
+      return {
+        success: true,
+        data: Array.from(revenueByPeriod.entries())
+          .map(([period, revenue]) => ({ period, revenue: Math.round(revenue * 100) / 100 }))
+          .sort((a, b) => a.period.localeCompare(b.period)),
+      };
+    }
+
+    default:
+      return { error: 'Unknown query type' };
+  }
+}
+
 // Process tool calls
 async function processToolCall(name: string, input: Record<string, unknown>) {
   switch (name) {
@@ -741,6 +1001,21 @@ async function processToolCall(name: string, input: Record<string, unknown>) {
       return await populateInventoryFromOrders(
         input.user_id as string,
         input.dry_run !== false
+      );
+    case 'get_product_sales_analytics':
+      return await getProductSalesAnalytics(
+        input.user_id as string,
+        input.limit as number | undefined,
+        input.date_from as string | undefined,
+        input.date_to as string | undefined
+      );
+    case 'query_orders_data':
+      return await queryOrdersData(
+        input.user_id as string,
+        input.query_type as string,
+        input.date_from as string | undefined,
+        input.date_to as string | undefined,
+        input.group_by as string | undefined
       );
     default:
       return { error: 'Unknown tool' };
