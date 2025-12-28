@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { CustomerCommunication } from './CustomerCommunication';
 
 interface Customer {
   id: string;
@@ -42,6 +43,7 @@ export function CustomersClient({ userId }: { userId: string }) {
   const [showThankYou, setShowThankYou] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState<'all' | 'vip' | 'repeat' | 'new'>('all');
+  const [detailTab, setDetailTab] = useState<'info' | 'communicate'>('info');
 
   useEffect(() => {
     fetchCustomers();
@@ -95,7 +97,25 @@ export function CustomersClient({ userId }: { userId: string }) {
   const selectCustomer = (customer: Customer) => {
     setSelectedCustomer(customer);
     setCustomerStats(null);
+    setDetailTab('info');
     fetchCustomerStats(customer.id);
+  };
+
+  const handleCommunicationSent = async (type: 'email' | 'whatsapp', templateId: string) => {
+    if (!selectedCustomer) return;
+    try {
+      await fetch('/api/customers/communication', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: selectedCustomer.id,
+          type,
+          templateId,
+        }),
+      });
+    } catch (error) {
+      console.error('Failed to log communication:', error);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -310,10 +330,11 @@ export function CustomersClient({ userId }: { userId: string }) {
         </div>
 
         {/* Customer Detail */}
-        <div className="bg-card rounded-lg border p-6">
+        <div className="bg-card rounded-lg border">
           {selectedCustomer ? (
-            <div className="space-y-6">
-              <div className="text-center">
+            <div className="space-y-0">
+              {/* Customer Header */}
+              <div className="text-center p-6 border-b border-border">
                 <div className="text-4xl mb-2">
                   {customerStats?.is_vip ? '⭐' : customerStats?.is_repeat ? '🔄' : '👤'}
                 </div>
@@ -325,96 +346,143 @@ export function CustomersClient({ userId }: { userId: string }) {
                 )}
               </div>
 
-              <div className="space-y-3 text-sm">
-                {selectedCustomer.email && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Email</span>
-                    <a
-                      href={`mailto:${selectedCustomer.email}`}
-                      className="text-primary hover:underline"
-                    >
-                      {selectedCustomer.email}
-                    </a>
-                  </div>
-                )}
-                {selectedCustomer.phone && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Phone</span>
-                    <a
-                      href={`https://wa.me/${selectedCustomer.phone.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-green-600 hover:underline"
-                    >
-                      {selectedCustomer.phone}
-                    </a>
-                  </div>
-                )}
-                {selectedCustomer.city && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">City</span>
-                    <span>{selectedCustomer.city}</span>
-                  </div>
-                )}
+              {/* Tabs */}
+              <div className="flex border-b border-border">
+                <button
+                  onClick={() => setDetailTab('info')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                    detailTab === 'info'
+                      ? 'text-foreground border-b-2 border-primary bg-muted/30'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  👤 Info
+                </button>
+                <button
+                  onClick={() => setDetailTab('communicate')}
+                  className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                    detailTab === 'communicate'
+                      ? 'text-foreground border-b-2 border-primary bg-muted/30'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  💬 Communicate
+                </button>
               </div>
 
-              {customerStats && (
-                <>
-                  <div className="border-t border-border pt-4 space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Orders</span>
-                      <span className="font-medium">{customerStats.total_orders}</span>
+              {/* Tab Content */}
+              <div className="p-6">
+                {detailTab === 'info' ? (
+                  <div className="space-y-6">
+                    <div className="space-y-3 text-sm">
+                      {selectedCustomer.email && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Email</span>
+                          <a
+                            href={`mailto:${selectedCustomer.email}`}
+                            className="text-primary hover:underline"
+                          >
+                            {selectedCustomer.email}
+                          </a>
+                        </div>
+                      )}
+                      {selectedCustomer.phone && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Phone</span>
+                          <a
+                            href={`https://wa.me/${selectedCustomer.phone.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-600 hover:underline"
+                          >
+                            {selectedCustomer.phone}
+                          </a>
+                        </div>
+                      )}
+                      {selectedCustomer.city && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">City</span>
+                          <span>{selectedCustomer.city}</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Total Spent</span>
-                      <span className="font-medium">{formatCurrency(customerStats.total_spent)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Avg Order</span>
-                      <span className="font-medium">
-                        {formatCurrency(customerStats.average_order_value)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">First Order</span>
-                      <span>{formatDate(customerStats.first_order_date)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Last Order</span>
-                      <span>{formatDate(customerStats.last_order_date)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Last Active</span>
-                      <span>{customerStats.days_since_last_order} days ago</span>
-                    </div>
+
+                    {customerStats && (
+                      <>
+                        <div className="border-t border-border pt-4 space-y-3 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Total Orders</span>
+                            <span className="font-medium">{customerStats.total_orders}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Total Spent</span>
+                            <span className="font-medium">{formatCurrency(customerStats.total_spent)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Avg Order</span>
+                            <span className="font-medium">
+                              {formatCurrency(customerStats.average_order_value)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">First Order</span>
+                            <span>{formatDate(customerStats.first_order_date)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Last Order</span>
+                            <span>{formatDate(customerStats.last_order_date)}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Last Active</span>
+                            <span>{customerStats.days_since_last_order} days ago</span>
+                          </div>
+                        </div>
+
+                        {customerStats.favorite_brands && customerStats.favorite_brands.length > 0 && (
+                          <div className="border-t border-border pt-4">
+                            <div className="text-sm text-muted-foreground mb-2">Favorite Brands</div>
+                            <div className="flex flex-wrap gap-1">
+                              {customerStats.favorite_brands.slice(0, 3).map((brand, i) => (
+                                <span key={i} className="text-xs px-2 py-1 bg-muted rounded-full">
+                                  {brand}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {(customerStats.is_vip || customerStats.is_repeat) && (
+                          <button
+                            onClick={() => setShowThankYou(true)}
+                            className="w-full px-4 py-2 bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 rounded-lg hover:bg-yellow-500/30 transition-colors"
+                          >
+                            Generate Thank You Note
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
-
-                  {customerStats.favorite_brands && customerStats.favorite_brands.length > 0 && (
-                    <div className="border-t border-border pt-4">
-                      <div className="text-sm text-muted-foreground mb-2">Favorite Brands</div>
-                      <div className="flex flex-wrap gap-1">
-                        {customerStats.favorite_brands.slice(0, 3).map((brand, i) => (
-                          <span key={i} className="text-xs px-2 py-1 bg-muted rounded-full">
-                            {brand}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {(customerStats.is_vip || customerStats.is_repeat) && (
-                    <button
-                      onClick={() => setShowThankYou(true)}
-                      className="w-full px-4 py-2 bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 rounded-lg hover:bg-yellow-500/30 transition-colors"
-                    >
-                      Generate Thank You Note
-                    </button>
-                  )}
-                </>
-              )}
+                ) : (
+                  <CustomerCommunication
+                    customer={{
+                      id: selectedCustomer.id,
+                      name: selectedCustomer.name,
+                      firstName: selectedCustomer.name.split(' ')[0],
+                      email: selectedCustomer.email,
+                      phone: selectedCustomer.phone,
+                      totalOrders: customerStats?.total_orders || selectedCustomer.total_orders,
+                      totalSpent: customerStats?.total_spent || selectedCustomer.total_spent,
+                      lastOrderDate: customerStats?.last_order_date || selectedCustomer.last_order_date,
+                      isVip: customerStats?.is_vip,
+                      favoriteBrands: customerStats?.favorite_brands,
+                    }}
+                    onCommunicationSent={handleCommunicationSent}
+                  />
+                )}
+              </div>
             </div>
           ) : (
-            <div className="text-center text-muted-foreground py-8">
+            <div className="text-center text-muted-foreground py-8 p-6">
               <div className="text-4xl mb-2">👆</div>
               <p>Select a customer to see details</p>
             </div>
