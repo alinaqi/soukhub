@@ -55,20 +55,28 @@ export function CommunicationsClient({ userId }: { userId: string }) {
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch WhatsApp status on mount
+  // Fetch WhatsApp status on mount and poll
   useEffect(() => {
     fetchWhatsAppStatus();
     fetchConversations();
 
-    // Poll for status updates
-    const interval = setInterval(fetchWhatsAppStatus, 5000);
+    // Poll more frequently when setup modal is open (waiting for QR scan)
+    const pollInterval = showSetup ? 2000 : 10000;
+    const interval = setInterval(fetchWhatsAppStatus, pollInterval);
     return () => clearInterval(interval);
-  }, []);
+  }, [showSetup]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Auto-close setup modal when WhatsApp becomes ready
+  useEffect(() => {
+    if (waStatus === 'ready' && showSetup) {
+      setShowSetup(false);
+    }
+  }, [waStatus, showSetup]);
 
   const fetchWhatsAppStatus = async () => {
     try {
@@ -212,6 +220,9 @@ export function CommunicationsClient({ userId }: { userId: string }) {
   };
 
   const getStatusIcon = () => {
+    // If there's an error, always show red
+    if (waError) return '🔴';
+
     switch (waStatus) {
       case 'ready':
         return '🟢';
@@ -225,6 +236,9 @@ export function CommunicationsClient({ userId }: { userId: string }) {
   };
 
   const getStatusText = () => {
+    // If there's an error, show error state
+    if (waError) return 'Error';
+
     switch (waStatus) {
       case 'ready':
         return 'Connected';
