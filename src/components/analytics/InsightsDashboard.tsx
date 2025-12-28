@@ -81,10 +81,10 @@ export function InsightsDashboard() {
 
   const getInsightColor = (type: ActionableInsight['type']) => {
     switch (type) {
-      case 'critical': return 'border-red-300 bg-red-50';
-      case 'warning': return 'border-yellow-300 bg-yellow-50';
-      case 'opportunity': return 'border-blue-300 bg-blue-50';
-      case 'success': return 'border-green-300 bg-green-50';
+      case 'critical': return 'border-red-300 bg-red-50 text-red-900';
+      case 'warning': return 'border-yellow-300 bg-yellow-50 text-yellow-900';
+      case 'opportunity': return 'border-blue-300 bg-blue-50 text-blue-900';
+      case 'success': return 'border-green-300 bg-green-50 text-green-900';
     }
   };
 
@@ -111,7 +111,7 @@ export function InsightsDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold">Actionable Insights</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-600">
             Last updated: {new Date(data.generatedAt).toLocaleTimeString()}
           </p>
         </div>
@@ -156,9 +156,9 @@ export function InsightsDashboard() {
         {activeTab === 'insights' && (
           <div className="space-y-4">
             {data.insights.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
+              <div className="text-center py-12 text-gray-600">
                 <p className="text-4xl mb-2">🎉</p>
-                <p className="font-medium">All good!</p>
+                <p className="font-medium text-gray-800">All good!</p>
                 <p className="text-sm">No critical actions needed right now.</p>
               </div>
             ) : (
@@ -181,13 +181,13 @@ export function InsightsDashboard() {
                         <p className="text-sm font-medium mt-2">{insight.metric}</p>
                       )}
                       {insight.action && (
-                        <div className="mt-3 p-2 bg-white/50 rounded text-sm">
+                        <div className="mt-3 p-2 bg-white/70 rounded text-sm border border-current/10">
                           <span className="font-medium">💡 Action: </span>
                           {insight.action}
                         </div>
                       )}
                       {insight.impact && (
-                        <p className="text-xs text-muted-foreground mt-2">
+                        <p className="text-xs opacity-75 mt-2">
                           Impact: {insight.impact}
                         </p>
                       )}
@@ -204,9 +204,9 @@ export function InsightsDashboard() {
           <div className="space-y-6">
             <div className="grid gap-4">
               {data.bottlenecks.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
+                <div className="text-center py-12 text-gray-600">
                   <p className="text-4xl mb-2">⚡</p>
-                  <p className="font-medium">Workflow is smooth!</p>
+                  <p className="font-medium text-gray-800">Workflow is smooth!</p>
                   <p className="text-sm">No bottlenecks detected in your order processing.</p>
                 </div>
               ) : (
@@ -217,10 +217,10 @@ export function InsightsDashboard() {
                       key={index}
                       className={`border rounded-lg p-4 ${
                         bottleneck.avgHours > 48
-                          ? 'border-red-300 bg-red-50'
+                          ? 'border-red-300 bg-red-50 text-red-900'
                           : bottleneck.avgHours > 24
-                          ? 'border-yellow-300 bg-yellow-50'
-                          : 'border-gray-200 bg-gray-50'
+                          ? 'border-yellow-300 bg-yellow-50 text-yellow-900'
+                          : 'border-gray-200 bg-gray-50 text-gray-900'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
@@ -229,13 +229,13 @@ export function InsightsDashboard() {
                           <span className="text-lg font-bold">
                             {bottleneck.avgHours}h
                           </span>
-                          <span className="text-sm text-muted-foreground ml-1">avg</span>
+                          <span className="text-sm opacity-75 ml-1">avg</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-4 text-sm mb-2">
                         <span>{bottleneck.orderCount} orders</span>
                         {/* Progress bar visualization */}
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="flex-1 h-2 bg-white/50 rounded-full overflow-hidden">
                           <div
                             className={`h-full ${
                               bottleneck.avgHours > 48 ? 'bg-red-500' :
@@ -246,7 +246,7 @@ export function InsightsDashboard() {
                           />
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">{bottleneck.recommendation}</p>
+                      <p className="text-sm opacity-80">{bottleneck.recommendation}</p>
                     </div>
                   ))}
                 </>
@@ -264,26 +264,26 @@ export function InsightsDashboard() {
                 <span>🏆</span> Top Performers
               </h3>
               {data.productPerformance.topPerformers.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No hot products yet. Keep selling!</p>
+                <p className="text-sm text-gray-600">No hot products yet. Keep selling!</p>
               ) : (
                 <div className="grid gap-2">
                   {data.productPerformance.topPerformers.slice(0, 5).map((product, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 border rounded-lg bg-green-50 border-green-200"
+                      className="flex items-center justify-between p-3 border rounded-lg bg-green-50 border-green-200 text-green-900"
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">{getTrendIcon(product.trend)}</span>
                         <div>
                           <p className="font-medium text-sm">{product.name}</p>
                           {product.recommendation && (
-                            <p className="text-xs text-muted-foreground">{product.recommendation}</p>
+                            <p className="text-xs opacity-75">{product.recommendation}</p>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold">AED {product.revenue.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs opacity-75">
                           {product.unitsSold} units • {product.velocity}/day
                         </p>
                       </div>
@@ -303,20 +303,20 @@ export function InsightsDashboard() {
                   {data.productPerformance.underperformers.slice(0, 5).map((product, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 border rounded-lg bg-yellow-50 border-yellow-200"
+                      className="flex items-center justify-between p-3 border rounded-lg bg-yellow-50 border-yellow-200 text-yellow-900"
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">{getTrendIcon(product.trend)}</span>
                         <div>
                           <p className="font-medium text-sm">{product.name}</p>
                           {product.recommendation && (
-                            <p className="text-xs text-muted-foreground">{product.recommendation}</p>
+                            <p className="text-xs opacity-75">{product.recommendation}</p>
                           )}
                         </div>
                       </div>
                       <div className="text-right">
                         <p className="font-bold">AED {product.revenue.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs opacity-75">
                           {product.unitsSold} units total
                         </p>
                       </div>
@@ -336,14 +336,14 @@ export function InsightsDashboard() {
                   {data.productPerformance.opportunities.slice(0, 5).map((product, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 border rounded-lg bg-blue-50 border-blue-200"
+                      className="flex items-center justify-between p-3 border rounded-lg bg-blue-50 border-blue-200 text-blue-900"
                     >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">💡</span>
                         <div>
                           <p className="font-medium text-sm">{product.name}</p>
                           {product.profitMargin !== undefined && (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs opacity-75">
                               {product.profitMargin}% margin - consider renegotiating with supplier
                             </p>
                           )}
@@ -351,7 +351,7 @@ export function InsightsDashboard() {
                       </div>
                       <div className="text-right">
                         <p className="font-bold">AED {product.revenue.toLocaleString()}</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs opacity-75">
                           {product.unitsSold} units
                         </p>
                       </div>
@@ -367,10 +367,10 @@ export function InsightsDashboard() {
         {activeTab === 'market' && (
           <div className="space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <p className="text-sm">
+              <p className="text-sm text-blue-900">
                 <span className="font-medium">🌍 UAE E-commerce Market Trends</span>
                 <br />
-                <span className="text-muted-foreground">
+                <span className="text-blue-700">
                   General market trends and insights for the UAE region.
                 </span>
               </p>
@@ -393,13 +393,13 @@ export function InsightsDashboard() {
                     {trend.trend === 'up' ? '↑ Growing' : trend.trend === 'down' ? '↓ Declining' : '→ Stable'}
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground">{trend.description}</p>
-                <p className="text-xs text-muted-foreground mt-2">Source: {trend.source}</p>
+                <p className="text-sm text-gray-700">{trend.description}</p>
+                <p className="text-xs text-gray-500 mt-2">Source: {trend.source}</p>
               </div>
             ))}
 
             <div className="border-t pt-4 mt-4">
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-gray-500 text-center">
                 Market trends are updated periodically. Check back for latest insights.
               </p>
             </div>
