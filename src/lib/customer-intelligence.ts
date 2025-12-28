@@ -147,35 +147,42 @@ export async function getCustomerStats(
   };
 }
 
+export interface BilingualNote {
+  english: string;
+  arabic: string;
+}
+
 /**
- * Generate thank-you note for customer
+ * Generate thank-you note for customer in English and Arabic
  */
 export function generateThankYouNote(
   stats: CustomerStats,
   productName: string,
   orderId: string,
   sellerName?: string
-): string {
-  const greeting = `Hi ${stats.name}!`;
+): BilingualNote {
+  const firstName = stats.name.split(' ')[0];
 
-  let body: string;
+  // English version
+  const enGreeting = `Hi ${firstName}!`;
+  let enBody: string;
 
   if (stats.is_vip) {
-    body = `Thank you for being one of our most valued customers! This is your ${ordinal(stats.total_orders)} order with us, and we truly appreciate your continued trust.
+    enBody = `Thank you for being one of our most valued customers! This is your ${ordinal(stats.total_orders)} order with us, and we truly appreciate your continued trust.
 
 Your ${productName} is on its way!
 Order: #${orderId}
 
 As a VIP customer, you're always our priority. If you ever need anything, just reach out!`;
   } else if (stats.is_repeat) {
-    body = `Great to see you again! This is your ${ordinal(stats.total_orders)} order with us - thank you for coming back!
+    enBody = `Great to see you again! This is your ${ordinal(stats.total_orders)} order with us - thank you for coming back!
 
 Your ${productName} is on its way!
 Order: #${orderId}
 
 We hope you love it as much as your previous purchases!`;
   } else {
-    body = `Thank you for your first order with us! We're excited to have you as a customer.
+    enBody = `Thank you for your first order with us! We're excited to have you as a customer.
 
 Your ${productName} is on its way!
 Order: #${orderId}
@@ -183,11 +190,45 @@ Order: #${orderId}
 If you love your purchase, we'd really appreciate a review. It helps us a lot!`;
   }
 
-  const signature = sellerName
+  const enSignature = sellerName
     ? `\n\nBest regards,\n${sellerName}`
-    : '\n\nBest regards,\nYour Seller';
+    : '\n\nBest regards,\nYour Team';
 
-  return `${greeting}\n\n${body}${signature}`;
+  // Arabic version
+  const arGreeting = `مرحباً ${firstName}!`;
+  let arBody: string;
+
+  if (stats.is_vip) {
+    arBody = `شكراً لكونك من أهم عملائنا! هذا طلبك رقم ${stats.total_orders} معنا، ونحن نقدر ثقتك المستمرة.
+
+منتجك ${productName} في الطريق إليك!
+رقم الطلب: #${orderId}
+
+كعميل VIP، أنت دائماً أولويتنا. إذا احتجت أي شيء، لا تتردد في التواصل معنا!`;
+  } else if (stats.is_repeat) {
+    arBody = `سعداء برؤيتك مجدداً! هذا طلبك رقم ${stats.total_orders} معنا - شكراً لعودتك!
+
+منتجك ${productName} في الطريق إليك!
+رقم الطلب: #${orderId}
+
+نتمنى أن يعجبك كما أعجبتك مشترياتك السابقة!`;
+  } else {
+    arBody = `شكراً لطلبك الأول معنا! نحن سعداء بانضمامك إلينا.
+
+منتجك ${productName} في الطريق إليك!
+رقم الطلب: #${orderId}
+
+إذا أعجبك المنتج، سنكون ممتنين لتقييمك. رأيك يهمنا كثيراً!`;
+  }
+
+  const arSignature = sellerName
+    ? `\n\nمع أطيب التحيات،\n${sellerName}`
+    : '\n\nمع أطيب التحيات،\nفريقكم';
+
+  return {
+    english: `${enGreeting}\n\n${enBody}${enSignature}`,
+    arabic: `${arGreeting}\n\n${arBody}${arSignature}`,
+  };
 }
 
 /**

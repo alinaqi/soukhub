@@ -78,27 +78,6 @@ export function Sidebar({ profile }: SidebarProps) {
         </Link>
       </div>
 
-      {/* Command Bar Trigger */}
-      <div className="px-3 py-2">
-        <button
-          onClick={() => {
-            const event = new KeyboardEvent('keydown', {
-              key: 'k',
-              metaKey: true,
-              bubbles: true,
-            });
-            document.dispatchEvent(event);
-          }}
-          className="w-full flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground bg-muted/50 hover:bg-muted rounded-lg border border-border transition-colors"
-        >
-          <span>🔍</span>
-          <span className="flex-1 text-left">Search or ask AI...</span>
-          <kbd className="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium bg-background border border-border rounded">
-            ⌘K
-          </kbd>
-        </button>
-      </div>
-
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-2">
         {NAV_GROUPS.map((group) => (

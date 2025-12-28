@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { generateThankYouNote, CustomerStats } from '@/lib/customer-intelligence';
+import { generateThankYouNote, CustomerStats, BilingualNote } from '@/lib/customer-intelligence';
+
+type Language = 'english' | 'arabic';
 
 interface ThankYouNoteProps {
   customerId: string;
@@ -19,10 +21,11 @@ export function ThankYouNote({
   onPrint,
 }: ThankYouNoteProps) {
   const [stats, setStats] = useState<CustomerStats | null>(null);
-  const [note, setNote] = useState<string>('');
+  const [notes, setNotes] = useState<BilingualNote>({ english: '', arabic: '' });
+  const [editedNotes, setEditedNotes] = useState<BilingualNote>({ english: '', arabic: '' });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedNote, setEditedNote] = useState('');
+  const [activeLanguage, setActiveLanguage] = useState<Language>('english');
 
   useEffect(() => {
     if (customerId) {
@@ -36,14 +39,14 @@ export function ThankYouNote({
       const data = await response.json();
       if (response.ok && data.stats) {
         setStats(data.stats);
-        const generatedNote = generateThankYouNote(
+        const generatedNotes = generateThankYouNote(
           data.stats,
           productName,
           orderId,
           sellerName
         );
-        setNote(generatedNote);
-        setEditedNote(generatedNote);
+        setNotes(generatedNotes);
+        setEditedNotes(generatedNotes);
       }
     } catch (error) {
       console.error('Failed to fetch customer stats:', error);
@@ -52,21 +55,25 @@ export function ThankYouNote({
     }
   };
 
+  const currentNote = isEditing ? editedNotes[activeLanguage] : notes[activeLanguage];
+
   const handlePrint = () => {
     const printWindow = window.open('', '_blank');
+    const isArabic = activeLanguage === 'arabic';
     if (printWindow) {
       printWindow.document.write(`
         <!DOCTYPE html>
-        <html>
+        <html dir="${isArabic ? 'rtl' : 'ltr'}" lang="${isArabic ? 'ar' : 'en'}">
         <head>
           <title>Thank You Note - Order #${orderId}</title>
           <style>
             body {
-              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              font-family: ${isArabic ? "'Segoe UI', 'Tahoma', 'Arial', sans-serif" : "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"};
               padding: 40px;
               max-width: 600px;
               margin: 0 auto;
-              line-height: 1.6;
+              line-height: 1.8;
+              direction: ${isArabic ? 'rtl' : 'ltr'};
             }
             .note {
               border: 2px solid #e5e7eb;
@@ -82,6 +89,7 @@ export function ThankYouNote({
               white-space: pre-wrap;
               font-size: 14px;
               color: #374151;
+              text-align: ${isArabic ? 'right' : 'left'};
             }
             ${stats?.is_vip ? `
             .note {
@@ -99,7 +107,7 @@ export function ThankYouNote({
             <div class="header">
               ${stats?.is_vip ? '⭐ VIP Customer ⭐' : stats?.is_repeat ? '🌟 Valued Customer 🌟' : '💝 Thank You! 💝'}
             </div>
-            <div class="content">${isEditing ? editedNote : note}</div>
+            <div class="content">${currentNote}</div>
           </div>
           <script>
             window.onload = () => {
@@ -116,7 +124,7 @@ export function ThankYouNote({
   };
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(isEditing ? editedNote : note);
+    await navigator.clipboard.writeText(currentNote);
   };
 
   if (loading) {
@@ -155,6 +163,30 @@ export function ThankYouNote({
         </span>
       </div>
 
+      {/* Language Tabs */}
+      <div className="flex border-b border-gray-200">
+        <button
+          onClick={() => setActiveLanguage('english')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeLanguage === 'english'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          English
+        </button>
+        <button
+          onClick={() => setActiveLanguage('arabic')}
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeLanguage === 'arabic'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          العربية
+        </button>
+      </div>
+
       {/* Note Content */}
       <div
         className={`border rounded-lg p-4 ${
@@ -162,17 +194,26 @@ export function ThankYouNote({
             ? 'border-yellow-300 bg-yellow-50'
             : 'border-gray-200 bg-gray-50'
         }`}
+        dir={activeLanguage === 'arabic' ? 'rtl' : 'ltr'}
       >
         {isEditing ? (
           <textarea
-            value={editedNote}
-            onChange={(e) => setEditedNote(e.target.value)}
-            rows={8}
-            className="w-full bg-white border rounded-md p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500"
+            value={editedNotes[activeLanguage]}
+            onChange={(e) => setEditedNotes(prev => ({
+              ...prev,
+              [activeLanguage]: e.target.value
+            }))}
+            rows={10}
+            className={`w-full bg-white border rounded-md p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500 ${
+              activeLanguage === 'arabic' ? 'text-right' : 'text-left'
+            }`}
+            dir={activeLanguage === 'arabic' ? 'rtl' : 'ltr'}
           />
         ) : (
-          <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
-            {note}
+          <pre className={`whitespace-pre-wrap text-sm text-gray-700 font-sans ${
+            activeLanguage === 'arabic' ? 'text-right' : 'text-left'
+          }`}>
+            {currentNote}
           </pre>
         )}
       </div>
@@ -182,7 +223,7 @@ export function ThankYouNote({
         <button
           onClick={() => {
             if (isEditing) {
-              setNote(editedNote);
+              setNotes(editedNotes);
             }
             setIsEditing(!isEditing);
           }}

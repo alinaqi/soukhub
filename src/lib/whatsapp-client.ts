@@ -39,6 +39,12 @@ async function callWhatsAppService<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
+  // Check if response is JSON (Render returns HTML during cold start)
+  const contentType = response.headers.get('content-type');
+  if (!contentType?.includes('application/json')) {
+    throw new Error('Service is starting up, please try again in a few seconds');
+  }
+
   const data = await response.json();
 
   if (!response.ok) {
