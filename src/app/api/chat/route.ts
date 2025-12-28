@@ -163,6 +163,91 @@ const tools: Anthropic.Tool[] = [
       required: ['user_id', 'query_type'],
     },
   },
+  {
+    name: 'route_orders_to_supplier',
+    description: 'Route orders to their designated suppliers based on brand/product rules. This creates supplier orders and prepares them for WhatsApp messaging. Use this when user wants to "forward to supplier", "send to supplier", "route orders", etc.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        order_ids: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of order IDs to route to suppliers',
+        },
+      },
+      required: ['user_id', 'order_ids'],
+    },
+  },
+  {
+    name: 'get_unrouted_orders',
+    description: 'Get orders that have not been routed to a supplier yet. These are pending/confirmed/processing orders without a supplier assignment.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+      },
+      required: ['user_id'],
+    },
+  },
+  {
+    name: 'send_whatsapp_to_supplier',
+    description: 'Generate and send WhatsApp messages to suppliers for routed orders. Returns WhatsApp links that can be clicked to open WhatsApp with the pre-filled message. Use this after routing orders to actually notify suppliers.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        supplier_order_ids: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of supplier order IDs to send messages for',
+        },
+      },
+      required: ['user_id', 'supplier_order_ids'],
+    },
+  },
+  {
+    name: 'mark_orders_for_packing',
+    description: 'Mark orders as ready for packing by updating their status to "processing" or "ready_to_ship". Use this when user wants to prepare orders for the packing station.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        order_ids: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of order IDs to mark for packing',
+        },
+        target_status: {
+          type: 'string',
+          enum: ['processing', 'ready_to_ship'],
+          description: 'Target status - use "processing" for orders that need to be packed, "ready_to_ship" for orders already packed',
+        },
+      },
+      required: ['user_id', 'order_ids', 'target_status'],
+    },
+  },
+  {
+    name: 'bulk_update_order_status',
+    description: 'Update the status of multiple orders at once. Useful for batch operations like marking all pending orders as confirmed, or all packed orders as shipped.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        user_id: { type: 'string', description: 'The user ID' },
+        order_ids: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Array of order IDs to update',
+        },
+        new_status: {
+          type: 'string',
+          enum: ['pending', 'confirmed', 'processing', 'ready_to_ship', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'returned', 'refunded'],
+          description: 'The new status to apply to all orders',
+        },
+      },
+      required: ['user_id', 'order_ids', 'new_status'],
+    },
+  },
 ];
 
 // Tool implementations
@@ -961,6 +1046,444 @@ async function queryOrdersData(
   }
 }
 
+// Route orders to suppliers
+async function routeOrdersToSupplier(userId: string, orderIds: string[]) {
+  if (!orderIds || orderIds.length === 0) {
+    return { error: 'No order IDs provided' };
+  }
+
+  const results = [];
+  const supplierOrderIds: string[] = [];
+
+  for (const orderId of orderIds) {
+    // Get order with items
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (product_name)
+      `)
+      .eq('id', orderId)
+      .eq('user_id', userId)
+      .single();
+
+    if (orderError || !order) {
+      results.push({
+        order_id: orderId,
+        routed: false,
+        reason: 'Order not found',
+      });
+      continue;
+    }
+
+    // Skip if already routed
+    if (order.supplier_order_id) {
+      results.push({
+        order_id: orderId,
+        marketplace_order_id: order.marketplace_order_id,
+        routed: false,
+        reason: 'Already routed to supplier',
+        supplier_order_id: order.supplier_order_id,
+      });
+      supplierOrderIds.push(order.supplier_order_id);
+      continue;
+    }
+
+    // Try to find a matching supplier based on brand rules
+    const orderItems = order.order_items || [];
+    if (orderItems.length === 0) {
+      results.push({
+        order_id: orderId,
+        marketplace_order_id: order.marketplace_order_id,
+        routed: false,
+        reason: 'Order has no items',
+      });
+      continue;
+    }
+
+    // Extract brand from product name
+    const productName = orderItems[0]?.product_name || '';
+    const brandPatterns: Record<string, string> = {
+      'iphone': 'Apple', 'macbook': 'Apple', 'airpods': 'Apple',
+      'galaxy': 'Samsung', 'samsung': 'Samsung',
+      'pixel': 'Google', 'google': 'Google',
+      'xiaomi': 'Xiaomi', 'redmi': 'Xiaomi', 'poco': 'Xiaomi',
+      'oneplus': 'OnePlus', 'huawei': 'Huawei', 'oppo': 'Oppo',
+    };
+
+    let detectedBrand: string | null = null;
+    const productLower = productName.toLowerCase();
+    for (const [keyword, brand] of Object.entries(brandPatterns)) {
+      if (productLower.includes(keyword)) {
+        detectedBrand = brand;
+        break;
+      }
+    }
+
+    // Find supplier based on brand rule
+    let supplierId: string | null = null;
+    let supplierName: string | null = null;
+
+    if (detectedBrand) {
+      const { data: brandRules } = await supabase
+        .from('supplier_brand_rules')
+        .select(`
+          supplier_id,
+          suppliers (id, name, is_active)
+        `)
+        .eq('user_id', userId)
+        .eq('brand', detectedBrand)
+        .order('priority', { ascending: true })
+        .limit(1);
+
+      if (brandRules && brandRules.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const brandRule = brandRules[0] as any;
+        const supplierInfo = brandRule.suppliers;
+        if (supplierInfo?.is_active) {
+          supplierId = brandRule.supplier_id;
+          supplierName = supplierInfo.name;
+        }
+      }
+    }
+
+    // If no brand rule found, try to get any active supplier
+    if (!supplierId) {
+      const { data: defaultSupplier } = await supabase
+        .from('suppliers')
+        .select('id, name')
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .limit(1)
+        .single();
+
+      if (defaultSupplier) {
+        supplierId = defaultSupplier.id;
+        supplierName = defaultSupplier.name;
+      }
+    }
+
+    if (!supplierId) {
+      results.push({
+        order_id: orderId,
+        marketplace_order_id: order.marketplace_order_id,
+        routed: false,
+        reason: 'No active supplier found. Please add a supplier first.',
+      });
+      continue;
+    }
+
+    // Create supplier order
+    const { data: supplierOrder, error: soError } = await supabase
+      .from('supplier_orders')
+      .insert({
+        user_id: userId,
+        order_id: orderId,
+        supplier_id: supplierId,
+        status: 'pending_send',
+      })
+      .select('id')
+      .single();
+
+    if (soError || !supplierOrder) {
+      results.push({
+        order_id: orderId,
+        marketplace_order_id: order.marketplace_order_id,
+        routed: false,
+        reason: 'Failed to create supplier order',
+      });
+      continue;
+    }
+
+    // Update order with supplier_order_id
+    await supabase
+      .from('orders')
+      .update({
+        supplier_order_id: supplierOrder.id,
+        routed_at: new Date().toISOString(),
+      })
+      .eq('id', orderId);
+
+    supplierOrderIds.push(supplierOrder.id);
+    results.push({
+      order_id: orderId,
+      marketplace_order_id: order.marketplace_order_id,
+      routed: true,
+      supplier_name: supplierName,
+      supplier_order_id: supplierOrder.id,
+      reason: detectedBrand ? `Matched brand: ${detectedBrand}` : 'Routed to default supplier',
+    });
+  }
+
+  const routedCount = results.filter(r => r.routed).length;
+
+  return {
+    success: routedCount > 0,
+    summary: {
+      total: orderIds.length,
+      routed: routedCount,
+      failed: orderIds.length - routedCount,
+    },
+    results,
+    supplier_order_ids: supplierOrderIds,
+    next_step: routedCount > 0
+      ? 'Orders have been routed to suppliers. Would you like me to send WhatsApp messages to notify the suppliers?'
+      : undefined,
+  };
+}
+
+// Get unrouted orders
+async function getUnroutedOrdersList(userId: string) {
+  const { data: orders } = await supabase
+    .from('orders')
+    .select(`
+      id,
+      marketplace_order_id,
+      marketplace,
+      customer_name,
+      order_date,
+      total,
+      status,
+      order_items (product_name, quantity)
+    `)
+    .eq('user_id', userId)
+    .is('supplier_order_id', null)
+    .in('status', ['pending', 'confirmed', 'processing'])
+    .order('order_date', { ascending: false })
+    .limit(50);
+
+  if (!orders || orders.length === 0) {
+    return {
+      count: 0,
+      orders: [],
+      message: 'All orders have been routed to suppliers.',
+    };
+  }
+
+  return {
+    count: orders.length,
+    orders: orders.map(o => ({
+      id: o.id,
+      marketplace_order_id: o.marketplace_order_id,
+      marketplace: o.marketplace,
+      customer_name: o.customer_name,
+      order_date: o.order_date,
+      total: o.total,
+      status: o.status,
+      products: (o.order_items as { product_name: string; quantity: number }[] || [])
+        .map(i => `${i.product_name} (x${i.quantity})`)
+        .join(', '),
+    })),
+    message: `Found ${orders.length} orders that need to be routed to suppliers.`,
+  };
+}
+
+// Send WhatsApp to suppliers
+async function sendWhatsAppToSupplier(userId: string, supplierOrderIds: string[]) {
+  if (!supplierOrderIds || supplierOrderIds.length === 0) {
+    return { error: 'No supplier order IDs provided' };
+  }
+
+  // Fetch supplier orders with details
+  const { data: supplierOrders } = await supabase
+    .from('supplier_orders')
+    .select(`
+      id,
+      order_id,
+      supplier_id,
+      supplier:suppliers (id, name, whatsapp_number)
+    `)
+    .in('id', supplierOrderIds)
+    .eq('user_id', userId);
+
+  if (!supplierOrders || supplierOrders.length === 0) {
+    return { error: 'Supplier orders not found' };
+  }
+
+  // Get order details
+  const orderIds = supplierOrders.map(so => so.order_id);
+  const { data: orders } = await supabase
+    .from('orders')
+    .select(`
+      id,
+      marketplace_order_id,
+      marketplace,
+      customer_name,
+      shipping_city,
+      order_items (product_name, quantity)
+    `)
+    .in('id', orderIds);
+
+  if (!orders || orders.length === 0) {
+    return { error: 'Orders not found' };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const orderMap = new Map(orders.map((o: any) => [o.id, o]));
+  const results = [];
+
+  // Group by supplier
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const supplierGroups = new Map<string, { supplier: any; orders: any[] }>();
+
+  for (const so of supplierOrders) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supplierData = (so as any).supplier;
+    const supplier = supplierData as { id: string; name: string; whatsapp_number: string } | null;
+    if (!supplier) continue;
+
+    const supplierId = supplier.id;
+    if (!supplierGroups.has(supplierId)) {
+      supplierGroups.set(supplierId, { supplier, orders: [] });
+    }
+
+    const order = orderMap.get(so.order_id);
+    if (order) {
+      supplierGroups.get(supplierId)!.orders.push({
+        ...order,
+        supplier_order_id: so.id,
+      });
+    }
+  }
+
+  for (const [supplierId, { supplier, orders: supplierOrdersList }] of supplierGroups) {
+    // Generate message
+    const orderDetails = supplierOrdersList.map(o => {
+      const items = (o.order_items || [])
+        .map((i: { product_name: string; quantity: number }) => `• ${i.product_name} (x${i.quantity})`)
+        .join('\n');
+      return `Order: ${o.marketplace_order_id}\nCustomer: ${o.customer_name}\nCity: ${o.shipping_city || 'N/A'}\nItems:\n${items}`;
+    }).join('\n\n---\n\n');
+
+    const message = `السلام عليكم ${supplier.name},
+
+New order${supplierOrdersList.length > 1 ? 's' : ''} to fulfill:
+
+${orderDetails}
+
+Please confirm availability. شكراً`;
+
+    // Create WhatsApp link
+    const encodedMessage = encodeURIComponent(message);
+    const phoneNumber = supplier.whatsapp_number.replace(/[^0-9]/g, '');
+    const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+
+    // Update supplier order status
+    const soIds = supplierOrdersList.map((o: { supplier_order_id: string }) => o.supplier_order_id);
+    await supabase
+      .from('supplier_orders')
+      .update({
+        status: 'sent',
+        sent_at: new Date().toISOString(),
+        sent_via: 'whatsapp',
+      })
+      .in('id', soIds);
+
+    // Log activity
+    await supabase.from('activity_log').insert({
+      user_id: userId,
+      activity_type: 'whatsapp_sent',
+      title: `WhatsApp sent to ${supplier.name}`,
+      description: `Sent ${supplierOrdersList.length} order(s) to supplier via WhatsApp`,
+      metadata: {
+        supplier_id: supplierId,
+        supplier_order_ids: soIds,
+      },
+    });
+
+    results.push({
+      supplier_id: supplierId,
+      supplier_name: supplier.name,
+      order_count: supplierOrdersList.length,
+      whatsapp_link: whatsappLink,
+      phone: supplier.whatsapp_number,
+    });
+  }
+
+  return {
+    success: true,
+    message: `Generated WhatsApp messages for ${results.length} supplier(s). Click the links below to send:`,
+    results,
+  };
+}
+
+// Mark orders for packing
+async function markOrdersForPacking(
+  userId: string,
+  orderIds: string[],
+  targetStatus: 'processing' | 'ready_to_ship'
+) {
+  if (!orderIds || orderIds.length === 0) {
+    return { error: 'No order IDs provided' };
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ status: targetStatus })
+    .eq('user_id', userId)
+    .in('id', orderIds)
+    .select('id, marketplace_order_id, status');
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  // Log activity
+  await supabase.from('activity_log').insert({
+    user_id: userId,
+    activity_type: 'order_status_changed',
+    title: `${orderIds.length} orders marked for packing`,
+    description: `Orders moved to ${targetStatus} status`,
+    metadata: { order_ids: orderIds, new_status: targetStatus },
+  });
+
+  return {
+    success: true,
+    updated: data?.length || 0,
+    status: targetStatus,
+    message: `${data?.length || 0} orders have been marked as "${targetStatus}". They are now visible in the packing station.`,
+  };
+}
+
+// Bulk update order status
+async function bulkUpdateOrderStatus(
+  userId: string,
+  orderIds: string[],
+  newStatus: string
+) {
+  if (!orderIds || orderIds.length === 0) {
+    return { error: 'No order IDs provided' };
+  }
+
+  const { data, error } = await supabase
+    .from('orders')
+    .update({ status: newStatus })
+    .eq('user_id', userId)
+    .in('id', orderIds)
+    .select('id, marketplace_order_id, status');
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  // Log activity
+  await supabase.from('activity_log').insert({
+    user_id: userId,
+    activity_type: 'order_status_changed',
+    title: `${orderIds.length} orders updated to ${newStatus}`,
+    description: `Bulk status update via AI assistant`,
+    metadata: { order_ids: orderIds, new_status: newStatus },
+  });
+
+  return {
+    success: true,
+    updated: data?.length || 0,
+    new_status: newStatus,
+    orders: data,
+    message: `Successfully updated ${data?.length || 0} orders to "${newStatus}".`,
+  };
+}
+
 // Process tool calls
 async function processToolCall(name: string, input: Record<string, unknown>) {
   switch (name) {
@@ -1017,6 +1540,30 @@ async function processToolCall(name: string, input: Record<string, unknown>) {
         input.date_to as string | undefined,
         input.group_by as string | undefined
       );
+    case 'route_orders_to_supplier':
+      return await routeOrdersToSupplier(
+        input.user_id as string,
+        input.order_ids as string[]
+      );
+    case 'get_unrouted_orders':
+      return await getUnroutedOrdersList(input.user_id as string);
+    case 'send_whatsapp_to_supplier':
+      return await sendWhatsAppToSupplier(
+        input.user_id as string,
+        input.supplier_order_ids as string[]
+      );
+    case 'mark_orders_for_packing':
+      return await markOrdersForPacking(
+        input.user_id as string,
+        input.order_ids as string[],
+        input.target_status as 'processing' | 'ready_to_ship'
+      );
+    case 'bulk_update_order_status':
+      return await bulkUpdateOrderStatus(
+        input.user_id as string,
+        input.order_ids as string[],
+        input.new_status as string
+      );
     default:
       return { error: 'Unknown tool' };
   }
@@ -1034,29 +1581,35 @@ const SYSTEM_PROMPT = `You are SoukHub AI, an intelligent assistant for multi-ch
 Your capabilities:
 1. **Order Management**: Search orders, view details, and update order statuses (mark as shipped, delivered, process refunds, etc.)
 2. **Inventory Management**: Check stock levels, find low stock items, adjust inventory quantities
-3. **Populate Inventory from Orders**: Analyze existing orders to extract products being sold and create inventory entries automatically
-4. **Analytics**: Provide insights about sales performance, return rates, and marketplace comparisons
-5. **Suggestions**: Proactively suggest actions to improve business operations
+3. **Supplier Routing**: Route orders to suppliers and send WhatsApp notifications
+4. **Packing Station**: Mark orders as ready for packing or ready to ship
+5. **Analytics**: Provide insights about sales performance, return rates, and marketplace comparisons
+6. **Bulk Actions**: Update multiple orders at once (mark all pending as shipped, etc.)
 
 Key behaviors:
 - Be concise and actionable in your responses
-- Format responses using markdown for better readability (use **bold**, bullet points, etc.)
-- When showing orders, format them as a markdown table or list with key details
+- Format responses using markdown for better readability (use **bold**, tables, bullet points)
+- When showing orders, format them as a markdown table with columns: Order ID, Customer, Status, Products, Total
 - When showing inventory, include SKU, product name, available quantity, and status
 - When updating order status or inventory, confirm the action was successful
 - Proactively suggest what the user might want to do next
 - Use AED as the default currency
-- Be helpful with refund processing - guide users through status changes
-- When listing orders or inventory items that need action, always include IDs/SKUs so users can take action
+- When listing orders or inventory items that need action, always include IDs so users can take action
+
+Common user requests and how to handle them:
+- "How many orders are pending?" → Use get_order_stats or search_orders with status=pending
+- "Forward orders to supplier" → First get unrouted orders, then route them, then offer to send WhatsApp
+- "Mark orders for packing" → Use mark_orders_for_packing with target_status=processing
+- "Send to supplier via WhatsApp" → Route orders first if needed, then use send_whatsapp_to_supplier
 
 Status flow for orders:
 - pending → confirmed → processing → ready_to_ship → shipped → out_for_delivery → delivered
 - Orders can also be: cancelled, returned, refunded
 
-Inventory status:
-- in_stock: Available quantity > reorder point
-- low_stock: Available quantity > 0 but <= reorder point
-- out_of_stock: Available quantity <= 0
+When routing to suppliers:
+1. First use get_unrouted_orders to find orders without suppliers
+2. Then use route_orders_to_supplier to assign suppliers based on brand rules
+3. Finally use send_whatsapp_to_supplier to notify suppliers (returns clickable links)
 
 When the user first messages you, introduce yourself briefly and ask how you can help. If appropriate, fetch their order stats to provide context.`;
 

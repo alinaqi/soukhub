@@ -267,7 +267,10 @@ export function CommandBar({ userId }: CommandBarProps) {
       setSelectedIndex((prev) => (prev > 0 ? prev - 1 : 0));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      if (isQuestion) {
+      // If there's already a chat history, treat any input as a follow-up question
+      if (chatHistory.length > 0 && query.trim()) {
+        handleAIQuery();
+      } else if (isQuestion) {
         handleAIQuery();
       } else if (filteredActions[selectedIndex]) {
         executeAction(filteredActions[selectedIndex]);
@@ -410,6 +413,28 @@ export function CommandBar({ userId }: CommandBarProps) {
                             ),
                             pre: ({ children }) => (
                               <pre className="bg-muted p-2 rounded overflow-x-auto text-xs">{children}</pre>
+                            ),
+                            table: ({ children }) => (
+                              <div className="overflow-x-auto my-2">
+                                <table className="min-w-full text-sm border-collapse border border-border rounded">
+                                  {children}
+                                </table>
+                              </div>
+                            ),
+                            thead: ({ children }) => (
+                              <thead className="bg-muted">{children}</thead>
+                            ),
+                            tbody: ({ children }) => <tbody>{children}</tbody>,
+                            tr: ({ children }) => (
+                              <tr className="border-b border-border last:border-0">{children}</tr>
+                            ),
+                            th: ({ children }) => (
+                              <th className="px-3 py-2 text-left font-semibold text-xs uppercase tracking-wider border-r border-border last:border-0">
+                                {children}
+                              </th>
+                            ),
+                            td: ({ children }) => (
+                              <td className="px-3 py-2 border-r border-border last:border-0">{children}</td>
                             ),
                           }}
                         >
