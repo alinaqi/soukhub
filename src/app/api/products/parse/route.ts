@@ -66,7 +66,7 @@ For electronics, default to "good" condition if unclear.
 For clothing/shoes, "new" often means new with tags.`;
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 512,
       messages: [
         {

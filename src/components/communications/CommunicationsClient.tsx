@@ -483,7 +483,7 @@ export function CommunicationsClient({ userId }: { userId: string }) {
                   <ol className="text-sm text-muted-foreground text-left space-y-1">
                     <li>1. Open WhatsApp on your phone</li>
                     <li>2. Go to Settings → Linked Devices</li>
-                    <li>3. Tap "Link a Device"</li>
+                    <li>3. Tap &ldquo;Link a Device&rdquo;</li>
                     <li>4. Scan this QR code</li>
                   </ol>
                 </div>
@@ -499,7 +499,7 @@ export function CommunicationsClient({ userId }: { userId: string }) {
                     <div className="space-y-2">
                       <div className="flex items-start gap-2">
                         <span>1.</span>
-                        <span><strong>Use "Open in WhatsApp"</strong> button to send messages via WhatsApp Web in browser</span>
+                        <span><strong>Use &ldquo;Open in WhatsApp&rdquo;</strong> button to send messages via WhatsApp Web in browser</span>
                       </div>
                       <div className="flex items-start gap-2">
                         <span>2.</span>

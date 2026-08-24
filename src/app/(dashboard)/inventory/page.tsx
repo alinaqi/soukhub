@@ -55,9 +55,12 @@ export default function InventoryPage() {
   const supabase = createClient();
 
   const fetchInventory = useCallback(async () => {
-    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
 
     const { data, error } = await supabase
       .from('inventory')
@@ -92,6 +95,8 @@ export default function InventoryPage() {
   }, [supabase]);
 
   useEffect(() => {
+    // Initial data fetch on mount; state updates happen after the async work completes
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchInventory();
   }, [fetchInventory]);
 

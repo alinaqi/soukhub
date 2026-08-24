@@ -327,7 +327,7 @@ async function updateOrderStatus(orderId: string, newStatus: string) {
 
 async function getOrderDetails(orderId: string, userId: string) {
   // Try UUID first, then marketplace_order_id
-  let { data, error } = await supabase
+  const { data, error } = await supabase
     .from('orders')
     .select('*')
     .eq('user_id', userId)
@@ -1740,7 +1740,7 @@ export async function POST(request: NextRequest) {
     const systemWithContext = `${SYSTEM_PROMPT}\n\nCurrent user ID: ${userId}. Always use this user_id when calling tools.`;
 
     let response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 1024,
       system: systemWithContext,
       tools,
@@ -1773,7 +1773,7 @@ export async function POST(request: NextRequest) {
 
       // Continue the conversation with tool results
       response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-5',
         max_tokens: 1024,
         system: systemWithContext,
         tools,

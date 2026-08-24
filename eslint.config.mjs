@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone CommonJS microservice with its own package.json (deployed to Render)
+    "whatsapp-service/**",
   ]),
 ]);
 

@@ -195,7 +195,9 @@ export async function analyzeProductPerformance(
 
   for (const order of orders) {
     const orderDate = new Date(order.order_date);
-    const items = (order as any).order_items || [];
+    const items =
+      (order as { order_items?: { product_name?: string; quantity?: number; unit_price?: number }[] })
+        .order_items || [];
 
     for (const item of items) {
       const key = item.product_name?.toLowerCase().trim() || 'unknown';
@@ -228,7 +230,7 @@ export async function analyzeProductPerformance(
   // Calculate metrics and classify products
   const allProducts: ProductPerformance[] = [];
 
-  for (const [_, data] of productMap) {
+  for (const data of productMap.values()) {
     const profit = data.revenue - data.cost;
     const profitMargin = data.revenue > 0 ? (profit / data.revenue) * 100 : 0;
     const velocity = data.recentUnits / 7; // units per day in last 7 days

@@ -32,9 +32,8 @@ export default async function ShippingPage() {
     .maybeSingle();
 
   // Default groupBy to marketplace if not configured
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const groupBy: 'marketplace' | 'destination' | 'carrier' =
-    (shippingRule?.config as any)?.group_by || 'marketplace';
+  const shippingConfig = shippingRule?.config as { group_by?: 'marketplace' | 'destination' | 'carrier' } | null;
+  const groupBy: 'marketplace' | 'destination' | 'carrier' = shippingConfig?.group_by || 'marketplace';
 
   // Fetch orders ready to ship (status = 'ready_to_ship')
   const { data: ordersData } = await supabase

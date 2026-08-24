@@ -16,6 +16,11 @@ function getTodayRange() {
   return { start, end };
 }
 
+// ISO timestamp for N hours ago (kept outside the component for react-hooks/purity)
+function getHoursAgoIso(hours: number) {
+  return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+}
+
 export default async function OperationsPage() {
   const supabase = await createClient();
   const {
@@ -158,7 +163,7 @@ export default async function OperationsPage() {
   }
 
   // Slow supplier responses (> 2 hours)
-  const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+  const twoHoursAgo = getHoursAgoIso(2);
   const slowResponses = supplierOrders.filter(
     (so) => so.status === 'sent' && so.sent_at && so.sent_at < twoHoursAgo
   );

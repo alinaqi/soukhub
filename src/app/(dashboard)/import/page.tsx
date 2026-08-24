@@ -302,7 +302,7 @@ export default function ImportPage() {
     const transformedData = transformData();
     let success = 0;
     let failed = 0;
-    let updated = 0;
+    const updated = 0;
 
     const marketplace = mappingResult?.marketplace || 'other';
 
