@@ -36,3 +36,10 @@ jobs:
 
       - name: Build
         run: pnpm build
+        env:
+          # Placeholder values so Supabase clients can be constructed during prerender.
+          # No network calls are made at build time.
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
+          SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-key
+          ANTHROPIC_API_KEY: ci-placeholder-key
