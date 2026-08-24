@@ -1,4 +1,9 @@
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+};
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { RecentOrders } from '@/components/dashboard/RecentOrders';
 import { MarketplaceBreakdown } from '@/components/dashboard/MarketplaceBreakdown';

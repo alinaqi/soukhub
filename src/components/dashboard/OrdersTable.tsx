@@ -172,10 +172,10 @@ export function OrdersTable({ orders: initialOrders }: OrdersTableProps) {
                 <td className="px-4 py-3">
                   <span
                     className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${
-                      STATUS_COLORS[order.status] || 'bg-gray-100 text-gray-800'
+                      STATUS_COLORS[order.status || 'pending'] || 'bg-gray-100 text-gray-800'
                     }`}
                   >
-                    {order.status.replace('_', ' ')}
+                    {(order.status || 'pending').replace('_', ' ')}
                   </span>
                 </td>
                 <td className="px-4 py-3 text-sm">

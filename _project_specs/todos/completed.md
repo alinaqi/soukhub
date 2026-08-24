@@ -163,6 +163,39 @@ Done items for reference. Move here from active.md when complete.
 
 ---
 
+## [2025-12-27] TODO-008: Build inventory management view
+
+**Completed**: 2025-12-27
+
+**What was done**:
+- Full inventory grid view with stock levels
+- Stats cards: Total SKUs, Total Units, Reserved, Low Stock, Out of Stock
+- Low stock alert banner with quick filter
+- Search and filter by stock status (all, low_stock, out_of_stock)
+- Stock adjustment modal (add/remove/set quantity with reason)
+- Activity logging for inventory changes
+- AI-powered dynamic CSV header mapping for imports
+- "Populate from Orders" feature:
+  - Analyzes existing orders to extract products
+  - Pattern matching for product info from raw order data
+  - Preview mode before creating products
+  - Creates products, variants, and inventory entries
+- AI chat tools for inventory management:
+  - `get_inventory_stats` - Get inventory statistics
+  - `search_inventory` - Search by SKU or product name
+  - `update_inventory` - Adjust stock quantities
+  - `populate_inventory_from_orders` - Analyze orders and create inventory
+
+**Files created/modified**:
+- `src/app/(dashboard)/inventory/page.tsx` - Complete inventory page
+- `src/app/api/inventory/populate-from-orders/route.ts` - Populate from orders API
+- `src/app/api/map-headers/route.ts` - AI header mapping API
+- `src/app/api/chat/route.ts` - Added inventory tools
+- `src/app/(dashboard)/import/page.tsx` - Refactored with AI mapping
+- `src/components/dashboard/Sidebar.tsx` - Added inventory nav link
+
+---
+
 ## [2025-12-27] TODO-009: Build analytics dashboard
 
 **Completed**: 2025-12-27

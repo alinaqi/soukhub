@@ -23,7 +23,7 @@ const ORDER_STATUSES = [
 ];
 
 export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalProps) {
-  const [status, setStatus] = useState<string>(order.status);
+  const [status, setStatus] = useState<string>(order.status || 'pending');
   const [trackingNumber, setTrackingNumber] = useState(order.tracking_number || '');
   const [carrier, setCarrier] = useState(order.carrier || '');
   const [notes, setNotes] = useState(order.notes || '');
@@ -219,7 +219,7 @@ export function OrderDetailModal({ order, onClose, onUpdate }: OrderDetailModalP
                   Mark as Shipped
                 </button>
               )}
-              {!['cancelled', 'returned', 'refunded'].includes(order.status) && (
+              {order.status && !['cancelled', 'returned', 'refunded'].includes(order.status) && (
                 <button
                   onClick={() => setStatus('cancelled')}
                   className="px-3 py-1.5 text-sm rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"

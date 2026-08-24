@@ -25,7 +25,7 @@ export function AnalyticsSummary({ orders }: AnalyticsSummaryProps) {
 
   const marketplaceData = orders.reduce(
     (acc, order) => {
-      const mp = order.marketplace;
+      const mp = order.marketplace || 'other';
       if (!acc[mp]) {
         acc[mp] = {
           name: mp.charAt(0).toUpperCase() + mp.slice(1),
@@ -39,7 +39,7 @@ export function AnalyticsSummary({ orders }: AnalyticsSummaryProps) {
       acc[mp].orders++;
       acc[mp].revenue += order.total || 0;
       if (order.status === 'delivered') acc[mp].delivered++;
-      if (['returned', 'refunded'].includes(order.status)) acc[mp].returned++;
+      if (order.status && ['returned', 'refunded'].includes(order.status)) acc[mp].returned++;
       return acc;
     },
     {} as Record<string, MarketplaceData>
@@ -54,7 +54,8 @@ export function AnalyticsSummary({ orders }: AnalyticsSummaryProps) {
   // Calculate status breakdown
   const statusCounts = orders.reduce(
     (acc, order) => {
-      acc[order.status] = (acc[order.status] || 0) + 1;
+      const status = order.status || 'unknown';
+      acc[status] = (acc[status] || 0) + 1;
       return acc;
     },
     {} as Record<string, number>
