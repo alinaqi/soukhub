@@ -33,55 +33,19 @@ SoukHub unifies order management across multiple e-commerce marketplaces (Amazon
 
 ## Getting Started
 
-### Prerequisites
+Full walkthrough (local Supabase, env setup, test user, AI, WhatsApp): **[GETTING_STARTED.md](GETTING_STARTED.md)**
 
-- Node.js 18+
-- npm or yarn
-- Supabase account
-- Anthropic API key
+Quickstart:
 
-### Installation
+```bash
+git clone https://github.com/alinaqi/soukhub.git && cd soukhub
+corepack enable && pnpm install         # pnpm 11, Node 22+
+supabase start && supabase db reset     # local Postgres + auth (Docker required)
+cp .env.example .env.local              # fill in keys from `supabase status` + Anthropic
+pnpm dev                                # http://localhost:4000
+```
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/alinaqi/soukhub.git
-   cd soukhub
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**
-
-   Create a `.env.local` file in the root directory:
-   ```env
-   # Supabase Configuration
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-   # AI / LLM
-   ANTHROPIC_API_KEY=your_anthropic_api_key
-
-   # App Config
-   NEXT_PUBLIC_APP_URL=http://localhost:3000
-   ```
-
-4. **Set up the database**
-
-   Push the database migrations to Supabase:
-   ```bash
-   npx supabase db push
-   ```
-
-5. **Run the development server**
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000) in your browser.
+Docs live in [`docs/`](docs/) — architecture, API, import formats, and [Architecture Decision Records](docs/adr/).
 
 ## Project Structure
 

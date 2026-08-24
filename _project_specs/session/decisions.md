@@ -43,3 +43,8 @@ Track key architectural and implementation decisions.
 - TypeScript for type safety across the stack
 **Trade-offs**: Less flexibility than pure Python for ML/data tasks, but better for web app development
 **References**: CLAUDE.md, _project_specs/overview.md
+
+## [2026-08-24] Formal ADRs introduced
+
+**Decision**: Public architecture decisions now live in docs/adr/ (numbered, with template and index). This log remains for session-level notes; anything of lasting architectural weight should be promoted to an ADR.
+**References**: docs/adr/README.md
