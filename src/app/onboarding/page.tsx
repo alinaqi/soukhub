@@ -1,43 +1,42 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  Check,
+  Store,
+  Package,
+  ShoppingBag,
+  Upload,
+  Copy,
+  MessageCircle,
+  ArrowRight,
+} from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { suggestStoreSlug, validateStoreSlug } from '@/lib/marketplace/store-slug';
 import type { MarketplaceType, Profile } from '@/types/supabase';
 
 const STEPS = [
-  { id: 0, title: 'Welcome', description: 'Tell us about your business' },
-  { id: 1, title: 'Marketplaces', description: 'Where do you sell?' },
-  { id: 2, title: 'Import Data', description: 'Bring in your existing orders' },
-  { id: 3, title: 'Ready!', description: "You're all set" },
+  { id: 0, title: 'Welcome' },
+  { id: 1, title: 'Your store' },
+  { id: 2, title: 'Marketplaces' },
+  { id: 3, title: 'Ready!' },
 ];
 
-const MARKETPLACES = [
-  {
-    id: 'amazon' as MarketplaceType,
-    name: 'Amazon',
-    description: 'Amazon UAE, KSA, and more',
-    icon: '📦',
-  },
-  {
-    id: 'cartlow' as MarketplaceType,
-    name: 'Cartlow',
-    description: 'Refurbished marketplace',
-    icon: '🛒',
-  },
-  {
-    id: 'revibe' as MarketplaceType,
-    name: 'Revibe',
-    description: 'Pre-owned electronics',
-    icon: '📱',
-  },
-  {
-    id: 'noon' as MarketplaceType,
-    name: 'Noon',
-    description: 'Middle East marketplace',
-    icon: '🌙',
-  },
+const MARKETPLACES: { id: MarketplaceType; name: string; description: string }[] = [
+  { id: 'amazon', name: 'Amazon', description: 'Amazon UAE, KSA, and more' },
+  { id: 'cartlow', name: 'Cartlow', description: 'Refurbished marketplace' },
+  { id: 'revibe', name: 'Revibe', description: 'Pre-owned electronics' },
+  { id: 'noon', name: 'Noon', description: 'Middle East marketplace' },
 ];
+
+const SLUG_ERRORS: Record<string, string> = {
+  slug_invalid: 'Only lowercase letters, numbers and dashes.',
+  slug_reserved: 'That address is reserved — try another.',
+  slug_too_short: 'At least 3 characters.',
+  slug_too_long: 'At most 40 characters.',
+  slug_taken: 'That address is already taken — try another.',
+};
 
 export default function OnboardingPage() {
   const [step, setStep] = useState(0);
@@ -46,6 +45,12 @@ export default function OnboardingPage() {
   const [phone, setPhone] = useState('');
   const [country, setCountry] = useState('AE');
   const [selectedMarketplaces, setSelectedMarketplaces] = useState<MarketplaceType[]>([]);
+  const [storeName, setStoreName] = useState('');
+  const [storeSlug, setStoreSlug] = useState('');
+  const [slugTouched, setSlugTouched] = useState(false);
+  const [storeError, setStoreError] = useState<string | null>(null);
+  const [storefrontPath, setStorefrontPath] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -66,20 +71,29 @@ export default function OnboardingPage() {
         .single();
 
       const profile = data as Profile | null;
-
       if (profile) {
-        setStep(profile.onboarding_step || 0);
+        setStep(Math.min(profile.onboarding_step || 0, 3));
         setBusinessName(profile.business_name || '');
         setPhone(profile.phone || '');
         setCountry(profile.country || 'AE');
-
         if (profile.onboarding_completed) {
           router.push('/dashboard');
         }
       }
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProfile();
   }, [supabase, router]);
+
+  // Entering the store step: provision + prefill from the API
+  const loadStore = useCallback(async () => {
+    const res = await fetch('/api/store');
+    if (!res.ok) return;
+    const { store } = await res.json();
+    setStoreName((prev) => prev || store.name || businessName);
+    setStoreSlug((prev) => prev || store.slug || suggestStoreSlug(businessName || store.name));
+    if (store.slug) setStorefrontPath(`/s/${store.slug}`);
+  }, [businessName]);
 
   const toggleMarketplace = (id: MarketplaceType) => {
     setSelectedMarketplaces((prev) =>
@@ -87,14 +101,12 @@ export default function OnboardingPage() {
     );
   };
 
-  const saveProgress = async (nextStep: number) => {
+  const saveProfileProgress = async (nextStep: number) => {
     setLoading(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
     if (!user) return;
-
     await supabase
       .from('profiles')
       .update({
@@ -104,9 +116,35 @@ export default function OnboardingPage() {
         onboarding_step: nextStep,
       } as never)
       .eq('id', user.id);
-
     setLoading(false);
     setStep(nextStep);
+    if (nextStep === 1) void loadStore();
+  };
+
+  const saveStore = async () => {
+    setStoreError(null);
+    const valid = validateStoreSlug(storeSlug);
+    if (!valid.ok) {
+      setStoreError(SLUG_ERRORS[`slug_${valid.error}`]);
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await fetch('/api/store', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: storeName.trim(), slug: storeSlug }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setStoreError(SLUG_ERRORS[data.error] ?? data.error);
+        return;
+      }
+      setStorefrontPath(`/s/${data.store.slug}`);
+      await saveProfileProgress(2);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const completeOnboarding = async () => {
@@ -114,10 +152,8 @@ export default function OnboardingPage() {
     const {
       data: { user },
     } = await supabase.auth.getUser();
-
     if (!user) return;
 
-    // Save marketplace connections
     for (const marketplace of selectedMarketplaces) {
       await supabase.from('marketplace_connections').insert({
         user_id: user.id,
@@ -127,24 +163,36 @@ export default function OnboardingPage() {
       } as never);
     }
 
-    // Mark onboarding complete
     await supabase
       .from('profiles')
-      .update({
-        onboarding_completed: true,
-        onboarding_step: 3,
-      } as never)
+      .update({ onboarding_completed: true, onboarding_step: 3 } as never)
       .eq('id', user.id);
 
-    router.push('/dashboard');
+    setLoading(false);
+    setStep(3);
   };
+
+  const storefrontUrl =
+    typeof window !== 'undefined' && storefrontPath
+      ? `${window.location.origin}${storefrontPath}`
+      : storefrontPath ?? '';
+
+  const copyLink = async () => {
+    if (!storefrontUrl) return;
+    await navigator.clipboard.writeText(storefrontUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const inputClass =
+    'w-full rounded-lg border border-border bg-card px-4 py-3 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary';
 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Progress bar */}
       <div className="border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-center mb-2">
             {STEPS.map((s, i) => (
               <div key={s.id} className="flex items-center">
                 <div
@@ -154,13 +202,11 @@ export default function OnboardingPage() {
                       : 'bg-muted text-muted-foreground'
                   }`}
                 >
-                  {step > s.id ? '✓' : s.id + 1}
+                  {step > s.id ? <Check className="h-4 w-4" aria-hidden /> : s.id + 1}
                 </div>
                 {i < STEPS.length - 1 && (
                   <div
-                    className={`w-16 sm:w-24 h-1 mx-2 ${
-                      step > s.id ? 'bg-primary' : 'bg-muted'
-                    }`}
+                    className={`w-12 sm:w-20 h-1 mx-2 ${step > s.id ? 'bg-primary' : 'bg-muted'}`}
                   />
                 )}
               </div>
@@ -181,48 +227,40 @@ export default function OnboardingPage() {
               <div className="text-center">
                 <h1 className="text-3xl font-bold">Welcome to SoukHub!</h1>
                 <p className="mt-2 text-muted-foreground">
-                  Let&apos;s set up your account. This will only take a minute.
+                  Let&apos;s set up your account. This takes about two minutes.
                 </p>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Business / Shop Name
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Business / Shop Name</label>
                   <input
                     type="text"
                     value={businessName}
                     onChange={(e) => setBusinessName(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-card px-4 py-3 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                    placeholder="My Awesome Shop"
+                    className={inputClass}
+                    placeholder="Ali Phones Trading"
                   />
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Phone Number (optional)
-                  </label>
+                  <label className="block text-sm font-medium mb-2">Phone (WhatsApp)</label>
                   <input
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-card px-4 py-3 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={inputClass}
                     placeholder="+971 50 123 4567"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium mb-2">Country</label>
                   <select
                     value={country}
                     onChange={(e) => setCountry(e.target.value)}
-                    className="w-full rounded-lg border border-border bg-card px-4 py-3 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className={inputClass}
                   >
                     <option value="AE">United Arab Emirates</option>
                     <option value="SA">Saudi Arabia</option>
-                    <option value="ZA">South Africa</option>
-                    <option value="EG">Egypt</option>
                     <option value="KW">Kuwait</option>
                     <option value="QA">Qatar</option>
                     <option value="BH">Bahrain</option>
@@ -232,158 +270,174 @@ export default function OnboardingPage() {
               </div>
 
               <button
-                onClick={() => saveProgress(1)}
-                disabled={loading || !businessName}
-                className="w-full rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                onClick={() => saveProfileProgress(1)}
+                disabled={!businessName.trim() || loading}
+                className="w-full rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
               >
-                {loading ? 'Saving...' : 'Continue'}
+                Continue
               </button>
             </div>
           )}
 
-          {/* Step 1: Marketplaces */}
+          {/* Step 1: Your store */}
           {step === 1 && (
             <div className="space-y-6">
               <div className="text-center">
-                <h1 className="text-3xl font-bold">Where do you sell?</h1>
+                <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Store className="h-7 w-7" aria-hidden />
+                </span>
+                <h1 className="text-3xl font-bold">Name your store</h1>
                 <p className="mt-2 text-muted-foreground">
-                  Select the marketplaces you&apos;re currently selling on
-                </p>
-              </div>
-
-              <div className="grid gap-3">
-                {MARKETPLACES.map((mp) => (
-                  <button
-                    key={mp.id}
-                    onClick={() => toggleMarketplace(mp.id)}
-                    className={`flex items-center gap-4 p-4 rounded-lg border text-left transition-colors ${
-                      selectedMarketplaces.includes(mp.id)
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/50'
-                    }`}
-                  >
-                    <span className="text-3xl">{mp.icon}</span>
-                    <div className="flex-1">
-                      <div className="font-medium">{mp.name}</div>
-                      <div className="text-sm text-muted-foreground">{mp.description}</div>
-                    </div>
-                    {selectedMarketplaces.includes(mp.id) && (
-                      <span className="text-primary text-xl">✓</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setStep(0)}
-                  className="flex-1 rounded-lg border border-border px-4 py-3 font-medium transition-colors hover:bg-muted"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => saveProgress(2)}
-                  disabled={loading || selectedMarketplaces.length === 0}
-                  className="flex-1 rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-                >
-                  {loading ? 'Saving...' : 'Continue'}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: Import Data */}
-          {step === 2 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <h1 className="text-3xl font-bold">Import your data</h1>
-                <p className="mt-2 text-muted-foreground">
-                  Bring in your existing orders and products
+                  This is what buyers see. Your storefront goes live as soon as you
+                  publish your first listing.
                 </p>
               </div>
 
               <div className="space-y-4">
-                <div className="rounded-lg border border-dashed border-border p-8 text-center">
-                  <div className="text-4xl mb-3">📄</div>
-                  <h3 className="font-medium mb-1">Upload CSV/Excel files</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Export your orders from Amazon, Cartlow, or Revibe and upload them here
-                  </p>
-                  <button className="rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted">
-                    Choose Files
-                  </button>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Store name</label>
+                  <input
+                    type="text"
+                    value={storeName}
+                    onChange={(e) => {
+                      setStoreName(e.target.value);
+                      if (!slugTouched) setStoreSlug(suggestStoreSlug(e.target.value));
+                    }}
+                    className={inputClass}
+                    placeholder={businessName || 'Ali Phones'}
+                  />
                 </div>
-
-                <div className="text-center text-sm text-muted-foreground">
-                  or
-                </div>
-
-                <button className="w-full rounded-lg border border-border p-4 text-left transition-colors hover:bg-muted">
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🔗</span>
-                    <div>
-                      <div className="font-medium">Connect API (Coming Soon)</div>
-                      <div className="text-sm text-muted-foreground">
-                        Automatically sync orders from your marketplaces
-                      </div>
-                    </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Store address</label>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground shrink-0">soukhub.com/s/</span>
+                    <input
+                      type="text"
+                      value={storeSlug}
+                      onChange={(e) => {
+                        setSlugTouched(true);
+                        setStoreSlug(e.target.value.toLowerCase());
+                      }}
+                      className={inputClass}
+                    />
                   </div>
-                </button>
+                  {storeError && <p className="mt-2 text-sm text-error">{storeError}</p>}
+                </div>
               </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setStep(1)}
-                  className="flex-1 rounded-lg border border-border px-4 py-3 font-medium transition-colors hover:bg-muted"
-                >
-                  Back
-                </button>
-                <button
-                  onClick={() => setStep(3)}
-                  className="flex-1 rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  Skip for now
-                </button>
-              </div>
+              <button
+                onClick={saveStore}
+                disabled={!storeName.trim() || !storeSlug || loading}
+                className="w-full rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
+              >
+                {loading ? 'Saving…' : 'Continue'}
+              </button>
             </div>
           )}
 
-          {/* Step 3: Complete */}
-          {step === 3 && (
-            <div className="space-y-6 text-center">
-              <div className="text-6xl">🎉</div>
-              <div>
-                <h1 className="text-3xl font-bold">You&apos;re all set!</h1>
+          {/* Step 2: Marketplaces */}
+          {step === 2 && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h1 className="text-3xl font-bold">Where else do you sell?</h1>
                 <p className="mt-2 text-muted-foreground">
-                  Your SoukHub account is ready. Start managing your marketplace orders.
+                  SoukHub also manages your orders from these platforms. Optional — skip
+                  if you only sell on SoukHub.
                 </p>
               </div>
 
-              <div className="bg-muted rounded-lg p-6 text-left space-y-3">
-                <h3 className="font-medium">What&apos;s next?</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <span className="text-primary">✓</span>
-                    Import your existing orders from CSV files
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-primary">✓</span>
-                    View all your marketplace orders in one dashboard
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-primary">✓</span>
-                    Get AI-powered insights and recommendations
-                  </li>
-                </ul>
+              <div className="grid grid-cols-2 gap-3">
+                {MARKETPLACES.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => toggleMarketplace(m.id)}
+                    className={`rounded-xl border p-4 text-left transition-colors ${
+                      selectedMarketplaces.includes(m.id)
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    <span className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                      <ShoppingBag className="h-5 w-5" aria-hidden />
+                    </span>
+                    <div className="font-medium">{m.name}</div>
+                    <div className="text-xs text-muted-foreground">{m.description}</div>
+                  </button>
+                ))}
               </div>
 
               <button
                 onClick={completeOnboarding}
                 disabled={loading}
-                className="w-full rounded-lg bg-primary px-4 py-3 font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                className="w-full rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
               >
-                {loading ? 'Setting up...' : 'Go to Dashboard'}
+                {loading ? 'Finishing…' : 'Finish setup'}
               </button>
+            </div>
+          )}
+
+          {/* Step 3: Ready */}
+          {step === 3 && (
+            <div className="space-y-6 text-center">
+              <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-success/10 text-success">
+                <Check className="h-8 w-8" aria-hidden />
+              </span>
+              <div>
+                <h1 className="text-3xl font-bold">Your store is ready</h1>
+                <p className="mt-2 text-muted-foreground">
+                  Add your first listing and publish it — your storefront goes live the
+                  moment you do.
+                </p>
+              </div>
+
+              {storefrontPath && (
+                <div className="rounded-xl border border-border bg-surface-warm p-4">
+                  <p className="text-sm text-muted-foreground">Your storefront</p>
+                  <p className="mt-1 truncate font-mono text-sm font-semibold">{storefrontUrl}</p>
+                  <div className="mt-3 flex justify-center gap-2">
+                    <button
+                      onClick={copyLink}
+                      className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                    >
+                      <Copy className="h-4 w-4" aria-hidden />
+                      {copied ? 'Copied!' : 'Copy link'}
+                    </button>
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(`Check out my store on SoukHub: ${storefrontUrl}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
+                    >
+                      <MessageCircle className="h-4 w-4" aria-hidden />
+                      Share on WhatsApp
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid gap-3">
+                <button
+                  onClick={() => router.push('/products')}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary-hover"
+                >
+                  <Package className="h-5 w-5" aria-hidden />
+                  Add your first product
+                  <ArrowRight className="h-4 w-4" aria-hidden />
+                </button>
+                <button
+                  onClick={() => router.push('/import')}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-border px-6 py-3 font-medium hover:bg-muted"
+                >
+                  <Upload className="h-5 w-5" aria-hidden />
+                  Import existing orders
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard')}
+                  className="text-sm font-medium text-muted-foreground hover:text-primary"
+                >
+                  Skip for now — go to dashboard
+                </button>
+              </div>
             </div>
           )}
         </div>

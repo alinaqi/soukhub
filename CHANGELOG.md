@@ -8,6 +8,7 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **Seller onboarding → live storefront (TODO-045)**: new "Name your store" onboarding step with auto-suggested, validated store address (reserved routes blocked); store auto-provisioned on first access for new signups; finish screen with storefront link + WhatsApp share; Store Settings page (name/slug/bio/logo in EN+AR, publish toggle, commission display); products console gains Live/Draft chips with one-click publish — publishing the first listing publishes the store; `/api/store` + `/api/products/publish` with role checks (9 new integration tests + 8 slug tests, full E2E verified)
 - **Multi-tenant foundation (TODO-040)**: `organizations` become stores (slug, Arabic fields, publishing, commission); membership-based RLS via `is_org_member()`; `org_id` on all tenant tables with backfill and insert-default triggers; public read policies for published stores/listings; 11-test cross-tenant RLS suite
 - **Public marketplace storefront (TODO-043)**: buyer-facing home, store pages (`/s/{slug}`), product pages (`/p/{slug}-{shortId}`) — server-rendered with ISR, Product/Offer + Breadcrumb JSON-LD (script-breakout-safe), canonical 308 redirects on renamed slugs, sticky mobile buy bar, WhatsApp order CTA
 - **Search v1 (TODO-044)**: `search_listings()` — bilingual FTS (weighted tsvector) + pg_trgm typo tolerance + brand/category/price filters, GIN-indexed, anon-safe via RLS; `/search` page with URL-state filters

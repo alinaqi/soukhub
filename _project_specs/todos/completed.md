@@ -330,3 +330,15 @@ Done items for reference. Move here from active.md when complete.
 - Vercel project: soukhub
 - Production URL: https://soukhub.vercel.app
 - GitHub: https://github.com/alinaqi/soukhub
+
+
+## [2026-08-26] Milestone M1 — Marketplace Foundation (TODO-040…047)
+- TODO-040 Multi-tenant foundation: organizations as stores, membership RLS (is_org_member), org_id everywhere + backfill, public read policies; cross-tenant suite + column-privilege hardening
+- TODO-041 "Clean Souk" design system (ADR 0010); token contract tests
+- TODO-042 i18n: next-intl en/ar, full RTL, parity-tested Arabic catalog, hreflang
+- TODO-043 Public storefront: home/store/product pages, ISR, localized JSON-LD, canonical 308s, mobile buy bar, WhatsApp CTA
+- TODO-044 Search v1: bilingual FTS + pg_trgm + filters (search_listings), GIN indexes
+- TODO-045 Seller onboarding: store step w/ slug validation, auto-provisioning, Store Settings page, publish flow (first publish → store live); E2E verified
+- TODO-046 OSS hygiene: MIT license, CHANGELOG, CONTRIBUTING, README, ADRs 0008-0014
+- TODO-047 Chat route session-derived identity + tenant-scoped tools
+- Plus: 40-agent adversarial review — 17 confirmed findings, all remediated (PRs #6, #7, #8)

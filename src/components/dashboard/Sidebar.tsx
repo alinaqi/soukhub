@@ -50,6 +50,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Settings',
     items: [
       { href: '/import', label: 'Import Data', icon: '📥' },
+      { href: '/settings/store', label: 'Store', icon: '🏬' },
       { href: '/settings/workflow', label: 'Workflow', icon: '⚙️' },
       { href: '/settings/team', label: 'Team', icon: '🧑‍🤝‍🧑' },
     ],
