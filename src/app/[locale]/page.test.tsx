@@ -1,8 +1,15 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '../../../messages/en.json';
 import ar from '../../../messages/ar.json';
+
+// The locale switcher needs Next's app router, which jsdom doesn't mount;
+// its behavior is not under test here.
+vi.mock('@/components/marketplace/LocaleSwitcher', () => ({
+  LocaleSwitcher: () => null,
+}));
+
 import Home from './page';
 
 function renderHome(locale: 'en' | 'ar' = 'en') {
