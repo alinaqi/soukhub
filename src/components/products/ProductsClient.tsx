@@ -51,6 +51,43 @@ export default function ProductsClient({
     null
   );
   const [addModal, setAddModal] = useState(false);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
+  const [storefrontNotice, setStorefrontNotice] = useState<string | null>(null);
+
+  const handleTogglePublish = async (product: Product) => {
+    setPublishingId(product.id);
+    try {
+      const res = await fetch('/api/products/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product_id: product.id,
+          is_published: !product.is_published,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setStorefrontNotice(`Could not update listing: ${data.error}`);
+        return;
+      }
+      setProducts((prev) =>
+        prev.map((p) =>
+          p.id === product.id ? { ...p, is_published: data.product_published } : p
+        )
+      );
+      if (data.product_published && data.storefront_path) {
+        setStorefrontNotice(
+          data.store_published
+            ? `Listing is live — your storefront is now published at ${data.storefront_path}`
+            : `Listing is live at ${data.storefront_path}`
+        );
+      } else {
+        setStorefrontNotice(null);
+      }
+    } finally {
+      setPublishingId(null);
+    }
+  };
 
   const handleExtractPreview = async () => {
     setExtractLoading(true);
@@ -128,6 +165,12 @@ export default function ProductsClient({
         </div>
       </div>
 
+      {storefrontNotice && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
+          {storefrontNotice}
+        </div>
+      )}
+
       {products.length === 0 ? (
         <div className="rounded-lg border border-border bg-card p-12 text-center">
           <span className="text-5xl mb-4 block">📦</span>
@@ -173,6 +216,37 @@ export default function ProductsClient({
                     </p>
                   )}
                 </div>
+              </div>
+              <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    product.is_published
+                      ? 'bg-success/10 text-success'
+                      : 'bg-muted text-muted-foreground'
+                  }`}
+                >
+                  {product.is_published ? 'Live' : 'Draft'}
+                </span>
+                {product.is_published && product.slug && product.short_id && (
+                  <Link
+                    href={`/p/${product.slug}-${product.short_id}`}
+                    target="_blank"
+                    className="text-xs font-medium text-primary hover:underline"
+                  >
+                    View listing
+                  </Link>
+                )}
+                <button
+                  onClick={() => handleTogglePublish(product)}
+                  disabled={publishingId === product.id}
+                  className="ms-auto rounded-lg border border-border px-3 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                >
+                  {publishingId === product.id
+                    ? '…'
+                    : product.is_published
+                      ? 'Unpublish'
+                      : 'Publish'}
+                </button>
               </div>
             </div>
           ))}

@@ -7,10 +7,10 @@ CHECKPOINT RULES (from session-management.md):
 
 # Current Session State
 
-*Last updated: 2026-08-24*
+*Last updated: 2026-08-26*
 
 ## Active Task
-Marketplace pivot M1 (feat/m1-foundation): TODO-040/041/042/043/044/047 implemented with TDD; TODO-045 (onboarding rework) + TODO-046 partially (docs merged) remain.
+Milestone M1 COMPLETE (TODO-040…047). Next: hosted `supabase db push` (blocked on credentials) and M2 (checkout/payments).
 
 ## Current Status
 - **Phase**: implementing / validating (M1)
