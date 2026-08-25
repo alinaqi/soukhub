@@ -8,8 +8,16 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **Multi-tenant foundation (TODO-040)**: `organizations` become stores (slug, Arabic fields, publishing, commission); membership-based RLS via `is_org_member()`; `org_id` on all tenant tables with backfill and insert-default triggers; public read policies for published stores/listings; 11-test cross-tenant RLS suite
+- **Public marketplace storefront (TODO-043)**: buyer-facing home, store pages (`/s/{slug}`), product pages (`/p/{slug}-{shortId}`) — server-rendered with ISR, Product/Offer + Breadcrumb JSON-LD (script-breakout-safe), canonical 308 redirects on renamed slugs, sticky mobile buy bar, WhatsApp order CTA
+- **Search v1 (TODO-044)**: `search_listings()` — bilingual FTS (weighted tsvector) + pg_trgm typo tolerance + brand/category/price filters, GIN-indexed, anon-safe via RLS; `/search` page with URL-state filters
+- **i18n (TODO-042)**: next-intl with `/` (en) + `/ar` routing, full RTL, IBM Plex Sans Arabic, complete Arabic catalog with parity test, hreflang alternates, localized metadata
+- **"Clean Souk" design system (TODO-041)**: commerce-grade palette (white canvas, souk-teal primary, sienna price accent, sand tint), Inter typography, Lucide icons — replaces the AI-SaaS gradient look; guarded by design-token contract tests
 - Marketplace pivot scope: detailed evaluation (`_project_specs/marketplace-pivot/evaluation.md`), milestone todos M1–M6, ADRs 0008–0014 (pivot, multi-tenancy, Clean Souk design system, i18n en/ar, payments Stripe+COD+ledger, search/SEO architecture, AI provider tiering)
 - Open-source hygiene: MIT LICENSE, this CHANGELOG, CONTRIBUTING.md
+
+### Fixed
+- **Security (TODO-047)**: `/api/chat` now derives identity from the session cookie and force-overrides `user_id` in every AI tool call — a client-supplied body `userId` is ignored; unauthenticated API calls return 401 instead of a login redirect
 
 ## [0.4.0] — 2026-08-24
 
