@@ -1,41 +1,35 @@
 # SoukHub
 
-AI-powered order management platform for multi-channel marketplace sellers in the UAE and Middle East.
+**The open-source, AI-first marketplace for the AI era** — open a store in minutes, sell phones & electronics to UAE buyers on SoukHub and across external marketplaces (Amazon, Cartlow, Revibe), with AI in every flow: listing creation from a photo, search that understands intent, ordering via web and WhatsApp, and an AI-powered seller ops engine underneath.
 
-![SoukHub Dashboard](https://img.shields.io/badge/Next.js-16.1-black?style=flat-square&logo=next.js)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=flat-square&logo=tailwind-css)
-![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?style=flat-square&logo=supabase)
+![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=flat-square&logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?style=flat-square&logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-Postgres-3ECF8E?style=flat-square&logo=supabase)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)
 
-## Overview
+## What is this?
 
-SoukHub unifies order management across multiple e-commerce marketplaces (Amazon UAE, Cartlow, Revibe) into a single AI-powered dashboard. Save hours every day with intelligent automation, bulk actions, and actionable insights.
+SoukHub is two products sharing one multi-tenant backend:
 
-### Key Features
+- **A marketplace** (in progress): public storefronts, fast localized product pages (English + Arabic RTL), guest checkout with cards/Apple Pay/COD, WhatsApp ordering, SEO/GEO-optimized from day one.
+- **A seller console** (working today): unified orders across marketplaces, inventory, supplier routing with WhatsApp automation, CRM, analytics, and a Claude-powered ops agent you talk to in natural language.
 
-- **Unified Dashboard** - View all orders from multiple marketplaces in one place
-- **AI-Powered Assistant** - Natural language interface to manage orders and get insights
-- **Bulk Actions** - Update multiple order statuses with a single click
-- **Comprehensive Analytics** - Revenue trends, marketplace comparison, fulfillment metrics
-- **Order Management** - Track shipments, process refunds, manage returns
-- **Easy Data Import** - Import orders from CSV/TSV exports
+## Status
 
-## Tech Stack
+| Area | State |
+|------|-------|
+| Seller console (orders, inventory, suppliers, WhatsApp, CRM, analytics, AI agent) | ✅ Working |
+| Marketplace pivot: multi-tenancy, public storefronts, i18n en/ar, search | 🚧 Milestone M1 — in progress |
+| Checkout, payments (Stripe + COD), seller ledger | 📋 M2 — planned |
+| AI listing creation, semantic search, AI support (Cerebras) | 📋 M3 — planned |
+| SEO scale surface, performance budgets in CI | 📋 M4 — planned |
+| Courier integrations, payout automation, BNPL | 📋 M5 — planned |
 
-- **Framework**: [Next.js 16](https://nextjs.org/) with App Router
-- **Language**: [TypeScript](https://www.typescriptlang.org/)
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
-- **Database**: [Supabase](https://supabase.com/) (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **AI**: [Anthropic Claude](https://anthropic.com/) with tool use
-- **Charts**: [Recharts](https://recharts.org/)
-- **Deployment**: [Vercel](https://vercel.com/)
+Roadmap detail: [`_project_specs/todos/`](_project_specs/todos/) · Full pivot evaluation: [`_project_specs/marketplace-pivot/evaluation.md`](_project_specs/marketplace-pivot/evaluation.md)
 
 ## Getting Started
 
 Full walkthrough (local Supabase, env setup, test user, AI, WhatsApp): **[GETTING_STARTED.md](GETTING_STARTED.md)**
-
-Quickstart:
 
 ```bash
 git clone https://github.com/alinaqi/soukhub.git && cd soukhub
@@ -45,229 +39,32 @@ cp .env.example .env.local              # fill in keys from `supabase status` + 
 pnpm dev                                # http://localhost:4000
 ```
 
-Docs live in [`docs/`](docs/) — architecture, API, import formats, and [Architecture Decision Records](docs/adr/).
+## Tech Stack
 
-## Project Structure
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, SSR/ISR) · **Language**: TypeScript (strict)
+- **Database/Auth**: [Supabase](https://supabase.com/) Postgres with RLS multi-tenancy — no ORM ([ADR 0002](docs/adr/0002-no-orm-supabase-query-builder.md))
+- **AI**: tiered by task — Claude (ops agent) / Gemini Flash (multimodal listings) / Cerebras (fast buyer-facing) ([ADR 0014](docs/adr/0014-ai-provider-tiering.md))
+- **Search**: Postgres FTS + pg_trgm → pgvector hybrid ([ADR 0013](docs/adr/0013-search-and-seo-architecture.md))
+- **i18n**: next-intl, English + Arabic RTL first ([ADR 0011](docs/adr/0011-i18n-en-ar-first.md))
+- **Payments (planned)**: Stripe + Cash-on-Delivery, immutable ledger ([ADR 0012](docs/adr/0012-payments-stripe-cod-ledger.md))
+- **Styling**: Tailwind CSS v4, "Clean Souk" design system ([ADR 0010](docs/adr/0010-clean-souk-design-system.md))
+- **Deploy**: Vercel + a standalone WhatsApp microservice on Render ([ADR 0005](docs/adr/0005-whatsapp-standalone-microservice.md))
 
-```
-soukhub/
-├── src/
-│   ├── app/                    # Next.js App Router pages
-│   │   ├── (dashboard)/        # Protected dashboard routes
-│   │   │   ├── analytics/      # Analytics page
-│   │   │   ├── dashboard/      # Main dashboard
-│   │   │   ├── orders/         # Orders list
-│   │   │   ├── products/       # Products catalog
-│   │   │   └── import/         # Data import
-│   │   ├── api/                # API routes
-│   │   │   ├── chat/           # AI chat endpoint
-│   │   │   └── orders/         # Order CRUD
-│   │   ├── login/              # Authentication
-│   │   ├── signup/             # Registration
-│   │   └── onboarding/         # User onboarding
-│   ├── components/             # React components
-│   │   ├── analytics/          # Analytics charts
-│   │   ├── chat/               # AI chat widget
-│   │   ├── dashboard/          # Dashboard components
-│   │   └── orders/             # Order management
-│   ├── lib/                    # Utilities
-│   │   ├── parsers/            # Marketplace data parsers
-│   │   └── supabase/           # Supabase clients
-│   └── types/                  # TypeScript types
-├── supabase/
-│   └── migrations/             # Database migrations
-└── scripts/                    # Utility scripts
-```
+## Documentation
 
-## Features
-
-### Dashboard
-
-The main dashboard provides an overview of your business:
-- Order statistics by status
-- Revenue metrics
-- Recent orders
-- AI-powered suggestions
-- Quick action buttons
-
-### Orders Management
-
-- View all orders across marketplaces
-- Filter by status, marketplace, date
-- Click any order to view details and update status
-- Bulk status updates
-- Track shipments with carrier and tracking numbers
-
-### Analytics
-
-Comprehensive analytics dashboard with:
-- Revenue over time (area chart)
-- Monthly performance comparison
-- Revenue by marketplace (pie chart)
-- Orders by status distribution
-- Payment methods breakdown
-- Fulfillment by marketplace
-- Orders by day of week
-- Top shipping destinations
-- Time range filters (7d, 30d, 90d, 1y, all)
-
-### AI Assistant
-
-Natural language interface powered by Claude:
-- "Show me pending orders"
-- "Mark all shipped orders as delivered"
-- "What's my return rate?"
-- "Process refund for order #12345"
-
-The AI can:
-- Search and display orders
-- Update order statuses
-- Provide business insights
-- Suggest actions to take
-
-### Data Import
-
-Import orders from marketplace exports:
-- **Amazon**: TSV format from Seller Central
-- **Cartlow**: CSV format from merchant portal
-- **Revibe**: CSV format from seller dashboard
-
-## Database Schema
-
-### Main Tables
-
-- **profiles** - User profiles and settings
-- **marketplace_connections** - Connected marketplace accounts
-- **products** - Product catalog
-- **product_variants** - Product variants (SKUs)
-- **orders** - All orders across marketplaces
-- **order_items** - Line items for each order
-- **inventory** - Stock levels
-- **activity_log** - Activity and notifications
-
-### Order Statuses
-
-```
-pending → confirmed → processing → ready_to_ship → shipped → out_for_delivery → delivered
-                                                                              ↓
-                                                                    returned / refunded
-                      ↓
-                  cancelled
-```
-
-## API Routes
-
-### POST /api/chat
-AI chat endpoint with tool use capabilities.
-
-**Request:**
-```json
-{
-  "messages": [{"role": "user", "content": "Show me pending orders"}],
-  "userId": "user-uuid"
-}
-```
-
-**Response:**
-```json
-{
-  "response": "Found 5 pending orders...",
-  "actions": [
-    {
-      "id": "bulk-ship-123",
-      "label": "Mark 5 as Shipped",
-      "type": "bulk_update",
-      "data": {"orderIds": [...], "updates": {"status": "shipped"}}
-    }
-  ]
-}
-```
-
-### GET /api/orders/[id]
-Get order details.
-
-### PATCH /api/orders/[id]
-Update order status, tracking, notes.
-
-**Request:**
-```json
-{
-  "status": "shipped",
-  "tracking_number": "1234567890",
-  "carrier": "Aramex"
-}
-```
-
-## Deployment
-
-### Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Import the project in Vercel
-3. Add environment variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `ANTHROPIC_API_KEY`
-4. Deploy
-
-### Environment Variables
-
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL | Yes |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key | Yes |
-| `ANTHROPIC_API_KEY` | Anthropic API key for Claude | Yes |
-| `NEXT_PUBLIC_APP_URL` | Application URL | No |
-
-## Supported Marketplaces
-
-| Marketplace | Region | Import Format | Status |
-|-------------|--------|---------------|--------|
-| Amazon | UAE | TSV | ✅ Supported |
-| Cartlow | UAE | CSV | ✅ Supported |
-| Revibe | Multi-region | CSV | ✅ Supported |
-| Noon | UAE | CSV | 🚧 Coming Soon |
-
-## Development
-
-### Running Tests
-```bash
-npm run test
-```
-
-### Linting
-```bash
-npm run lint
-```
-
-### Type Checking
-```bash
-npm run type-check
-```
-
-### Building for Production
-```bash
-npm run build
-```
+| Doc | Purpose |
+|-----|---------|
+| [GETTING_STARTED.md](GETTING_STARTED.md) | Clone → running app in ~10 minutes |
+| [docs/adr/](docs/adr/) | Architecture Decision Records — read before proposing structural changes |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
+| [docs/API.md](docs/API.md) | API routes |
+| [CHANGELOG.md](CHANGELOG.md) | Release history (Keep a Changelog) |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | How we work: TDD, ADRs, PR rules |
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+PRs welcome — read [CONTRIBUTING.md](CONTRIBUTING.md) first. In short: TDD is mandatory, every PR updates the CHANGELOG, architectural choices need an ADR, and CI (lint, typecheck, tests, build, secret scan, audit) must be green.
 
 ## License
 
-This project is proprietary software. All rights reserved.
-
-## Support
-
-For support, email support@soukhub.com or open an issue in the GitHub repository.
-
----
-
-Built with ❤️ for UAE marketplace sellers
+[MIT](LICENSE) © SoukHub contributors

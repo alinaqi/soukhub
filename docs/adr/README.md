@@ -13,6 +13,13 @@ This directory records the significant architectural decisions made in SoukHub â
 | [0005](0005-whatsapp-standalone-microservice.md) | WhatsApp integration as a standalone microservice | Accepted |
 | [0006](0006-pnpm11-node22-toolchain.md) | pnpm 11 + Node 22 toolchain, pinned via packageManager | Accepted |
 | [0007](0007-local-supabase-nonstandard-ports.md) | Local Supabase on non-default 553xx ports | Accepted |
+| [0008](0008-marketplace-pivot.md) | Pivot: seller tool â†’ multi-tenant AI-first marketplace | Accepted |
+| [0009](0009-multi-tenancy-shared-schema-rls.md) | Multi-tenancy: shared schema + org_id + RLS | Accepted |
+| [0010](0010-clean-souk-design-system.md) | "Clean Souk" design system for the buyer surface | Accepted |
+| [0011](0011-i18n-en-ar-first.md) | i18n: English + Arabic (RTL) first, stored translations | Accepted |
+| [0012](0012-payments-stripe-cod-ledger.md) | Payments: Stripe + COD with internal ledger | Accepted |
+| [0013](0013-search-and-seo-architecture.md) | Search & discovery: staged Postgres-native; SEO by construction | Accepted |
+| [0014](0014-ai-provider-tiering.md) | AI provider tiering: Cerebras / Gemini / Claude | Accepted |
 
 ## How to add an ADR
 
