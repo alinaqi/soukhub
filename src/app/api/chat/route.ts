@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { createClient as createServerSupabase } from '@/lib/supabase/server';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -320,11 +321,12 @@ async function searchOrders(userId: string, status?: string, marketplace?: strin
   return { orders: data, count: data?.length || 0 };
 }
 
-async function updateOrderStatus(orderId: string, newStatus: string) {
+async function updateOrderStatus(orderId: string, newStatus: string, userId: string) {
   const { data, error } = await supabase
     .from('orders')
     .update({ status: newStatus })
     .eq('id', orderId)
+    .eq('user_id', userId)
     .select('id, marketplace_order_id, status')
     .single();
 
@@ -1505,7 +1507,11 @@ async function processToolCall(name: string, input: Record<string, unknown>) {
         input.limit as number | undefined
       );
     case 'update_order_status':
-      return await updateOrderStatus(input.order_id as string, input.new_status as string);
+      return await updateOrderStatus(
+        input.order_id as string,
+        input.new_status as string,
+        input.user_id as string
+      );
     case 'get_order_details':
       return await getOrderDetails(input.order_id as string, input.user_id as string);
     case 'get_suggestions':
@@ -1737,11 +1743,19 @@ function generateActions(
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, userId } = await request.json();
+    // Identity comes from the session cookie ONLY (TODO-047) — a client-supplied
+    // userId in the body is ignored so no caller can read another tenant's data.
+    const authClient = await createServerSupabase();
+    const {
+      data: { user },
+    } = await authClient.auth.getUser();
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID required' }, { status: 400 });
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const userId = user.id;
+
+    const { messages } = await request.json();
 
     // Add user_id context to the conversation
     const systemWithContext = `${SYSTEM_PROMPT}\n\nCurrent user ID: ${userId}. Always use this user_id when calling tools.`;
@@ -1765,7 +1779,12 @@ export async function POST(request: NextRequest) {
 
       const toolResults = await Promise.all(
         toolUseBlocks.map(async (toolUse) => {
-          const result = await processToolCall(toolUse.name, toolUse.input as Record<string, unknown>);
+          // Force the session identity into every tool call — the model's
+          // user_id argument is never trusted.
+          const result = await processToolCall(toolUse.name, {
+            ...(toolUse.input as Record<string, unknown>),
+            user_id: userId,
+          });
 
           // Track for action generation
           allToolResults.push({ name: toolUse.name, result: result as Record<string, unknown> });

@@ -41,8 +41,11 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === '/' ||
     request.nextUrl.pathname.startsWith('/callback');
 
-  // Redirect unauthenticated users to login
+  // API routes get a proper 401; pages redirect to login
   if (!user && !isAuthPage && !isPublicPage) {
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

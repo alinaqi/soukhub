@@ -1,19 +1,35 @@
-import { type NextRequest } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+import createIntlMiddleware from 'next-intl/middleware';
+import { routing } from '@/i18n/routing';
 import { updateSession } from '@/lib/supabase/middleware';
 
+const intl = createIntlMiddleware(routing);
+
+// Public marketplace surface: locale-routed, no auth required (ADR 0011).
+const PUBLIC_LOCALIZED = [
+  /^\/$/,
+  /^\/(en|ar)(\/.*)?$/,
+  /^\/search(\/.*)?$/,
+  /^\/s\/.+$/, // storefronts (deep paths 404 inside the locale tree, not at /login)
+  /^\/p\/.+$/, // product pages
+];
+
+// Public but outside the locale tree (legal pages live at the root)
+const PUBLIC_PLAIN = [/^\/privacy$/, /^\/terms$/];
+
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  if (PUBLIC_LOCALIZED.some((re) => re.test(path))) {
+    return intl(request);
+  }
+  if (PUBLIC_PLAIN.some((re) => re.test(path))) {
+    return NextResponse.next();
+  }
   return await updateSession(request);
 }
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (public folder)
-     */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

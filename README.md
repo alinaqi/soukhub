@@ -19,7 +19,10 @@ SoukHub is two products sharing one multi-tenant backend:
 | Area | State |
 |------|-------|
 | Seller console (orders, inventory, suppliers, WhatsApp, CRM, analytics, AI agent) | ✅ Working |
-| Marketplace pivot: multi-tenancy, public storefronts, i18n en/ar, search | 🚧 Milestone M1 — in progress |
+| Multi-tenant backend (stores, membership RLS, public listing policies) | ✅ M1 shipped |
+| Public storefronts: home, store & product pages, JSON-LD, en+ar RTL | ✅ M1 shipped |
+| Search v1 (bilingual FTS + typo tolerance + filters) | ✅ M1 shipped |
+| Seller onboarding rework (store setup → live storefront) | 🚧 M1 — remaining |
 | Checkout, payments (Stripe + COD), seller ledger | 📋 M2 — planned |
 | AI listing creation, semantic search, AI support (Cerebras) | 📋 M3 — planned |
 | SEO scale surface, performance budgets in CI | 📋 M4 — planned |

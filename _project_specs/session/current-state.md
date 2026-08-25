@@ -10,12 +10,12 @@ CHECKPOINT RULES (from session-management.md):
 *Last updated: 2026-08-24*
 
 ## Active Task
-PR #3 merged to main (2026-08-24). Full stack running locally against local Supabase.
+Marketplace pivot M1 (feat/m1-foundation): TODO-040/041/042/043/044/047 implemented with TDD; TODO-045 (onboarding rework) + TODO-046 partially (docs merged) remain.
 
 ## Current Status
-- **Phase**: merged / local dev ready
-- **Progress**: PR #3 merged (quality CI green: lint 0 errors, tests 4/4, typecheck, build, audit 0 vulns). Local stack verified.
-- **Blocking Issues**: None.
+- **Phase**: implementing / validating (M1)
+- **Progress**: 45 tests green (11 RLS + 8 search + design/i18n/lib/landing), lint 0, tsc clean, build passes; visual validation done via headless Chrome (desktop+mobile, en+ar RTL)
+- **Blocking Issues**: Claude-in-Chrome extension cannot reach localhost (needs site permission) — used headless Chrome instead.
 
 ## Completed This Session
 - [x] Reviewed full project state (Phases 1-4 done; Phases 5-8 features shipped on this branch: workflow config, suppliers, order routing, WhatsApp microservice, CRM, insights, AI chat upgrades)

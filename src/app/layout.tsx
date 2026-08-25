@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, IBM_Plex_Sans_Arabic, Geist_Mono } from "next/font/google";
+import { getLocale } from "next-intl/server";
+import { getDir } from "@/i18n/routing";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+});
+
+const plexArabic = IBM_Plex_Sans_Arabic({
+  variable: "--font-plex-arabic",
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -14,21 +22,26 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "SoukHub - Multi-Channel Marketplace Management",
+    default: "SoukHub — Buy & Sell Phones and Electronics in the UAE",
     template: "%s | SoukHub",
   },
-  description: "AI-powered order management for multi-channel marketplace sellers in the UAE and Middle East.",
+  description:
+    "The AI-first marketplace for phones and electronics in the UAE. Open a store in minutes, shop with confidence — English and Arabic, cards or cash on delivery.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Locale is set by the next-intl middleware on public routes;
+  // console/auth routes fall back to English.
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale} dir={getDir(locale)}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.variable} ${plexArabic.variable} ${geistMono.variable} antialiased`}
       >
         {children}
       </body>

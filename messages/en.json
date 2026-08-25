@@ -1,0 +1,115 @@
+{
+  "common": {
+    "brand": "SoukHub",
+    "searchPlaceholder": "Search iPhone 15, Galaxy S24, AirPods…",
+    "search": "Search",
+    "login": "Log in",
+    "startSelling": "Start selling",
+    "aed": "AED",
+    "orderOnWhatsApp": "Order on WhatsApp",
+    "viewStore": "View store",
+    "condition": {
+      "new": "New",
+      "excellent": "Excellent",
+      "very_good": "Very good",
+      "good": "Good",
+      "fair": "Fair",
+      "renewed": "Renewed"
+    }
+  },
+  "nav": {
+    "browse": "Browse",
+    "sell": "Sell on SoukHub"
+  },
+  "home": {
+    "heroTitle": "The UAE marketplace for phones & electronics",
+    "heroSubtitle": "Buy graded devices from local sellers. Pay by card or cash on delivery. Sell in minutes with a store that runs itself — AI-first, in English and Arabic.",
+    "browsePhones": "Browse phones",
+    "startSellingFree": "Start selling free",
+    "categories": {
+      "phones": "Phones",
+      "laptops": "Laptops",
+      "tablets": "Tablets",
+      "audio": "Audio",
+      "wearables": "Wearables",
+      "gaming": "Gaming"
+    },
+    "trustTitle": "Built for how the UAE actually shops",
+    "trust": {
+      "gradedTitle": "Graded & honest listings",
+      "gradedText": "Every used device carries a clear condition grade. What you see is what arrives.",
+      "payTitle": "Pay your way",
+      "payText": "Cards, Apple Pay, or cash on delivery. Your choice, always in AED.",
+      "whatsappTitle": "Order on WhatsApp",
+      "whatsappText": "Prefer chatting? Every listing can be ordered straight from WhatsApp.",
+      "sellerTitle": "Straight from the seller",
+      "sellerText": "Local UAE sellers, fast handover — same-day in most emirates."
+    },
+    "sellerTitle": "Selling, without the busywork",
+    "sellerSubtitle": "SoukHub is a marketplace built for the AI era — your store comes with an operations engine most retailers would pay thousands for.",
+    "seller": {
+      "aiTitle": "AI does the listing",
+      "aiText": "Snap a photo — AI drafts the title, specs, condition and price in English and Arabic.",
+      "storeTitle": "Your store, live in minutes",
+      "storeText": "A clean storefront at soukhub.com/your-store. No setup fees, free to list.",
+      "opsTitle": "Serious back-office included",
+      "opsText": "Orders, inventory, supplier WhatsApp automation, CRM and analytics — built in."
+    },
+    "marketplacesTitle": "Already selling elsewhere?",
+    "marketplacesSubtitle": "Manage everything in one place — SoukHub syncs with the platforms you already use.",
+    "openStoreCta": "Open your store — it's free",
+    "commissionNote": "Free to list. We only earn a small commission when you sell.",
+    "codStrip": "Cash on delivery across the UAE",
+    "gradedStrip": "Condition-graded used & new devices",
+    "languagesStrip": "English · العربية",
+    "latestListings": "Latest listings",
+    "footerTagline": "The AI-first marketplace for phones and electronics in the UAE.",
+    "footer": {
+      "buy": "Buy",
+      "sell": "Sell",
+      "company": "Company",
+      "openStore": "Open a store",
+      "sellerConsole": "Seller console",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "openSource": "Open source",
+      "copyright": "© {year} SoukHub. MIT licensed."
+    },
+    "metaTitle": "SoukHub — Buy & Sell Phones and Electronics in the UAE",
+    "metaDescription": "The AI-first marketplace for phones and electronics in the UAE. Graded devices from local sellers — cards, Apple Pay or cash on delivery, in English and Arabic."
+  },
+  "search": {
+    "title": "Search",
+    "resultsFor": "Results for “{query}”",
+    "allListings": "All listings",
+    "noResults": "No listings found. Try a different search or clear the filters.",
+    "filters": {
+      "brand": "Brand",
+      "category": "Category",
+      "minPrice": "Min price",
+      "maxPrice": "Max price",
+      "apply": "Apply filters",
+      "clear": "Clear"
+    },
+    "metaTitle": "Search phones & electronics",
+    "metaDescription": "Search graded phones and electronics from UAE sellers. Pay by card or cash on delivery."
+  },
+  "store": {
+    "listings": "Listings",
+    "noListings": "This store has no published listings yet.",
+    "metaDescription": "Shop {store} on SoukHub — graded phones and electronics in the UAE."
+  },
+  "product": {
+    "soldBy": "Sold by",
+    "aboutItem": "About this item",
+    "whatsappMessage": "Hi! I would like to order: {product} ({url})",
+    "buyOnline": "Buy online — coming soon",
+    "delivery": "Seller-arranged delivery across the UAE",
+    "codAvailable": "Cash on delivery available"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page you are looking for doesn't exist or is no longer available.",
+    "backHome": "Back to home"
+  }
+}

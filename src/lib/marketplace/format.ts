@@ -1,0 +1,30 @@
+/** Price/URL formatting helpers for the buyer surface (ADR 0011). */
+
+/** AED price, Western Arabic numerals in both locales (UAE convention). */
+export function formatAED(value: number, locale: string): string {
+  const amount = new Intl.NumberFormat('en-AE', {
+    maximumFractionDigits: value % 1 === 0 ? 0 : 2,
+    minimumFractionDigits: 0,
+  }).format(value);
+  return locale === 'ar' ? `${amount} د.إ` : `AED ${amount}`;
+}
+
+/** Canonical product path: /p/{slug}-{shortId} (locale prefix added by Link). */
+export function productPath(slug: string, shortId: string): string {
+  return `/p/${slug}-${shortId}`;
+}
+
+/** Parse "{slug}-{shortId}" — shortId is the last 8-hex segment. */
+export function parseSlugId(slugId: string): { slug: string; shortId: string } | null {
+  const m = /^(.*)-([a-f0-9]{8})$/.exec(slugId);
+  if (!m) return null;
+  return { slug: m[1], shortId: m[2] };
+}
+
+/** wa.me deep link with a prefilled order message. */
+export function whatsAppOrderLink(phone: string, message: string): string {
+  let cleaned = phone.replace(/[\s\-()+]/g, '');
+  if (cleaned.startsWith('05')) cleaned = '971' + cleaned.slice(1);
+  else if (cleaned.length === 9 && !cleaned.startsWith('971')) cleaned = '971' + cleaned;
+  return `https://wa.me/${cleaned}?text=${encodeURIComponent(message)}`;
+}
