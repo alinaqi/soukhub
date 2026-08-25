@@ -25,6 +25,7 @@ let orgB: string;
 let productA: string;
 let productBDraft: string;
 let productBPublished: string;
+let bUserId: string;
 
 beforeAll(async () => {
   if (!up) return;
@@ -34,6 +35,7 @@ beforeAll(async () => {
   const a2 = await userClient(A2_EMAIL);
   aClient = a.client;
   bClient = b.client;
+  bUserId = b.userId;
   a2Client = a2.client;
 
   // Orgs are created by the backfill for pre-existing users; new users get one
@@ -184,5 +186,42 @@ d('public (anon) marketplace access', () => {
       const { data } = await anon.from(table).select('id').limit(1);
       expect(data ?? [], `anon read ${table}`).toHaveLength(0);
     }
+  });
+});
+
+d('anon column privileges (sensitive seller data)', () => {
+  it('anon cannot read cost/margin or internal columns on published products', async () => {
+    const anon = anonClient();
+    const { error } = await anon
+      .from('products')
+      .select('cost_price')
+      .eq('id', productBPublished);
+    expect(error, 'cost_price must be revoked for anon').not.toBeNull();
+    const { error: e2 } = await anon.from('products').select('attributes').limit(1);
+    expect(e2, 'attributes must be revoked for anon').not.toBeNull();
+  });
+
+  it('anon cannot read owner/commission/settings on published stores', async () => {
+    const anon = anonClient();
+    for (const col of ['owner_user_id', 'commission_bps', 'settings']) {
+      const { error } = await anon.from('organizations').select(col).eq('id', orgB);
+      expect(error, `${col} must be revoked for anon`).not.toBeNull();
+    }
+  });
+
+  it('anon can still read the public listing columns', async () => {
+    const anon = anonClient();
+    const { data, error } = await anon
+      .from('products')
+      .select('id, name, title_ar, brand, base_price, images, slug, short_id')
+      .eq('id', productBPublished);
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+  });
+
+  it('anon cannot call ensure_org_for_user even for a real user', async () => {
+    const { error } = await anonClient().rpc('ensure_org_for_user', { p_user_id: bUserId });
+    expect(error).not.toBeNull();
+    expect(error?.message).toMatch(/permission|not exist|denied/i);
   });
 });

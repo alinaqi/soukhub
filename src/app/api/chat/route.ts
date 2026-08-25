@@ -321,11 +321,12 @@ async function searchOrders(userId: string, status?: string, marketplace?: strin
   return { orders: data, count: data?.length || 0 };
 }
 
-async function updateOrderStatus(orderId: string, newStatus: string) {
+async function updateOrderStatus(orderId: string, newStatus: string, userId: string) {
   const { data, error } = await supabase
     .from('orders')
     .update({ status: newStatus })
     .eq('id', orderId)
+    .eq('user_id', userId)
     .select('id, marketplace_order_id, status')
     .single();
 
@@ -1506,7 +1507,11 @@ async function processToolCall(name: string, input: Record<string, unknown>) {
         input.limit as number | undefined
       );
     case 'update_order_status':
-      return await updateOrderStatus(input.order_id as string, input.new_status as string);
+      return await updateOrderStatus(
+        input.order_id as string,
+        input.new_status as string,
+        input.user_id as string
+      );
     case 'get_order_details':
       return await getOrderDetails(input.order_id as string, input.user_id as string);
     case 'get_suggestions':

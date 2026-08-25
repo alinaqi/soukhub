@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Store, Search } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from './LocaleSwitcher';
@@ -7,6 +7,8 @@ import { LocaleSwitcher } from './LocaleSwitcher';
 /** Compact header for search / store / product pages. */
 export function PublicHeader({ defaultQuery = '' }: { defaultQuery?: string }) {
   const t = useTranslations('common');
+  const locale = useLocale();
+  const searchAction = locale === 'ar' ? '/ar/search' : '/search';
 
   return (
     <header className="border-b border-border bg-background">
@@ -20,7 +22,7 @@ export function PublicHeader({ defaultQuery = '' }: { defaultQuery?: string }) {
           </span>
         </Link>
 
-        <form action="/search" className="flex flex-1 items-center gap-2" role="search">
+        <form action={searchAction} className="flex flex-1 items-center gap-2" role="search">
           <div className="relative flex-1">
             <Search
               className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"

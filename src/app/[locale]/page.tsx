@@ -1,5 +1,7 @@
 import { Suspense } from 'react';
-import { useTranslations } from 'next-intl';
+import type { Metadata } from 'next';
+import { useLocale, useTranslations } from 'next-intl';
+import { getTranslations } from 'next-intl/server';
 import {
   Search,
   Store,
@@ -46,9 +48,25 @@ const SELLER_ICONS = [
 
 const MARKETPLACES = ['Amazon UAE', 'Cartlow', 'Revibe'];
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'home' });
+  return {
+    title: { absolute: t('metaTitle') },
+    description: t('metaDescription'),
+    alternates: { languages: { en: '/', ar: '/ar' } },
+  };
+}
+
 export default function Home() {
   const t = useTranslations('home');
   const tc = useTranslations('common');
+  const locale = useLocale();
+  const searchAction = locale === 'ar' ? '/ar/search' : '/search';
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -85,7 +103,7 @@ export default function Home() {
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">{t('heroTitle')}</h1>
             <p className="mt-4 text-lg text-muted-foreground">{t('heroSubtitle')}</p>
 
-            <form action="/search" className="mx-auto mt-8 flex max-w-xl items-center gap-2" role="search">
+            <form action={searchAction} className="mx-auto mt-8 flex max-w-xl items-center gap-2" role="search">
               <div className="relative flex-1">
                 <Search
                   className="pointer-events-none absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
@@ -292,7 +310,7 @@ export default function Home() {
             </div>
           </div>
           <p className="mt-10 text-sm text-muted-foreground">
-            © {new Date().getFullYear()} SoukHub. MIT licensed.
+            {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
         </div>
       </footer>

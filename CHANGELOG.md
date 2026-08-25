@@ -16,6 +16,15 @@ Every PR must add an entry under **[Unreleased]**.
 - Marketplace pivot scope: detailed evaluation (`_project_specs/marketplace-pivot/evaluation.md`), milestone todos M1–M6, ADRs 0008–0014 (pivot, multi-tenancy, Clean Souk design system, i18n en/ar, payments Stripe+COD+ledger, search/SEO architecture, AI provider tiering)
 - Open-source hygiene: MIT LICENSE, this CHANGELOG, CONTRIBUTING.md
 
+### Security
+- Adversarial multi-agent review of M1 (40 agents, 17 confirmed findings — all fixed):
+  column-level privileges now hide seller cost/margin, owner ids, commission terms and
+  settings from anon; `ensure_org_for_user` restricted to service_role; the
+  `update_order_status` AI tool is tenant-scoped; JSON-LD no longer fabricates
+  item condition and is localized per page; public data-layer errors throw instead of
+  caching as 404s; search forms preserve the Arabic locale; localized home metadata +
+  hreflang; deep public paths 404 instead of redirecting buyers to /login
+
 ### Fixed
 - **Security (TODO-047)**: `/api/chat` now derives identity from the session cookie and force-overrides `user_id` in every AI tool call — a client-supplied body `userId` is ignored; unauthenticated API calls return 401 instead of a login redirect
 

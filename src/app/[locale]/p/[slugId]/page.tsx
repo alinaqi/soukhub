@@ -74,12 +74,16 @@ export default async function ProductPage({
   const url = `${baseUrl()}${locale === 'ar' ? '/ar' : ''}${canonicalPath}`;
   const price = Number(product.base_price ?? 0);
 
+  // JSON-LD mirrors the visible localized content of THIS page (ar pages get
+  // Arabic structured data; condition is omitted until listings carry one)
   const jsonLd = productJsonLd({
-    name: product.name,
-    description: product.description,
+    name: title,
+    description,
     images,
     price,
-    storeName: product.store?.name ?? 'SoukHub seller',
+    storeName: (locale === 'ar' && product.store?.name_ar
+      ? product.store.name_ar
+      : product.store?.name) ?? 'SoukHub seller',
     url,
   });
   const breadcrumbs = breadcrumbJsonLd([
@@ -87,7 +91,7 @@ export default async function ProductPage({
     ...(product.category
       ? [{ name: product.category, url: `${baseUrl()}/search?category=${product.category}` }]
       : []),
-    { name: product.name, url },
+    { name: title, url },
   ]);
 
   const whatsappHref = whatsAppOrderLink(

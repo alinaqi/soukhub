@@ -71,6 +71,11 @@ describe('JSON-LD builders (ADR 0013)', () => {
     );
   });
 
+  it('omits itemCondition when the condition is unknown (never fabricates)', () => {
+    const base = { name: 'x', images: [], price: 1, storeName: 's', url: 'u' };
+    expect(productJsonLd(base).offers).not.toHaveProperty('itemCondition');
+  });
+
   it('builds breadcrumbs with positions', () => {
     const ld = breadcrumbJsonLd([
       { name: 'Home', url: 'https://x/' },

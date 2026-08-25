@@ -5,8 +5,6 @@ import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import { searchListings } from '@/lib/marketplace/queries';
 
-export const revalidate = 60;
-
 type SearchParams = Promise<{
   q?: string;
   brand?: string;
@@ -60,7 +58,7 @@ export default async function SearchPage({
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* Filters */}
           <aside className="lg:w-56 lg:shrink-0">
-            <form action="/search" className="grid grid-cols-2 gap-3 lg:grid-cols-1">
+            <form action={locale === 'ar' ? '/ar/search' : '/search'} className="grid grid-cols-2 gap-3 lg:grid-cols-1">
               {query && <input type="hidden" name="q" value={query} />}
               <label className="text-sm">
                 <span className="mb-1 block font-medium">{t('filters.brand')}</span>

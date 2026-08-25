@@ -29,6 +29,9 @@ const CONDITION_MAP: Record<string, string> = {
 };
 
 export function productJsonLd(p: ProductJsonLdInput) {
+  // Never claim a condition we don't know — omitting is honest; lying is a
+  // rich-result penalty (and a refund dispute) waiting to happen.
+  const condition = p.condition ? CONDITION_MAP[p.condition] : undefined;
   return {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -43,7 +46,7 @@ export function productJsonLd(p: ProductJsonLdInput) {
       availability: p.inStock === false
         ? 'https://schema.org/OutOfStock'
         : 'https://schema.org/InStock',
-      itemCondition: CONDITION_MAP[p.condition ?? 'new'] ?? 'https://schema.org/UsedCondition',
+      ...(condition ? { itemCondition: condition } : {}),
       seller: { '@type': 'Organization', name: p.storeName },
     },
   };

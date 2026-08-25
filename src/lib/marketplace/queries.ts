@@ -1,9 +1,13 @@
+import { cache } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Public (anon) data access for the buyer surface. RLS exposes only
- * published stores/listings (ADR 0009) — safe to call without a session,
- * cacheable by ISR.
+ * Public (anon) data access for the buyer surface. RLS + column grants expose
+ * only published stores/listings and buyer-safe columns (ADR 0009, hardening
+ * migration) — safe to call without a session, cacheable by ISR.
+ *
+ * Errors are THROWN, never swallowed: a transient outage must fail the render
+ * (and keep the last ISR copy) rather than bake a 404 into the cache.
  */
 function publicClient() {
   return createClient(
@@ -68,40 +72,50 @@ export async function getLatestListings(limit = 8): Promise<PublicListing[]> {
   return searchListings({ limit });
 }
 
-export async function getStoreBySlug(slug: string): Promise<PublicStore | null> {
-  const { data } = await publicClient()
+export const getStoreBySlug = cache(async (slug: string): Promise<PublicStore | null> => {
+  const { data, error } = await publicClient()
     .from('organizations')
     .select('id, slug, name, name_ar, logo_url, bio, bio_ar')
     .eq('slug', slug)
     .maybeSingle();
+  if (error) throw error;
   return (data as PublicStore | null) ?? null;
-}
+});
 
 export async function getStoreListings(orgId: string): Promise<PublicListing[]> {
-  const { data } = await publicClient()
+  const { data, error } = await publicClient()
     .from('products')
     .select('id, name, title_ar, brand, category, base_price, images, slug, short_id, org_id')
     .eq('org_id', orgId)
     .order('created_at', { ascending: false })
     .limit(48);
+  if (error) throw error;
   return (data ?? []) as PublicListing[];
 }
 
-export async function getProductByShortId(shortId: string): Promise<
-  (PublicListing & { store: PublicStore | null; condition?: string | null }) | null
-> {
-  const { data } = await publicClient()
-    .from('products')
-    .select(
-      'id, name, title_ar, brand, category, base_price, images, slug, short_id, org_id, description, description_ar'
-    )
-    .eq('short_id', shortId)
-    .maybeSingle();
-  if (!data) return null;
-  const { data: org } = await publicClient()
-    .from('organizations')
-    .select('id, slug, name, name_ar, logo_url, bio, bio_ar')
-    .eq('id', data.org_id)
-    .maybeSingle();
-  return { ...(data as PublicListing), store: (org as PublicStore | null) ?? null };
-}
+/**
+ * Deduped with React cache() so generateMetadata + the page render share one
+ * lookup per request instead of doubling the round trips.
+ */
+export const getProductByShortId = cache(
+  async (
+    shortId: string
+  ): Promise<(PublicListing & { store: PublicStore | null; condition?: string | null }) | null> => {
+    const { data, error } = await publicClient()
+      .from('products')
+      .select(
+        'id, name, title_ar, brand, category, base_price, images, slug, short_id, org_id, description, description_ar'
+      )
+      .eq('short_id', shortId)
+      .maybeSingle();
+    if (error) throw error;
+    if (!data) return null;
+    const { data: org, error: orgError } = await publicClient()
+      .from('organizations')
+      .select('id, slug, name, name_ar, logo_url, bio, bio_ar')
+      .eq('id', data.org_id)
+      .maybeSingle();
+    if (orgError) throw orgError;
+    return { ...(data as PublicListing), store: (org as PublicStore | null) ?? null };
+  }
+);

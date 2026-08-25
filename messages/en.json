@@ -61,7 +61,7 @@
     "commissionNote": "Free to list. We only earn a small commission when you sell.",
     "codStrip": "Cash on delivery across the UAE",
     "gradedStrip": "Condition-graded used & new devices",
-    "languagesStrip": "العربية والإنجليزية",
+    "languagesStrip": "English · العربية",
     "latestListings": "Latest listings",
     "footerTagline": "The AI-first marketplace for phones and electronics in the UAE.",
     "footer": {
@@ -72,8 +72,11 @@
       "sellerConsole": "Seller console",
       "privacy": "Privacy",
       "terms": "Terms",
-      "openSource": "Open source"
-    }
+      "openSource": "Open source",
+      "copyright": "© {year} SoukHub. MIT licensed."
+    },
+    "metaTitle": "SoukHub — Buy & Sell Phones and Electronics in the UAE",
+    "metaDescription": "The AI-first marketplace for phones and electronics in the UAE. Graded devices from local sellers — cards, Apple Pay or cash on delivery, in English and Arabic."
   },
   "search": {
     "title": "Search",
