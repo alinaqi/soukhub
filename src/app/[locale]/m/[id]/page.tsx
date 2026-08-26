@@ -13,6 +13,8 @@ import {
 } from '@/lib/marketplace/queries';
 import { parseSlugId, catalogPath } from '@/lib/marketplace/format';
 import { productJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
+import { Breadcrumbs } from '@/components/marketplace/Breadcrumbs';
+import { CategoryChips } from '@/components/marketplace/CategoryChips';
 import { getCachedRatingFor } from '@/lib/reviews/cached';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -109,6 +111,15 @@ export default async function CatalogItemPage({
         />
       )}
       <PublicHeader />
+      <div className="mx-auto max-w-4xl space-y-3 px-4 pt-5 sm:px-6">
+        <Breadcrumbs
+          locale={locale}
+          category={item.category}
+          title={title}
+          currentPath={canonical}
+        />
+        <CategoryChips locale={locale} active={item.category} />
+      </div>
       <CatalogRequestClient
         item={{
           id: item.id,
