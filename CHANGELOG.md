@@ -8,6 +8,10 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **Assistant side drawer**: full-height drawer with backdrop, animated slide-in, product cards with images/prices/conditions from tool results, page-aware suggestion bubbles (home/search/product/trade-in/sell) and page context passed to the model, bold+link markdown rendering, Escape-to-close
+- **PWA**: web manifest + icons, installable standalone app, service worker (cache-first static assets, network-first pages, offline fallback page), theme color, apple-touch-icon
+- **Search filters v2**: brand autocomplete (from live catalog brands), category dropdown, dual price-range sliders with live AED readout
+- **Deals row source diversity**: round-robin across Amazon/Cartlow/Revibe instead of freshest-source-wins
 - **Buy online (COD checkout v1)**: guest checkout on every listing — order lands directly in the seller's ops console as a real `soukhub` order (SH- reference), with public status lookup by reference + phone; cards follow with Stripe (ADR 0012)
 - **AI shopping assistant**: floating "Ask SoukHub" on every public page — grounded product discovery over live listings + market catalog with internal links, order-status lookup (ref+phone), trade-in guidance; guests welcome
 - **Keep-on-SoukHub catalog flow**: market items now open internal pages (`/m/{id}`) with an "Order through SoukHub" request form (WhatsApp follow-up) instead of sending buyers to Amazon/Cartlow/Revibe

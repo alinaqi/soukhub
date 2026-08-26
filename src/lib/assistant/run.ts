@@ -78,6 +78,7 @@ async function runTool(name: string, input: Record<string, unknown>) {
       return rows.map((r) => ({
         name: r.name, price: r.base_price, store: r.store_name,
         link: `/p/${r.slug}-${r.short_id}`,
+        image: Array.isArray(r.images) ? (r.images[0] as string | undefined) ?? null : null,
       }));
     }
     if (name === 'search_market') {
@@ -90,6 +91,7 @@ async function runTool(name: string, input: Record<string, unknown>) {
       return rows.map((r) => ({
         title: r.title, price: r.price, condition: r.condition, source: r.source,
         link: `/m/${r.id}`,
+        image: Array.isArray(r.images) ? (r.images[0] as string | undefined) ?? null : null,
       }));
     }
     if (name === 'order_status') {
@@ -107,13 +109,33 @@ export interface ChatTurn {
   content: string;
 }
 
+export interface AssistantProduct {
+  title: string;
+  price: number | null;
+  condition?: string | null;
+  source?: string | null;
+  store?: string | null;
+  link: string;
+  image: string | null;
+}
+
+export interface AssistantResult {
+  reply: string;
+  products: AssistantProduct[];
+}
+
 export async function runAssistant(
   turns: ChatTurn[],
-  createMessage?: MessagesCreate
-): Promise<string> {
+  createMessage?: MessagesCreate,
+  pagePath?: string | null
+): Promise<AssistantResult> {
   const create =
     createMessage ??
     ((params) => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }).messages.create(params));
+
+  const system = pagePath
+    ? `${SYSTEM}\nContext: the shopper is currently viewing ${pagePath} on SoukHub — tailor recommendations to it (e.g. the category or product they are looking at).`
+    : SYSTEM;
 
   const messages: Anthropic.MessageParam[] = turns
     .slice(-12)
@@ -122,10 +144,30 @@ export async function runAssistant(
   let response = await create({
     model: 'claude-sonnet-5',
     max_tokens: 700,
-    system: SYSTEM,
+    system,
     tools: TOOLS,
     messages,
   });
+
+  const products: AssistantProduct[] = [];
+  const seenLinks = new Set<string>();
+  const collect = (result: unknown) => {
+    if (!Array.isArray(result)) return;
+    for (const r of result as Array<Record<string, unknown>>) {
+      const link = typeof r.link === 'string' ? r.link : null;
+      if (!link || seenLinks.has(link) || products.length >= 6) continue;
+      seenLinks.add(link);
+      products.push({
+        title: String(r.title ?? r.name ?? ''),
+        price: typeof r.price === 'number' ? r.price : r.price != null ? Number(r.price) : null,
+        condition: (r.condition as string) ?? null,
+        source: (r.source as string) ?? null,
+        store: (r.store as string) ?? null,
+        link,
+        image: typeof r.image === 'string' ? r.image : null,
+      });
+    }
+  };
 
   for (let i = 0; i < 4 && response.stop_reason === 'tool_use'; i++) {
     const toolUses = response.content.filter(
@@ -134,6 +176,7 @@ export async function runAssistant(
     const results: Anthropic.ToolResultBlockParam[] = [];
     for (const tu of toolUses) {
       const result = await runTool(tu.name, tu.input as Record<string, unknown>);
+      if (tu.name !== 'order_status') collect(result);
       results.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(result) });
     }
     messages.push({ role: 'assistant', content: response.content });
@@ -141,7 +184,7 @@ export async function runAssistant(
     response = await create({
       model: 'claude-sonnet-5',
       max_tokens: 700,
-      system: SYSTEM,
+      system,
       tools: TOOLS,
       messages,
     });
@@ -152,5 +195,5 @@ export async function runAssistant(
     .map((b) => b.text)
     .join('\n')
     .trim();
-  return text || '…';
+  return { reply: text || '…', products };
 }

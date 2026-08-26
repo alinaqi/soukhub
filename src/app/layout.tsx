@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, IBM_Plex_Sans_Arabic, Geist_Mono } from "next/font/google";
 import { getLocale } from "next-intl/server";
 import { getDir } from "@/i18n/routing";
+import { ServiceWorkerRegistrar } from "@/components/marketplace/ServiceWorkerRegistrar";
 import "./globals.css";
 
 const inter = Inter({
@@ -20,7 +21,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0f766e",
+};
+
 export const metadata: Metadata = {
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "SoukHub",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
   title: {
     default: "SoukHub — Buy & Sell Phones and Electronics in the UAE",
     template: "%s | SoukHub",
@@ -44,6 +59,7 @@ export default async function RootLayout({
         className={`${inter.variable} ${plexArabic.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <ServiceWorkerRegistrar />
       </body>
     </html>
   );

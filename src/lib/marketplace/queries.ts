@@ -167,3 +167,43 @@ export const getCatalogItemById = cache(async (id: string): Promise<PublicCatalo
   if (error) throw error;
   return (data as PublicCatalogItem | null) ?? null;
 });
+
+/** Distinct brands across active catalog + published listings (filter autocomplete). */
+export const getKnownBrands = cache(async (): Promise<string[]> => {
+  const { data } = await publicClient()
+    .from('catalog_products')
+    .select('brand')
+    .eq('is_active', true)
+    .not('brand', 'is', null)
+    .limit(400);
+  const counts = new Map<string, number>();
+  for (const row of data ?? []) {
+    const b = (row.brand as string).trim();
+    if (b) counts.set(b, (counts.get(b) ?? 0) + 1);
+  }
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([b]) => b).slice(0, 24);
+});
+
+/** Similar devices for product pages: same category, comparable price. */
+export async function getSimilarItems(opts: {
+  category: string | null;
+  price: number | null;
+  excludeListingId?: string;
+  excludeCatalogId?: string;
+}): Promise<{ listings: PublicListing[]; catalog: PublicCatalogItem[] }> {
+  const band = opts.price
+    ? { minPrice: Math.floor(opts.price * 0.55), maxPrice: Math.ceil(opts.price * 1.6) }
+    : {};
+  const [listings, catalog] = await Promise.all([
+    searchListings({ category: opts.category ?? undefined, ...band, limit: 8 }).catch(
+      () => [] as PublicListing[]
+    ),
+    searchCatalog({ category: opts.category ?? undefined, ...band, limit: 8 }).catch(
+      () => [] as PublicCatalogItem[]
+    ),
+  ]);
+  return {
+    listings: listings.filter((l) => l.id !== opts.excludeListingId).slice(0, 4),
+    catalog: catalog.filter((c) => c.id !== opts.excludeCatalogId).slice(0, 4),
+  };
+}

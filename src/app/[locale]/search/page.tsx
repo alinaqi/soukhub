@@ -3,7 +3,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProductCard } from '@/components/marketplace/ProductCard';
-import { searchListings, searchCatalog, type PublicCatalogItem } from '@/lib/marketplace/queries';
+import { searchListings, searchCatalog, getKnownBrands, type PublicCatalogItem } from '@/lib/marketplace/queries';
+import { SearchFiltersPanel } from '@/components/marketplace/SearchFiltersPanel';
 import { CatalogCard } from '@/components/marketplace/CatalogCard';
 
 type SearchParams = Promise<{
@@ -50,7 +51,10 @@ export default async function SearchPage({
     minPrice: sp.min ? Number(sp.min) : undefined,
     maxPrice: sp.max ? Number(sp.max) : undefined,
   };
-  const listings = await searchListings({ ...filterArgs, limit: 36 });
+  const [listings, knownBrands] = await Promise.all([
+    searchListings({ ...filterArgs, limit: 36 }),
+    getKnownBrands().catch(() => [] as string[]),
+  ]);
 
   // Never an empty result: back-fill with badged market-catalog items (ADR 0016)
   let catalogItems: PublicCatalogItem[] = [];
@@ -69,60 +73,12 @@ export default async function SearchPage({
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-6 lg:flex-row">
           {/* Filters */}
-          <aside className="lg:w-56 lg:shrink-0">
-            <form action={locale === 'ar' ? '/ar/search' : '/search'} className="grid grid-cols-2 gap-3 lg:grid-cols-1">
-              {query && <input type="hidden" name="q" value={query} />}
-              <label className="text-sm">
-                <span className="mb-1 block font-medium">{t('filters.brand')}</span>
-                <input
-                  name="brand"
-                  defaultValue={sp.brand ?? ''}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-2"
-                />
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block font-medium">{t('filters.category')}</span>
-                <input
-                  name="category"
-                  defaultValue={sp.category ?? ''}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-2"
-                />
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block font-medium">{t('filters.minPrice')}</span>
-                <input
-                  name="min"
-                  type="number"
-                  min="0"
-                  defaultValue={sp.min ?? ''}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-2"
-                />
-              </label>
-              <label className="text-sm">
-                <span className="mb-1 block font-medium">{t('filters.maxPrice')}</span>
-                <input
-                  name="max"
-                  type="number"
-                  min="0"
-                  defaultValue={sp.max ?? ''}
-                  className="w-full rounded-lg border border-border bg-card px-3 py-2"
-                />
-              </label>
-              <div className="col-span-2 flex gap-2 lg:col-span-1">
-                <button
-                  type="submit"
-                  className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary-hover"
-                >
-                  {t('filters.apply')}
-                </button>
-                <Link
-                  href="/search"
-                  className="rounded-lg border border-border px-4 py-2 text-center text-sm font-medium hover:bg-muted"
-                >
-                  {t('filters.clear')}
-                </Link>
-              </div>
-            </form>
+          <aside className="lg:w-60 lg:shrink-0">
+            <SearchFiltersPanel
+              action={locale === 'ar' ? '/ar/search' : '/search'}
+              brands={knownBrands}
+              initial={{ q: query || undefined, brand: sp.brand, category: sp.category, min: sp.min, max: sp.max }}
+            />
           </aside>
 
           {/* Results */}

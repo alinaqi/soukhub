@@ -1102,3 +1102,16 @@ export const catalogRequests = pgTable("catalog_requests", {
 		name: "catalog_requests_item_fkey"
 	}).onDelete("cascade"),
 ]);
+
+// Cached web-review intelligence per product family (Gemini + Search grounding)
+export const productReviews = pgTable("product_reviews", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	productKey: text("product_key").notNull(),
+	rating: numeric({ precision: 3, scale: 2 }),
+	reviewCount: integer("review_count"),
+	summary: text(),
+	quotes: jsonb().default([]),
+	fetchedAt: timestamp("fetched_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	unique("uq_product_reviews_key").on(table.productKey),
+]);

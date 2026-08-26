@@ -20,6 +20,10 @@ const PUBLIC_LOCALIZED = [
 
 // Public but outside the locale tree (legal pages live at the root)
 const PUBLIC_PLAIN = [
+  /^\/offline$/,
+  /^\/sw\.js$/,
+  /^\/manifest\.webmanifest$/,
+  /^\/icons\/.+$/,
   /^\/privacy$/,
   /^\/terms$/,
   /^\/api\/trade-in\/evaluate$/, // guests get valuations; validates its own input

@@ -29,12 +29,26 @@ export default async function HomePage({
 
   let listings: PublicListing[] = [];
   let catalog: PublicCatalogItem[] = [];
-  let deals: PublicCatalogItem[] = [];
+  const deals: PublicCatalogItem[] = [];
   try {
-    [listings, deals] = await Promise.all([
+    let dealPool: PublicCatalogItem[] = [];
+    [listings, dealPool] = await Promise.all([
       getLatestListings(8),
-      searchCatalog({ maxPrice: 500, limit: 4 }),
+      searchCatalog({ maxPrice: 500, limit: 24 }),
     ]);
+    // Round-robin across sources so the row shows the whole market
+    const bySource = new Map<string, PublicCatalogItem[]>();
+    for (const item of dealPool) {
+      const list = bySource.get(item.source) ?? [];
+      list.push(item);
+      bySource.set(item.source, list);
+    }
+    const buckets = [...bySource.values()];
+    for (let i = 0; deals.length < 4 && buckets.some((b) => b.length); i++) {
+      const bucket = buckets[i % buckets.length];
+      const next = bucket.shift();
+      if (next) deals.push(next);
+    }
   } catch {
     // The home page must render even if search is briefly unavailable;
     // the grid shows its empty state and ISR retries within a minute.
