@@ -128,17 +128,28 @@ async function runTool(name: string, input: Record<string, unknown>) {
       return order ?? { error: 'No order found for that reference + phone combination.' };
     }
     if (name === 'get_event_calendar') {
+      const now = Date.now();
+      const days = (iso: string) => Math.round((Date.parse(iso) - now) / 86_400_000);
       const events = await getEventCalendar({
         category: input.category ? String(input.category) : null,
         days: typeof input.days === 'number' ? input.days : undefined,
       });
-      return events.map((e) => ({
-        event: e.name,
-        starts: e.starts_at.slice(0, 10),
-        ends: e.ends_at.slice(0, 10),
-        expected_discount_pct: e.expected_discount_pct,
-        category: e.category ?? 'all',
-      }));
+      return {
+        today: new Date(now).toISOString().slice(0, 10),
+        events: events.map((e) => {
+          const dStart = days(e.starts_at);
+          return {
+            event: e.name,
+            status: dStart <= 0 ? 'live now' : 'upcoming',
+            starts: e.starts_at.slice(0, 10),
+            ends: e.ends_at.slice(0, 10),
+            days_until_start: Math.max(0, dStart),
+            days_until_end: Math.max(0, days(e.ends_at)),
+            expected_discount_pct: e.expected_discount_pct,
+            category: e.category ?? 'all',
+          };
+        }),
+      };
     }
     return { error: 'unknown tool' };
   } catch (e) {
@@ -175,9 +186,11 @@ export async function runAssistant(
     createMessage ??
     ((params) => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }).messages.create(params));
 
+  const today = new Date().toISOString().slice(0, 10);
+  const dated = `${SYSTEM}\nToday's date is ${today}. Judge how near an event is from this date and the days_until fields the calendar tool returns — never guess whether a sale is live or far off.`;
   const system = pagePath
-    ? `${SYSTEM}\nContext: the shopper is currently viewing ${pagePath} on SoukHub — tailor recommendations to it (e.g. the category or product they are looking at).`
-    : SYSTEM;
+    ? `${dated}\nContext: the shopper is currently viewing ${pagePath} on SoukHub — tailor recommendations to it (e.g. the category or product they are looking at).`
+    : dated;
 
   const messages: Anthropic.MessageParam[] = turns
     .slice(-12)
