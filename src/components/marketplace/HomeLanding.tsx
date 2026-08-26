@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   Store,
   Smartphone,
@@ -26,6 +26,8 @@ import { CatalogCard } from '@/components/marketplace/CatalogCard';
 import { SellerDealsStrip } from '@/components/marketplace/SellerDealsStrip';
 import { HeroSearch } from '@/components/marketplace/HeroSearch';
 import { HomeShopsStrip } from '@/components/marketplace/HomeShopsStrip';
+import { EventBanner } from '@/components/marketplace/EventBanner';
+import type { RetailEvent } from '@/lib/marketplace/events-service';
 import type { SellerDeal } from '@/lib/marketplace/deals-service';
 import type { PublicProvider } from '@/lib/marketplace/queries';
 
@@ -55,6 +57,8 @@ export function HomeLanding({
   deals = [],
   bannerImage = null,
   sellerDeals = [],
+  activeEvent = null,
+  eventDeals = [],
   providers = [],
 }: {
   listings: PublicListing[];
@@ -62,12 +66,15 @@ export function HomeLanding({
   deals?: PublicCatalogItem[];
   bannerImage?: string | null;
   sellerDeals?: SellerDeal[];
+  activeEvent?: RetailEvent | null;
+  eventDeals?: PublicCatalogItem[];
   providers?: PublicProvider[];
 }) {
   const tcat = useTranslations('catalog');
   const t = useTranslations('home');
   const tn = useTranslations('nav');
   const tc = useTranslations('common');
+  const locale = useLocale();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -143,6 +150,31 @@ export function HomeLanding({
           </div>
         </div>
       </section>
+
+      {activeEvent && <EventBanner event={activeEvent} />}
+
+      {activeEvent && eventDeals.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-2xl font-bold">
+              <span aria-hidden>{activeEvent.emoji}</span>
+              {t('eventDealsTitle', { event: (activeEvent.name_ar && locale === 'ar') ? activeEvent.name_ar : activeEvent.name })}
+            </h2>
+            <Link
+              href={activeEvent.category ? `/search?category=${activeEvent.category}` : '/search'}
+              className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
+            >
+              {t('dealsAll')}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+            </Link>
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {eventDeals.slice(0, 4).map((item) => (
+              <CatalogCard key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Promo banners */}
       <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">

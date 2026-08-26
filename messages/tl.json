@@ -111,7 +111,8 @@
     "kmAway": "{km} km ang layo",
     "heroPlaceholder": "Ano ang kailangan mo? hal. laptop para sa unibersidad…",
     "askAi": "Magtanong sa AI",
-    "topShopsIn": "Top na tindahan sa {location}"
+    "topShopsIn": "Top na tindahan sa {location}",
+    "eventDealsTitle": "Mga deal sa {event}"
   },
   "search": {
     "title": "Maghanap",
@@ -346,5 +347,12 @@
     "saveAddress": "I-save",
     "locationFailed": "Hindi makuha ang lokasyon mo — i-type na lang ang lugar mo.",
     "nearYou": "Malapit sa iyo"
+  },
+  "events": {
+    "liveNow": "Live na",
+    "tagline": "Seasonal deals sa SoukHub — habang may offer.",
+    "taglineWithDiscount": "Makatipid ng hanggang {pct}% ngayong season — habang may offer.",
+    "shopDeals": "Tingnan ang deals",
+    "eventDealsTitle": "Mga deal sa {event}"
   }
 }

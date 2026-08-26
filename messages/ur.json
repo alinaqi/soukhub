@@ -111,7 +111,8 @@
     "kmAway": "{km} کلومیٹر دور",
     "heroPlaceholder": "آپ کو کیا چاہیے؟ مثلاً یونیورسٹی کے لیے لیپ ٹاپ…",
     "askAi": "AI سے پوچھیں",
-    "topShopsIn": "{location} کی بہترین دکانیں"
+    "topShopsIn": "{location} کی بہترین دکانیں",
+    "eventDealsTitle": "{event} ڈیلز"
   },
   "search": {
     "title": "تلاش",
@@ -346,5 +347,12 @@
     "saveAddress": "محفوظ کریں",
     "locationFailed": "آپ کا مقام معلوم نہیں ہو سکا — اپنا علاقہ خود لکھ دیں۔",
     "nearYou": "آپ کے قریب"
+  },
+  "events": {
+    "liveNow": "ابھی",
+    "tagline": "SoukHub پر موسمی ڈیلز — جب تک آفرز ہیں۔",
+    "taglineWithDiscount": "اس سیزن {pct}% تک بچائیں — جب تک آفرز ہیں۔",
+    "shopDeals": "ڈیلز دیکھیں",
+    "eventDealsTitle": "{event} ڈیلز"
   }
 }

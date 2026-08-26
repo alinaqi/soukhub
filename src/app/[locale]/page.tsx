@@ -4,6 +4,7 @@ import { HomeLanding } from '@/components/marketplace/HomeLanding';
 import { getLatestListings, getLatestCatalog, searchCatalog, type PublicListing, type PublicCatalogItem } from '@/lib/marketplace/queries';
 import { getCachedRatings, attachRating } from '@/lib/reviews/cached';
 import { listSellerDeals, type SellerDeal } from '@/lib/marketplace/deals-service';
+import { getActiveEvent, type RetailEvent } from '@/lib/marketplace/events-service';
 import { listProviders, type PublicProvider } from '@/lib/marketplace/queries';
 import { localeAlternates } from '@/i18n/routing';
 
@@ -36,8 +37,17 @@ export default async function HomePage({
   const deals: PublicCatalogItem[] = [];
   let sellerDeals: SellerDeal[] = [];
   let providers: PublicProvider[] = [];
+  let activeEvent: RetailEvent | null = null;
+  let eventDeals: PublicCatalogItem[] = [];
   try {
-    [sellerDeals, providers] = await Promise.all([listSellerDeals(8), listProviders(24)]);
+    [sellerDeals, providers, activeEvent] = await Promise.all([
+      listSellerDeals(8),
+      listProviders(24),
+      getActiveEvent(),
+    ]);
+    if (activeEvent?.category) {
+      eventDeals = await searchCatalog({ category: activeEvent.category, limit: 8 });
+    }
   } catch {
     // promotional strips are best-effort
   }
@@ -77,10 +87,12 @@ export default async function HomePage({
       ...listings.map((l) => ({ brand: l.brand, title: l.name })),
       ...catalog.map((c) => ({ brand: c.brand, title: c.title })),
       ...deals.map((d) => ({ brand: d.brand, title: d.title })),
+      ...eventDeals.map((d) => ({ brand: d.brand, title: d.title })),
     ]);
     listings = attachRating(listings, ratings);
     catalog = attachRating(catalog, ratings);
     for (let i = 0; i < deals.length; i++) deals[i] = attachRating([deals[i]], ratings)[0];
+    eventDeals = attachRating(eventDeals, ratings);
   } catch {
     // stars are enhancement only
   }
@@ -97,6 +109,8 @@ export default async function HomePage({
       deals={deals}
       sellerDeals={sellerDeals}
       providers={providers}
+      activeEvent={activeEvent}
+      eventDeals={eventDeals}
       bannerImage={bannerImage}
     />
   );

@@ -111,7 +111,8 @@
     "kmAway": "{km} किमी दूर",
     "heroPlaceholder": "आपको क्या चाहिए? जैसे: यूनिवर्सिटी के लिए लैपटॉप…",
     "askAi": "AI से पूछें",
-    "topShopsIn": "{location} की टॉप दुकानें"
+    "topShopsIn": "{location} की टॉप दुकानें",
+    "eventDealsTitle": "{event} डील"
   },
   "search": {
     "title": "खोजें",
@@ -346,5 +347,12 @@
     "saveAddress": "सेव करें",
     "locationFailed": "आपकी लोकेशन नहीं मिल पाई — अपना इलाका लिख दें।",
     "nearYou": "आपके पास"
+  },
+  "events": {
+    "liveNow": "अभी लाइव",
+    "tagline": "SoukHub पर सीज़नल डील — जब तक ऑफ़र हैं।",
+    "taglineWithDiscount": "इस सीज़न {pct}% तक बचाएँ — जब तक ऑफ़र हैं।",
+    "shopDeals": "डील देखें",
+    "eventDealsTitle": "{event} डील"
   }
 }

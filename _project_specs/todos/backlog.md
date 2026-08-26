@@ -2286,7 +2286,7 @@ As a seller, I want to contact my supplier via WhatsApp or email depending on ur
 10. **Zero training needed**
 
 ## TODO-068: Spec floors + retail calendar (agent ring 2)
-Curated `spec_floors` (laptops: writing/coding/design) and `events` (White Friday, DSF, Ramadan/Eid, back-to-school, Gitex, launches) tables + read-only agent tools `get_spec_floor` / `get_event_calendar`.
+Curated `spec_floors` (laptops: writing/coding/design) + `get_spec_floor` tool. NOTE: the `events` retail calendar table + seed + home banner shipped; remaining here is the `get_event_calendar` agent tool so timing advice can cite events.
 - Validation: agent recommendations for "laptop for coding" meet the 16GB/512SSD floor; calendar returns events in a date window. Tests: floor lookup, window queries, agent grounding.
 
 ## TODO-069: Price history recording (agent ring 2 — schedule-critical)

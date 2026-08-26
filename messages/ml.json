@@ -111,7 +111,8 @@
     "kmAway": "{km} കി.മീ. അകലെ",
     "heroPlaceholder": "നിങ്ങൾക്ക് എന്താണ് വേണ്ടത്? ഉദാ: യൂണിവേഴ്സിറ്റിക്ക് ലാപ്ടോപ്പ്…",
     "askAi": "AI-യോട് ചോദിക്കൂ",
-    "topShopsIn": "{location}-യിലെ മികച്ച കടകൾ"
+    "topShopsIn": "{location}-യിലെ മികച്ച കടകൾ",
+    "eventDealsTitle": "{event} ഡീലുകൾ"
   },
   "search": {
     "title": "തിരയുക",
@@ -346,5 +347,12 @@
     "saveAddress": "സേവ് ചെയ്യൂ",
     "locationFailed": "നിങ്ങളുടെ ലൊക്കേഷൻ കണ്ടെത്താനായില്ല — പകരം ഏരിയ ടൈപ്പ് ചെയ്യൂ.",
     "nearYou": "നിങ്ങൾക്ക് സമീപം"
+  },
+  "events": {
+    "liveNow": "ഇപ്പോൾ",
+    "tagline": "SoukHub-ലെ സീസണൽ ഡീലുകൾ — ഓഫറുകൾ തീരും വരെ.",
+    "taglineWithDiscount": "ഈ സീസണിൽ {pct}% വരെ ലാഭിക്കൂ — ഓഫറുകൾ തീരും വരെ.",
+    "shopDeals": "ഡീലുകൾ കാണൂ",
+    "eventDealsTitle": "{event} ഡീലുകൾ"
   }
 }

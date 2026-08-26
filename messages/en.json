@@ -111,7 +111,8 @@
     "kmAway": "{km} km away",
     "heroPlaceholder": "What do you need? e.g. a laptop for university…",
     "askAi": "Ask AI",
-    "topShopsIn": "Top shops across {location}"
+    "topShopsIn": "Top shops across {location}",
+    "eventDealsTitle": "{event} deals"
   },
   "search": {
     "title": "Search",
@@ -346,5 +347,12 @@
     "saveAddress": "Save",
     "locationFailed": "Couldn't get your location — type your area instead.",
     "nearYou": "Near you"
+  },
+  "events": {
+    "liveNow": "Live now",
+    "tagline": "Seasonal deals across SoukHub — while the offers last.",
+    "taglineWithDiscount": "Save up to {pct}% this season — while the offers last.",
+    "shopDeals": "Shop deals",
+    "eventDealsTitle": "{event} deals"
   }
 }

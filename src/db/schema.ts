@@ -1198,3 +1198,22 @@ export const deals = pgTable("deals", {
 	}).onDelete("cascade"),
 	uniqueIndex("uq_deals_product_active").using("btree", table.productId.asc().nullsLast().op("uuid_ops")).where(sql`is_active`),
 ]);
+
+export const events = pgTable("events", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	slug: text().notNull(),
+	name: text().notNull(),
+	nameAr: text("name_ar"),
+	emoji: text(),
+	category: text(),
+	startsAt: timestamp("starts_at", { withTimezone: true, mode: 'string' }).notNull(),
+	endsAt: timestamp("ends_at", { withTimezone: true, mode: 'string' }).notNull(),
+	expectedDiscountPct: integer("expected_discount_pct"),
+	priority: integer().default(0).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	uniqueIndex("uq_events_slug").using("btree", table.slug.asc().nullsLast().op("text_ops")),
+	index("idx_events_window").using("btree", table.endsAt.desc().nullsFirst()).where(sql`is_active`),
+	check("events_window_valid", sql`ends_at > starts_at`),
+]);
