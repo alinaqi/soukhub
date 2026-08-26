@@ -1,3 +1,4 @@
+import { randomInt } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
 /**
@@ -26,9 +27,10 @@ export type CheckoutResult =
   | { ok: false; status: number; error: string };
 
 function orderRef(): string {
+  // Crypto-random: refs are unguessable even before the phone check on lookup
   const chars = 'ABCDEFGHJKMNPQRSTVWXYZ23456789';
   let s = '';
-  for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  for (let i = 0; i < 6; i++) s += chars[randomInt(chars.length)];
   return `SH-${s}`;
 }
 

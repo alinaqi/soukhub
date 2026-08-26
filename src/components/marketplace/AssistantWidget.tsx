@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Sparkles, X, Send } from 'lucide-react';
+import { safeInternalPath } from '@/lib/marketplace/format';
 
 interface Turn {
   role: 'user' | 'assistant';
@@ -14,14 +15,15 @@ function renderContent(text: string) {
   const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
     const m = /^\[([^\]]+)\]\(([^)]+)\)$/.exec(part);
-    if (m && m[2].startsWith('/')) {
+    const safe = m ? safeInternalPath(m[2]) : null;
+    if (m && safe) {
       return (
-        <a key={i} href={m[2]} className="font-medium text-primary underline">
+        <a key={i} href={safe} className="font-medium text-primary underline">
           {m[1]}
         </a>
       );
     }
-    return <span key={i}>{part}</span>;
+    return <span key={i}>{m ? m[1] : part}</span>;
   });
 }
 

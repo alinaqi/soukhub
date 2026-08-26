@@ -100,3 +100,20 @@ describe('safeJsonLd', () => {
     expect(JSON.parse(out).description).toContain('</script>');
   });
 });
+
+describe('safeInternalPath (assistant link guard)', () => {
+  it('allows allowlisted internal routes', async () => {
+    const { safeInternalPath } = await import('@/lib/marketplace/format');
+    expect(safeInternalPath('/p/iphone-15-abc12345')).toBeTruthy();
+    expect(safeInternalPath('/m/666d1c9f-4b3e-4073-9d27-b4f8eaa0fc31')).toBeTruthy();
+    expect(safeInternalPath('/trade-in')).toBeTruthy();
+    expect(safeInternalPath('/ar/search?q=iphone')).toBeTruthy();
+  });
+  it('rejects protocol-relative, external, and off-allowlist paths', async () => {
+    const { safeInternalPath } = await import('@/lib/marketplace/format');
+    expect(safeInternalPath('//evil.com/p/x')).toBeNull();
+    expect(safeInternalPath('https://evil.com')).toBeNull();
+    expect(safeInternalPath('/api/admin/ingest')).toBeNull();
+    expect(safeInternalPath('/dashboard')).toBeNull();
+  });
+});
