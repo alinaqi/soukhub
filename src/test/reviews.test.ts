@@ -55,3 +55,13 @@ describe('fetchWebReviews', () => {
     expect(await fetchWebReviews('x', fetchMock as unknown as typeof fetch)).toBeNull();
   });
 });
+
+describe('quote spam filter', () => {
+  it('drops promotional non-review quotes', () => {
+    const parsed = parseReviewJson(
+      '{"rating": 4, "quotes": [{"text": "The iPhone 13 is great. View refurbished deals at BackMarket.", "source": "x"}, {"text": "Battery life easily lasts a full day of heavy use", "source": "TechRadar"}]}'
+    )!;
+    expect(parsed.quotes).toHaveLength(1);
+    expect(parsed.quotes[0].source).toBe('TechRadar');
+  });
+});

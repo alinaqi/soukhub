@@ -42,9 +42,10 @@ export function parseReviewJson(text: string): ProductReviewData | null {
   try {
     const raw = JSON.parse(match[0]) as Record<string, unknown>;
     const rating = Number(raw.rating);
+    const SPAM = /view (refurbished )?deals|click here|buy now|https?:\/\/|shop at|discount code/i;
     const quotes = Array.isArray(raw.quotes)
       ? (raw.quotes as Array<Record<string, unknown>>)
-          .filter((q) => typeof q.text === 'string' && q.text.trim())
+          .filter((q) => typeof q.text === 'string' && q.text.trim().length > 15 && !SPAM.test(q.text as string))
           .slice(0, 4)
           .map((q) => ({
             text: String(q.text).slice(0, 200),
