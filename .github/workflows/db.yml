@@ -1,0 +1,79 @@
+name: Database
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'drizzle/**'
+      - 'src/db/**'
+      - 'drizzle.config.ts'
+      - 'scripts/ci/supabase-shim.sql'
+      - '.github/workflows/db.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drizzle/**'
+      - 'src/db/**'
+      - 'drizzle.config.ts'
+      - '.github/workflows/db.yml'
+  workflow_dispatch: {}
+
+jobs:
+  # Every PR: the full migration history must apply cleanly from zero.
+  validate-migrations:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Apply Supabase environment shim
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/ci/supabase-shim.sql
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+      - name: Apply all migrations from zero
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+
+  # Merge to main: apply pending migrations to the hosted database.
+  deploy-migrations:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment: production-db
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Deploy migrations
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::warning::DATABASE_URL secret not configured — skipping hosted migration deploy."
+            echo "Add it under Settings → Environments → production-db (use the DIRECT connection string, port 5432)."
+            exit 0
+          fi
+          pnpm db:migrate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

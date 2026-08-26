@@ -45,7 +45,7 @@ pnpm dev                                # http://localhost:4000
 ## Tech Stack
 
 - **Framework**: [Next.js 16](https://nextjs.org/) (App Router, SSR/ISR) · **Language**: TypeScript (strict)
-- **Database/Auth**: [Supabase](https://supabase.com/) Postgres with RLS multi-tenancy — no ORM ([ADR 0002](docs/adr/0002-no-orm-supabase-query-builder.md))
+- **Database/Auth**: [Supabase](https://supabase.com/) Postgres with RLS multi-tenancy · [Drizzle ORM](https://orm.drizzle.team/) schema + CI-deployed migrations ([ADR 0015](docs/adr/0015-drizzle-orm-ci-migrations.md))
 - **AI**: tiered by task — Claude (ops agent) / Gemini Flash (multimodal listings) / Cerebras (fast buyer-facing) ([ADR 0014](docs/adr/0014-ai-provider-tiering.md))
 - **Search**: Postgres FTS + pg_trgm → pgvector hybrid ([ADR 0013](docs/adr/0013-search-and-seo-architecture.md))
 - **i18n**: next-intl, English + Arabic RTL first ([ADR 0011](docs/adr/0011-i18n-en-ar-first.md))
