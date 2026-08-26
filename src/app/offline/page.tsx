@@ -17,6 +17,8 @@ export default function OfflinePage() {
       <p className="mt-2 max-w-sm text-muted-foreground">
         SoukHub needs a connection to load fresh listings. Check your internet and try again.
       </p>
+      {/* Full page load on purpose: the SW retries the network on navigation */}
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
       <a
         href="/"
         className="mt-6 rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground"

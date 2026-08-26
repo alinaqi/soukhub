@@ -183,3 +183,27 @@ export const getKnownBrands = cache(async (): Promise<string[]> => {
   }
   return [...counts.entries()].sort((a, b) => b[1] - a[1]).map(([b]) => b).slice(0, 24);
 });
+
+/** Similar devices for product pages: same category, comparable price. */
+export async function getSimilarItems(opts: {
+  category: string | null;
+  price: number | null;
+  excludeListingId?: string;
+  excludeCatalogId?: string;
+}): Promise<{ listings: PublicListing[]; catalog: PublicCatalogItem[] }> {
+  const band = opts.price
+    ? { minPrice: Math.floor(opts.price * 0.55), maxPrice: Math.ceil(opts.price * 1.6) }
+    : {};
+  const [listings, catalog] = await Promise.all([
+    searchListings({ category: opts.category ?? undefined, ...band, limit: 8 }).catch(
+      () => [] as PublicListing[]
+    ),
+    searchCatalog({ category: opts.category ?? undefined, ...band, limit: 8 }).catch(
+      () => [] as PublicCatalogItem[]
+    ),
+  ]);
+  return {
+    listings: listings.filter((l) => l.id !== opts.excludeListingId).slice(0, 4),
+    catalog: catalog.filter((c) => c.id !== opts.excludeCatalogId).slice(0, 4),
+  };
+}

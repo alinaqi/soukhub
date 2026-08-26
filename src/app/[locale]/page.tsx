@@ -29,7 +29,7 @@ export default async function HomePage({
 
   let listings: PublicListing[] = [];
   let catalog: PublicCatalogItem[] = [];
-  let deals: PublicCatalogItem[] = [];
+  const deals: PublicCatalogItem[] = [];
   try {
     let dealPool: PublicCatalogItem[] = [];
     [listings, dealPool] = await Promise.all([

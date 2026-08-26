@@ -1,9 +1,12 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Store, Truck, Banknote, MessageCircle, ShoppingBag } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
+import { ReviewsSection } from '@/components/marketplace/ReviewsSection';
+import { SimilarSection } from '@/components/marketplace/SimilarSection';
 import { getProductByShortId } from '@/lib/marketplace/queries';
 import { formatAED, parseSlugId, productPath, whatsAppOrderLink } from '@/lib/marketplace/format';
 import { productJsonLd, breadcrumbJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
@@ -195,6 +198,18 @@ export default async function ProductPage({
             )}
           </div>
         </div>
+
+        <Suspense fallback={null}>
+          <ReviewsSection brand={product.brand} title={product.name} locale={locale} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SimilarSection
+            category={product.category}
+            price={price || null}
+            locale={locale}
+            excludeListingId={product.id}
+          />
+        </Suspense>
       </main>
 
       {/* Sticky mobile buy bar */}

@@ -1,8 +1,11 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { CatalogRequestClient } from '@/components/marketplace/CatalogRequestClient';
+import { ReviewsSection } from '@/components/marketplace/ReviewsSection';
+import { SimilarSection } from '@/components/marketplace/SimilarSection';
 import { getCatalogItemById } from '@/lib/marketplace/queries';
 
 export async function generateMetadata({
@@ -46,6 +49,19 @@ export default async function CatalogItemPage({
           sourceName: t(`sources.${item.source}`),
         }}
       />
+      <div className="mx-auto max-w-4xl px-4 pb-12 sm:px-6">
+        <Suspense fallback={null}>
+          <ReviewsSection brand={item.brand} title={item.title} locale={locale} />
+        </Suspense>
+        <Suspense fallback={null}>
+          <SimilarSection
+            category={item.category}
+            price={item.price != null ? Number(item.price) : null}
+            locale={locale}
+            excludeCatalogId={item.id}
+          />
+        </Suspense>
+      </div>
     </div>
   );
 }
