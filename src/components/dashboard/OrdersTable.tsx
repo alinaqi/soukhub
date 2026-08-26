@@ -23,6 +23,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const MARKETPLACE_ICONS: Record<string, string> = {
+  soukhub: '🏬',
   amazon: '📦',
   cartlow: '🛒',
   revibe: '📱',
