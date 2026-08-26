@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProvidersDirectoryClient } from '@/components/marketplace/ProvidersDirectoryClient';
 import { listProviders, type PublicProvider } from '@/lib/marketplace/queries';
+import { localeAlternates } from '@/i18n/routing';
 
 export const revalidate = 300;
 
@@ -16,7 +17,7 @@ export async function generateMetadata({
   return {
     title: { absolute: t('metaTitle') },
     description: t('metaDescription'),
-    alternates: { languages: { en: '/providers', ar: '/ar/providers' } },
+    alternates: { languages: localeAlternates('/providers') },
   };
 }
 

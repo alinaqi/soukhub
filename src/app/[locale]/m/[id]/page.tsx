@@ -6,12 +6,13 @@ import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { CatalogRequestClient } from '@/components/marketplace/CatalogRequestClient';
 import { ReviewsSection } from '@/components/marketplace/ReviewsSection';
 import { SimilarSection } from '@/components/marketplace/SimilarSection';
+import { localePath, localeAlternates } from '@/i18n/routing';
 import {
   getCatalogItemById,
   getCatalogItemByShortId,
   type PublicCatalogItem,
 } from '@/lib/marketplace/queries';
-import { parseSlugId, catalogPath } from '@/lib/marketplace/format';
+import { parseSlugId, catalogPath, hoursSince } from '@/lib/marketplace/format';
 import { productJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
 import { Breadcrumbs } from '@/components/marketplace/Breadcrumbs';
 import { CategoryChips } from '@/components/marketplace/CategoryChips';
@@ -49,7 +50,7 @@ export async function generateMetadata({
     description,
     alternates: {
       canonical: path,
-      languages: { en: path, ar: `/ar${path}` },
+      languages: localeAlternates(path),
     },
     openGraph: {
       title,
@@ -78,7 +79,7 @@ export default async function CatalogItemPage({
   // Canonical URL: uuid links and stale slugs 308 to /m/{slug}-{shortId}
   const canonical = catalogPath(item);
   if (item.slug && item.short_id && `/m/${id}` !== canonical) {
-    permanentRedirect(locale === 'ar' ? `/ar${canonical}` : canonical);
+    permanentRedirect(localePath(locale, canonical));
   }
 
   const t = await getTranslations({ locale, namespace: 'catalog' });
@@ -94,7 +95,7 @@ export default async function CatalogItemPage({
         price: Number(item.price),
         condition: item.condition,
         storeName: 'SoukHub',
-        url: `${base}${locale === 'ar' ? '/ar' : ''}${canonical}`,
+        url: `${base}${localePath(locale, canonical)}`,
         aggregateRating:
           cachedRating && cachedRating.review_count
             ? { rating: cachedRating.rating, count: cachedRating.review_count }
@@ -119,6 +120,11 @@ export default async function CatalogItemPage({
           currentPath={canonical}
         />
         <CategoryChips locale={locale} active={item.category} />
+        {item.scraped_at && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {t('verifiedAgo', { hours: hoursSince(item.scraped_at) })}
+          </p>
+        )}
       </div>
       <CatalogRequestClient
         item={{

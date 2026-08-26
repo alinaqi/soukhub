@@ -7,6 +7,7 @@ import { searchListings, searchCatalog, getKnownBrands, type PublicCatalogItem }
 import { SearchFiltersPanel } from '@/components/marketplace/SearchFiltersPanel';
 import { getCachedRatings, attachRating } from '@/lib/reviews/cached';
 import { CatalogCard } from '@/components/marketplace/CatalogCard';
+import { localePath, localeAlternates } from '@/i18n/routing';
 
 type SearchParams = Promise<{
   q?: string;
@@ -27,7 +28,7 @@ export async function generateMetadata({
     title: t('metaTitle'),
     description: t('metaDescription'),
     alternates: {
-      languages: { en: '/search', ar: '/ar/search' },
+      languages: localeAlternates('/search'),
     },
   };
 }
@@ -89,7 +90,7 @@ export default async function SearchPage({
           {/* Filters */}
           <aside className="lg:w-60 lg:shrink-0">
             <SearchFiltersPanel
-              action={locale === 'ar' ? '/ar/search' : '/search'}
+              action={localePath(locale, '/search')}
               brands={knownBrands}
               initial={{ q: query || undefined, brand: sp.brand, category: sp.category, min: sp.min, max: sp.max }}
             />

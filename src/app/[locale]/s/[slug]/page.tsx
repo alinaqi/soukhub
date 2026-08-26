@@ -5,6 +5,7 @@ import { Store } from 'lucide-react';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import { getStoreBySlug, getStoreListings } from '@/lib/marketplace/queries';
+import { localeAlternates } from '@/i18n/routing';
 
 export const revalidate = 120;
 
@@ -22,7 +23,7 @@ export async function generateMetadata({
     title: name,
     description: t('metaDescription', { store: name }),
     alternates: {
-      languages: { en: `/s/${slug}`, ar: `/ar/s/${slug}` },
+      languages: localeAlternates(`/s/${slug}`),
     },
   };
 }

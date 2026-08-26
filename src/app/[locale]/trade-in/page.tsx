@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { TradeInClient } from '@/components/marketplace/TradeInClient';
+import { localeAlternates } from '@/i18n/routing';
 
 export async function generateMetadata({
   params,
@@ -13,7 +14,7 @@ export async function generateMetadata({
   return {
     title: { absolute: t('metaTitle') },
     description: t('metaDescription'),
-    alternates: { languages: { en: '/trade-in', ar: '/ar/trade-in' } },
+    alternates: { languages: localeAlternates('/trade-in') },
   };
 }
 

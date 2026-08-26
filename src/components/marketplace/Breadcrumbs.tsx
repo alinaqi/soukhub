@@ -25,7 +25,7 @@ export async function Breadcrumbs({
   const tn = await getTranslations({ locale, namespace: 'nav' });
   const th = await getTranslations({ locale, namespace: 'home' });
   const base = process.env.NEXT_PUBLIC_APP_URL || 'https://soukhub.vercel.app';
-  const prefix = locale === 'ar' ? '/ar' : '';
+  const prefix = locale === 'en' ? '' : `/${locale}`;
 
   const knownCategory = category && KNOWN_CATEGORIES.includes(category) ? category : null;
   const categoryLabel = knownCategory ? th(`categories.${knownCategory}`) : null;

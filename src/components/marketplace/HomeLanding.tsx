@@ -15,8 +15,7 @@ import {
   BadgeCheck,
   ArrowRight,
   CreditCard,
-  Banknote,
-} from 'lucide-react';
+  Banknote, } from 'lucide-react';
 import NextLink from 'next/link';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from '@/components/marketplace/LocaleSwitcher';
@@ -25,6 +24,11 @@ import { DeliveryLocationBar } from '@/components/marketplace/DeliveryLocationBa
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import type { PublicListing, PublicCatalogItem } from '@/lib/marketplace/queries';
 import { CatalogCard } from '@/components/marketplace/CatalogCard';
+import { SellerDealsStrip } from '@/components/marketplace/SellerDealsStrip';
+import { AskAiButton } from '@/components/marketplace/AskAiButton';
+import { HomeShopsStrip } from '@/components/marketplace/HomeShopsStrip';
+import type { SellerDeal } from '@/lib/marketplace/deals-service';
+import type { PublicProvider } from '@/lib/marketplace/queries';
 
 const CATEGORY_ICONS = [
   { key: 'phones', icon: Smartphone },
@@ -51,12 +55,16 @@ export function HomeLanding({
   catalog = [],
   deals = [],
   bannerImage = null,
+  sellerDeals = [],
+  providers = [],
   searchAction,
 }: {
   listings: PublicListing[];
   catalog?: PublicCatalogItem[];
   deals?: PublicCatalogItem[];
   bannerImage?: string | null;
+  sellerDeals?: SellerDeal[];
+  providers?: PublicProvider[];
   searchAction: string;
 }) {
   const tcat = useTranslations('catalog');
@@ -129,10 +137,11 @@ export function HomeLanding({
                 <input
                   type="search"
                   name="q"
-                  placeholder={tc('searchPlaceholder')}
+                  placeholder={t('heroPlaceholder')}
                   className="w-full rounded-lg border border-border bg-card py-3 ps-10 pe-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                 />
               </div>
+              <AskAiButton label={t('askAi')} />
               <button
                 type="submit"
                 className="rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary-hover"
@@ -208,6 +217,8 @@ export function HomeLanding({
       </section>
 
       {/* Deals under AED 500 */}
+      <SellerDealsStrip deals={sellerDeals} />
+
       {deals.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
@@ -224,6 +235,8 @@ export function HomeLanding({
           </div>
         </section>
       )}
+
+      <HomeShopsStrip providers={providers} />
 
       {/* Latest listings — real inventory above the fold */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

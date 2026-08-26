@@ -124,6 +124,19 @@ export function AssistantWidget() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open]);
 
+  // "What do you need?" entry points elsewhere (home hero) hand their
+  // question to the agent through this event
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      const question = String((e as CustomEvent).detail?.question ?? '').slice(0, 500);
+      setOpen(true);
+      if (question) void send(question);
+    };
+    window.addEventListener('soukhub:ask', onAsk);
+    return () => window.removeEventListener('soukhub:ask', onAsk);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turns, busy]);
+
   const send = async (preset?: string) => {
     const content = (preset ?? input).trim();
     if (!content || busy) return;

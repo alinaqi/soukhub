@@ -8,7 +8,7 @@ const intl = createIntlMiddleware(routing);
 // Public marketplace surface: locale-routed, no auth required (ADR 0011).
 const PUBLIC_LOCALIZED = [
   /^\/$/,
-  /^\/(en|ar)(\/.*)?$/,
+  /^\/(en|ar|hi|ur|ml|tl)(\/.*)?$/,
   /^\/search(\/.*)?$/,
   /^\/sell$/,
   /^\/trade-in$/,

@@ -9,6 +9,7 @@ import { ProviderClaimClient } from '@/components/marketplace/ProviderClaimClien
 import { ProviderRating } from '@/components/marketplace/ProvidersDirectoryClient';
 import { getProviderBySlug } from '@/lib/marketplace/queries';
 import { safeJsonLd } from '@/lib/marketplace/jsonld';
+import { localeAlternates } from '@/i18n/routing';
 
 export const revalidate = 300;
 
@@ -25,7 +26,7 @@ export async function generateMetadata({
     description: [provider.area, provider.emirate, provider.phone].filter(Boolean).join(' · '),
     alternates: {
       canonical: `/providers/${slug}`,
-      languages: { en: `/providers/${slug}`, ar: `/ar/providers/${slug}` },
+      languages: localeAlternates(`/providers/${slug}`),
     },
   };
 }

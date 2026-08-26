@@ -49,3 +49,8 @@ export function safeInternalPath(href: string): string | null {
     ? href
     : null;
 }
+
+/** Whole hours since an ISO timestamp, minimum 1 (freshness display). */
+export function hoursSince(iso: string): number {
+  return Math.max(1, Math.round((Date.now() - new Date(iso).getTime()) / 3600000));
+}

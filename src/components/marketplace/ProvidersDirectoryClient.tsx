@@ -48,6 +48,7 @@ export function ProvidersDirectoryClient({
     initialEmirate && EMIRATE_OPTIONS.has(initialEmirate) ? initialEmirate : 'all'
   );
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
+  const [kind, setKind] = useState<'all' | 'mobile' | 'computer'>('all');
 
   // A saved "Deliver to" location with coordinates sorts the directory by
   // distance immediately, Talabat-style
@@ -83,10 +84,14 @@ export function ProvidersDirectoryClient({
 
   const list = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const isComputer = (p: PublicProvider) =>
+      /computer|laptop|pc\b/i.test(`${p.category ?? ''} ${p.name}`);
     let rows = providers.filter((p) => {
       if (emirate !== 'all' && p.emirate !== emirate) return false;
+      if (kind === 'computer' && !isComputer(p)) return false;
+      if (kind === 'mobile' && isComputer(p)) return false;
       if (!q) return true;
-      return `${p.name} ${p.area ?? ''} ${p.address ?? ''}`.toLowerCase().includes(q);
+      return `${p.name} ${p.area ?? ''} ${p.address ?? ''} ${p.category ?? ''}`.toLowerCase().includes(q);
     });
     if (me) {
       rows = rows
@@ -98,7 +103,7 @@ export function ProvidersDirectoryClient({
         .sort((a, b) => (a.distance_km ?? 1e9) - (b.distance_km ?? 1e9));
     }
     return rows;
-  }, [providers, query, emirate, me]);
+  }, [providers, query, emirate, kind, me]);
 
   return (
     <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -130,6 +135,23 @@ export function ProvidersDirectoryClient({
           <LocateFixed className="h-4 w-4" aria-hidden />
           {locating ? t('locating') : t('nearMe')}
         </button>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {([['all', t('kindAll')], ['mobile', t('kindMobile')], ['computer', t('kindComputer')]] as const).map(
+          ([value, label]) => (
+            <button
+              key={value}
+              onClick={() => setKind(value)}
+              className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
+                kind === value
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-card text-muted-foreground hover:border-primary hover:text-foreground'
+              }`}
+            >
+              {label}
+            </button>
+          )
+        )}
       </div>
       {locationError && (
         <p className="mt-2 text-sm text-warning">{t('locationDenied')}</p>

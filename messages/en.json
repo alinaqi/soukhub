@@ -101,7 +101,16 @@
     "bannerSellTitle": "Sell your electronics",
     "bannerSellText": "Open a store in minutes — free.",
     "dealsTitle": "Deals under AED 500",
-    "dealsAll": "See all deals"
+    "dealsAll": "See all deals",
+    "sellerDealsTitle": "Deals from our sellers",
+    "sellerDealsText": "Limited-time prices set by SoukHub sellers — while they last.",
+    "dealChip": "Deal",
+    "shopsNearYou": "Shops near you",
+    "topShops": "Top shops across the UAE",
+    "allShops": "All shops",
+    "kmAway": "{km} km away",
+    "heroPlaceholder": "What do you need? e.g. a laptop for university…",
+    "askAi": "Ask AI"
   },
   "search": {
     "title": "Search",
@@ -136,7 +145,8 @@
     "reviewsTitle": "What reviewers say",
     "reviewsNote": "Ratings and quotes gathered from public web reviews of this model.",
     "basedOn": "based on ~{count} web reviews",
-    "similarTitle": "Similar devices"
+    "similarTitle": "Similar devices",
+    "dealBadge": "Deal"
   },
   "notFound": {
     "title": "Page not found",
@@ -181,7 +191,8 @@
     "successText": "We'll message you on WhatsApp shortly to confirm availability, price, and delivery.",
     "priceRef": "Market price reference: {source}",
     "conditionLabel": "Condition",
-    "phoneInvalid": "Enter a valid WhatsApp number so we can reach you."
+    "phoneInvalid": "Enter a valid WhatsApp number so we can reach you.",
+    "verifiedAgo": "Price verified {hours}h ago"
   },
   "tradein": {
     "navLabel": "Trade in",
@@ -320,7 +331,10 @@
     "claimTaken": "This shop has already been claimed by its owner on SoukHub.",
     "claimError": "Something went wrong — please try again.",
     "googleReviewsTitle": "What customers say",
-    "googleReviewsSource": "Reviews from Google"
+    "googleReviewsSource": "Reviews from Google",
+    "kindAll": "All shops",
+    "kindMobile": "Mobile phones",
+    "kindComputer": "Computers & laptops"
   },
   "delivery": {
     "deliverTo": "Deliver to:",

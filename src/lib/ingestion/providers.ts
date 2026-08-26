@@ -156,9 +156,12 @@ export async function ingestProviders(emirate: string, max = 60): Promise<Provid
   const raw = await runActorSync(
     'compass/crawler-google-places',
     {
-      searchStringsArray: ['mobile phone shop', 'mobile phone trading'],
+      searchStringsArray: [
+        'mobile phone shop', 'mobile phone trading',
+        'computer shop', 'laptop shop',
+      ],
       locationQuery: `${emirate}, United Arab Emirates`,
-      maxCrawledPlacesPerSearch: Math.ceil(max / 2),
+      maxCrawledPlacesPerSearch: Math.ceil(max / 4),
       language: 'en',
       skipClosedPlaces: true,
       scrapeContacts: false,
