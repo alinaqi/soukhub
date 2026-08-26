@@ -1,6 +1,6 @@
 # 0002. No ORM — Supabase query builder with generated types
 
-- **Status**: Accepted
+- **Status**: Superseded by [0015](0015-drizzle-orm-ci-migrations.md) (Drizzle adopted for schema/migrations/server queries; supabase-js remains the RLS surface)
 - **Date**: 2025-12-27
 
 ## Context

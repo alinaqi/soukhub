@@ -7,7 +7,7 @@ This directory records the significant architectural decisions made in SoukHub â
 | # | Title | Status |
 |---|-------|--------|
 | [0001](0001-nextjs-supabase-claude-stack.md) | Next.js + Supabase + Claude stack | Accepted |
-| [0002](0002-no-orm-supabase-query-builder.md) | No ORM â€” Supabase query builder with generated types | Accepted |
+| [0002](0002-no-orm-supabase-query-builder.md) | No ORM â€” Supabase query builder with generated types | Superseded by 0015 |
 | [0003](0003-csv-import-with-ai-header-mapping.md) | Marketplace data via CSV import with AI header mapping | Accepted |
 | [0004](0004-ai-agent-with-tool-use.md) | AI assistant as a Claude tool-use agent | Accepted |
 | [0005](0005-whatsapp-standalone-microservice.md) | WhatsApp integration as a standalone microservice | Accepted |
@@ -20,6 +20,7 @@ This directory records the significant architectural decisions made in SoukHub â
 | [0012](0012-payments-stripe-cod-ledger.md) | Payments: Stripe + COD with internal ledger | Accepted |
 | [0013](0013-search-and-seo-architecture.md) | Search & discovery: staged Postgres-native; SEO by construction | Accepted |
 | [0014](0014-ai-provider-tiering.md) | AI provider tiering: Cerebras / Gemini / Claude | Accepted |
+| [0015](0015-drizzle-orm-ci-migrations.md) | Drizzle ORM as schema authority; CI/CD migration deploys | Accepted |
 
 ## How to add an ADR
 

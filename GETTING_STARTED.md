@@ -30,9 +30,11 @@ pnpm install
 The entire Supabase stack (Postgres, Auth, REST, Studio) runs locally in Docker:
 
 ```bash
-supabase start      # first run downloads images, takes a few minutes
-supabase db reset   # applies all migrations in supabase/migrations/
+supabase start      # boots the stack (first run downloads images)
+pnpm db:migrate     # applies all migrations from drizzle/ (Drizzle owns the schema — ADR 0015)
 ```
+
+To rebuild from scratch later: `pnpm db:reset` (bare reset + re-apply all migrations).
 
 This project uses **non-default ports (553xx)** to avoid clashing with other local Supabase projects:
 
@@ -100,12 +102,12 @@ These are the same checks CI runs on every PR (`.github/workflows/quality.yml` a
 
 ## Database access — how it works
 
-There is **no ORM**. Data access uses the `@supabase/supabase-js` query builder with generated TypeScript types:
+Two layers by trust boundary (ADR 0015):
 
-- `src/lib/supabase/client.ts` — browser client (anon key, RLS-protected)
-- `src/lib/supabase/server.ts` — server client (cookie-based auth via `@supabase/ssr`)
-- `src/types/supabase.ts` — generated DB types (regenerate with `supabase gen types typescript --local > src/types/supabase.ts` after schema changes)
-- Schema changes go in new files under `supabase/migrations/` and are applied with `supabase db reset` (local) or `supabase db push` (hosted)
+- **Drizzle ORM** (`src/db/`) — schema source of truth (`schema.ts`), migrations in `drizzle/`, and a server-only client that bypasses RLS (use where service-role access is intended).
+- **supabase-js** — the RLS/auth surface: `src/lib/supabase/client.ts` (browser, anon key) and `server.ts` (cookie sessions). Regenerate its types after schema changes: `pnpm db:gen-types`.
+
+Schema changes: edit `src/db/schema.ts` → `pnpm db:generate` (use `npx drizzle-kit generate --custom` for RLS policies/functions/triggers, which stay hand-written SQL) → `pnpm db:migrate` locally. **Merging to main deploys migrations to the hosted DB automatically** via `.github/workflows/db.yml` (requires the `DATABASE_URL` secret in the `production-db` environment).
 
 ## Optional: WhatsApp integration
 
