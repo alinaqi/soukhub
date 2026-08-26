@@ -28,6 +28,15 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://soukhub.vercel.app"),
+  openGraph: {
+    siteName: "SoukHub",
+    type: "website",
+    locale: "en_AE",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

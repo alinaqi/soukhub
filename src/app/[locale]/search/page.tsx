@@ -5,6 +5,7 @@ import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import { searchListings, searchCatalog, getKnownBrands, type PublicCatalogItem } from '@/lib/marketplace/queries';
 import { SearchFiltersPanel } from '@/components/marketplace/SearchFiltersPanel';
+import { getCachedRatings, attachRating } from '@/lib/reviews/cached';
 import { CatalogCard } from '@/components/marketplace/CatalogCard';
 
 type SearchParams = Promise<{
@@ -67,6 +68,19 @@ export default async function SearchPage({
   }
   const tcat = await getTranslations({ locale, namespace: 'catalog' });
 
+  let ratedListings = listings;
+  let ratedCatalog = catalogItems;
+  try {
+    const ratings = await getCachedRatings([
+      ...listings.map((l) => ({ brand: l.brand, title: l.name })),
+      ...catalogItems.map((c) => ({ brand: c.brand, title: c.title })),
+    ]);
+    ratedListings = attachRating(listings, ratings);
+    ratedCatalog = attachRating(catalogItems, ratings);
+  } catch {
+    // stars are enhancement only
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <PublicHeader defaultQuery={query} />
@@ -94,7 +108,7 @@ export default async function SearchPage({
               <>
                 {listings.length > 0 && (
                   <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-                    {listings.map((listing) => (
+                    {ratedListings.map((listing) => (
                       <ProductCard key={listing.id} listing={listing} />
                     ))}
                   </div>
@@ -104,7 +118,7 @@ export default async function SearchPage({
                     <h2 className="text-lg font-semibold">{tcat('fromMarket')}</h2>
                     <p className="mt-1 text-sm text-muted-foreground">{tcat('marketNote')}</p>
                     <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-                      {catalogItems.map((item) => (
+                      {ratedCatalog.map((item) => (
                         <CatalogCard key={item.id} item={item} />
                       ))}
                     </div>

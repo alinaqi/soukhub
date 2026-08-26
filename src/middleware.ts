@@ -23,6 +23,8 @@ const PUBLIC_PLAIN = [
   /^\/offline$/,
   /^\/sw\.js$/,
   /^\/manifest\.webmanifest$/,
+  /^\/sitemap\.xml$/,
+  /^\/robots\.txt$/,
   /^\/icons\/.+$/,
   /^\/privacy$/,
   /^\/terms$/,

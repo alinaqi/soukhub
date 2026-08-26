@@ -20,6 +20,7 @@ import {
 import NextLink from 'next/link';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from '@/components/marketplace/LocaleSwitcher';
+import { MobileMenu } from '@/components/marketplace/MobileNav';
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import type { PublicListing, PublicCatalogItem } from '@/lib/marketplace/queries';
 import { CatalogCard } from '@/components/marketplace/CatalogCard';
@@ -74,27 +75,32 @@ export function HomeLanding({
             <span className="text-xl font-bold tracking-tight">{tc('brand')}</span>
           </Link>
           <div className="flex items-center gap-2 sm:gap-3">
+            <span className="hidden items-center gap-2 lg:flex">
+              <Suspense>
+                <LocaleSwitcher />
+              </Suspense>
+              <Link
+                href="/trade-in"
+                className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
+              >
+                {tn('tradeIn')}
+              </Link>
+              <Link
+                href="/sell"
+                className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5"
+              >
+                {tn('forSellers')}
+              </Link>
+              <NextLink
+                href="/login"
+                className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
+              >
+                {tc('login')}
+              </NextLink>
+            </span>
             <Suspense>
-              <LocaleSwitcher />
+              <MobileMenu />
             </Suspense>
-            <Link
-              href="/trade-in"
-              className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
-            >
-              {tn('tradeIn')}
-            </Link>
-            <Link
-              href="/sell"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5"
-            >
-              {tn('forSellers')}
-            </Link>
-            <NextLink
-              href="/login"
-              className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
-            >
-              {tc('login')}
-            </NextLink>
           </div>
         </div>
       </nav>

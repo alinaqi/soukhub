@@ -3,6 +3,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Store, Search } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from './LocaleSwitcher';
+import { BackButton, MobileMenu } from './MobileNav';
 
 /** Compact header for search / store / product pages. */
 export function PublicHeader({ defaultQuery = '' }: { defaultQuery?: string }) {
@@ -12,7 +13,10 @@ export function PublicHeader({ defaultQuery = '' }: { defaultQuery?: string }) {
 
   return (
     <header className="border-b border-border bg-background">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
+        <Suspense>
+          <BackButton />
+        </Suspense>
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Store className="h-4 w-4" aria-hidden />
@@ -44,8 +48,13 @@ export function PublicHeader({ defaultQuery = '' }: { defaultQuery?: string }) {
           </button>
         </form>
 
+        <span className="hidden sm:inline-flex">
+          <Suspense>
+            <LocaleSwitcher />
+          </Suspense>
+        </span>
         <Suspense>
-          <LocaleSwitcher />
+          <MobileMenu />
         </Suspense>
       </div>
     </header>

@@ -137,6 +137,8 @@ export interface PublicCatalogItem {
   images: string[] | null;
   source: 'amazon' | 'cartlow' | 'revibe';
   url: string;
+  slug?: string | null;
+  short_id?: string | null;
 }
 
 export async function searchCatalog(filters: SearchFilters): Promise<PublicCatalogItem[]> {
@@ -157,16 +159,32 @@ export async function getLatestCatalog(limit = 8): Promise<PublicCatalogItem[]> 
   return searchCatalog({ limit });
 }
 
+const CATALOG_COLS =
+  'id, title, title_ar, brand, model, category, condition, price, currency, images, source, url, slug, short_id';
+
 export const getCatalogItemById = cache(async (id: string): Promise<PublicCatalogItem | null> => {
   const { data, error } = await publicClient()
     .from('catalog_products')
-    .select('id, title, title_ar, brand, model, category, condition, price, currency, images, source, url')
+    .select(CATALOG_COLS)
     .eq('id', id)
     .eq('is_active', true)
     .maybeSingle();
   if (error) throw error;
   return (data as PublicCatalogItem | null) ?? null;
 });
+
+export const getCatalogItemByShortId = cache(
+  async (shortId: string): Promise<PublicCatalogItem | null> => {
+    const { data, error } = await publicClient()
+      .from('catalog_products')
+      .select(CATALOG_COLS)
+      .eq('short_id', shortId)
+      .eq('is_active', true)
+      .maybeSingle();
+    if (error) throw error;
+    return (data as PublicCatalogItem | null) ?? null;
+  }
+);
 
 /** Distinct brands across active catalog + published listings (filter autocomplete). */
 export const getKnownBrands = cache(async (): Promise<string[]> => {

@@ -10,6 +10,7 @@ import { SimilarSection } from '@/components/marketplace/SimilarSection';
 import { getProductByShortId } from '@/lib/marketplace/queries';
 import { formatAED, parseSlugId, productPath, whatsAppOrderLink } from '@/lib/marketplace/format';
 import { productJsonLd, breadcrumbJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
+import { getCachedRatingFor } from '@/lib/reviews/cached';
 
 export const revalidate = 60;
 
@@ -76,6 +77,9 @@ export default async function ProductPage({
   const url = `${baseUrl()}${locale === 'ar' ? '/ar' : ''}${canonicalPath}`;
   const price = Number(product.base_price ?? 0);
 
+  // Cached web-review aggregate → Google rich-snippet stars in organic results
+  const cachedRating = await getCachedRatingFor(product.brand, product.name).catch(() => null);
+
   // JSON-LD mirrors the visible localized content of THIS page (ar pages get
   // Arabic structured data; condition is omitted until listings carry one)
   const jsonLd = productJsonLd({
@@ -87,6 +91,10 @@ export default async function ProductPage({
       ? product.store.name_ar
       : product.store?.name) ?? 'SoukHub seller',
     url,
+    aggregateRating:
+      cachedRating && cachedRating.review_count
+        ? { rating: cachedRating.rating, count: cachedRating.review_count }
+        : null,
   });
   const breadcrumbs = breadcrumbJsonLd([
     { name: 'SoukHub', url: baseUrl() },

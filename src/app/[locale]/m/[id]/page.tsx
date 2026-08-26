@@ -1,12 +1,28 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { CatalogRequestClient } from '@/components/marketplace/CatalogRequestClient';
 import { ReviewsSection } from '@/components/marketplace/ReviewsSection';
 import { SimilarSection } from '@/components/marketplace/SimilarSection';
-import { getCatalogItemById } from '@/lib/marketplace/queries';
+import {
+  getCatalogItemById,
+  getCatalogItemByShortId,
+  type PublicCatalogItem,
+} from '@/lib/marketplace/queries';
+import { parseSlugId, catalogPath } from '@/lib/marketplace/format';
+import { productJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
+import { getCachedRatingFor } from '@/lib/reviews/cached';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+async function resolveItem(param: string): Promise<PublicCatalogItem | null> {
+  if (UUID_RE.test(param)) return getCatalogItemById(param);
+  const parsed = parseSlugId(param);
+  if (!parsed) return null;
+  return getCatalogItemByShortId(parsed.shortId);
+}
 
 export async function generateMetadata({
   params,
@@ -14,11 +30,37 @@ export async function generateMetadata({
   params: Promise<{ locale: string; id: string }>;
 }): Promise<Metadata> {
   const { locale, id } = await params;
-  if (!/^[0-9a-f-]{36}$/.test(id)) return {};
-  const item = await getCatalogItemById(id);
+  const item = await resolveItem(id).catch(() => null);
   if (!item) return {};
   const title = locale === 'ar' && item.title_ar ? item.title_ar : item.title;
-  return { title, robots: { index: false } };
+  const image = Array.isArray(item.images) ? (item.images[0] as string | undefined) : undefined;
+  const path = catalogPath(item);
+  const description = [
+    item.brand,
+    item.condition?.replace('_', ' '),
+    item.price ? `AED ${item.price}` : null,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: path,
+      languages: { en: path, ar: `/ar${path}` },
+    },
+    openGraph: {
+      title,
+      description,
+      type: 'website',
+      ...(image ? { images: [{ url: image }] } : {}),
+    },
+    twitter: {
+      card: image ? 'summary_large_image' : 'summary',
+      title,
+      description,
+    },
+  };
 }
 
 export default async function CatalogItemPage({
@@ -28,16 +70,44 @@ export default async function CatalogItemPage({
 }) {
   const { locale, id } = await params;
   setRequestLocale(locale);
-  if (!/^[0-9a-f-]{36}$/.test(id)) notFound();
-  const item = await getCatalogItemById(id);
+  const item = await resolveItem(id);
   if (!item) notFound();
+
+  // Canonical URL: uuid links and stale slugs 308 to /m/{slug}-{shortId}
+  const canonical = catalogPath(item);
+  if (item.slug && item.short_id && `/m/${id}` !== canonical) {
+    permanentRedirect(locale === 'ar' ? `/ar${canonical}` : canonical);
+  }
 
   const t = await getTranslations({ locale, namespace: 'catalog' });
   const title = locale === 'ar' && item.title_ar ? item.title_ar : item.title;
   const image = Array.isArray(item.images) ? (item.images[0] as string | undefined) : undefined;
 
+  const cachedRating = await getCachedRatingFor(item.brand, item.title).catch(() => null);
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://soukhub.vercel.app';
+  const jsonLd = item.price != null
+    ? productJsonLd({
+        name: title,
+        images: image ? [image] : [],
+        price: Number(item.price),
+        condition: item.condition,
+        storeName: 'SoukHub',
+        url: `${base}${locale === 'ar' ? '/ar' : ''}${canonical}`,
+        aggregateRating:
+          cachedRating && cachedRating.review_count
+            ? { rating: cachedRating.rating, count: cachedRating.review_count }
+            : null,
+      })
+    : null;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
+        />
+      )}
       <PublicHeader />
       <CatalogRequestClient
         item={{

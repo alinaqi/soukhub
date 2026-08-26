@@ -28,10 +28,14 @@ export function productReviewKey(brand: string | null, title: string): string {
     .toLowerCase()
     .replace(/\((renewed|refurbished)\)/g, '')
     .replace(/\b(\d+\s?(gb|tb))\b/g, '')
+    .replace(/\b\d{5,}\b/g, '') // SKU/timestamp suffixes don't split a family
     .replace(/\b(black|white|blue|red|green|yellow|purple|pink|silver|gold|gray|grey|graphite|midnight|starlight|titanium|bronze|lavender|violet)\b/g, '')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
-    .replace(/\s+/g, '-')
+    .split(/\s+/)
+    // collapse repeated tokens ("apple apple iphone" → "apple iphone")
+    .filter((tok, i, arr) => i === 0 || tok !== arr[i - 1])
+    .join('-')
     .slice(0, 80);
   return base || 'unknown';
 }

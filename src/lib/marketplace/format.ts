@@ -21,6 +21,11 @@ export function parseSlugId(slugId: string): { slug: string; shortId: string } |
   return { slug: m[1], shortId: m[2] };
 }
 
+/** Canonical catalog path: /m/{slug}-{shortId}, uuid fallback for legacy rows. */
+export function catalogPath(item: { id: string; slug?: string | null; short_id?: string | null }): string {
+  return item.slug && item.short_id ? `/m/${item.slug}-${item.short_id}` : `/m/${item.id}`;
+}
+
 /** wa.me deep link with a prefilled order message. */
 export function whatsAppOrderLink(phone: string, message: string): string {
   let cleaned = phone.replace(/[\s\-()+]/g, '');

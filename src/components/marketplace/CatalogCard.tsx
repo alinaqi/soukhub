@@ -1,14 +1,15 @@
 import { useLocale, useTranslations } from 'next-intl';
 import { ImageOff, ArrowRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import { formatAED } from '@/lib/marketplace/format';
+import { formatAED, catalogPath } from '@/lib/marketplace/format';
 import type { PublicCatalogItem } from '@/lib/marketplace/queries';
+import { RatingBadge } from './RatingBadge';
 
 /**
  * Reference-catalog card (ADR 0016): clearly badged with its source and
  * linking out — never dressed up as a SoukHub listing.
  */
-export function CatalogCard({ item }: { item: PublicCatalogItem }) {
+export function CatalogCard({ item }: { item: PublicCatalogItem & { rating?: number; review_count?: number | null } }) {
   const locale = useLocale();
   const t = useTranslations('catalog');
   const title = locale === 'ar' && item.title_ar ? item.title_ar : item.title;
@@ -17,7 +18,7 @@ export function CatalogCard({ item }: { item: PublicCatalogItem }) {
 
   return (
     <Link
-      href={`/m/${item.id}`}
+      href={catalogPath(item)}
       className="group flex flex-col overflow-hidden rounded-xl border border-dashed border-border bg-card transition-colors hover:border-primary"
     >
       <div className="relative aspect-square bg-muted">
@@ -41,6 +42,9 @@ export function CatalogCard({ item }: { item: PublicCatalogItem }) {
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
         <h3 className="line-clamp-2 text-sm font-medium group-hover:text-primary">{title}</h3>
+        {item.rating != null && (
+          <RatingBadge rating={item.rating} reviewCount={item.review_count} />
+        )}
         {item.price != null && (
           <p className="text-base font-bold">{formatAED(Number(item.price), locale)}</p>
         )}

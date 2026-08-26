@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { HomeLanding } from '@/components/marketplace/HomeLanding';
 import { getLatestListings, getLatestCatalog, searchCatalog, type PublicListing, type PublicCatalogItem } from '@/lib/marketplace/queries';
+import { getCachedRatings, attachRating } from '@/lib/reviews/cached';
 
 export const revalidate = 60;
 
@@ -60,6 +61,20 @@ export default async function HomePage({
       // catalog is best-effort filler
     }
   }
+  // Attach cached web-review ratings (no live fetches on the home path)
+  try {
+    const ratings = await getCachedRatings([
+      ...listings.map((l) => ({ brand: l.brand, title: l.name })),
+      ...catalog.map((c) => ({ brand: c.brand, title: c.title })),
+      ...deals.map((d) => ({ brand: d.brand, title: d.title })),
+    ]);
+    listings = attachRating(listings, ratings);
+    catalog = attachRating(catalog, ratings);
+    for (let i = 0; i < deals.length; i++) deals[i] = attachRating([deals[i]], ratings)[0];
+  } catch {
+    // stars are enhancement only
+  }
+
   const bannerImage =
     listings.find((l) => Array.isArray(l.images) && l.images[0])?.images?.[0] ??
     deals.find((d) => Array.isArray(d.images) && d.images[0])?.images?.[0] ??

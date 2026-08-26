@@ -90,7 +90,7 @@ async function runTool(name: string, input: Record<string, unknown>) {
       });
       return rows.map((r) => ({
         title: r.title, price: r.price, condition: r.condition, source: r.source,
-        link: `/m/${r.id}`,
+        link: r.slug && r.short_id ? `/m/${r.slug}-${r.short_id}` : `/m/${r.id}`,
         image: Array.isArray(r.images) ? (r.images[0] as string | undefined) ?? null : null,
       }));
     }
