@@ -20,7 +20,8 @@ export function getDir(locale: string): 'ltr' | 'rtl' {
 
 /** Locale-prefixed path: default locale unprefixed, others prefixed. */
 export function localePath(locale: string, path: string): string {
-  return locale === routing.defaultLocale ? path : `/${locale}${path}`;
+  const prefixed = locale === routing.defaultLocale ? path : `/${locale}${path}`;
+  return prefixed === '' ? '/' : prefixed;
 }
 
 /** hreflang languages map for a path across all supported locales. */
