@@ -11,6 +11,11 @@ vi.mock('@/lib/marketplace/queries', () => ({
   searchCatalog: vi.fn(async () => []),
 }));
 vi.mock('@/lib/checkout/service', () => ({ lookupOrder: vi.fn(async () => null) }));
+vi.mock('@/lib/marketplace/events-service', () => ({
+  getEventCalendar: vi.fn(async () => [
+    { slug: 'white-friday', name: 'White Friday', category: null, starts_at: '2026-11-26', ends_at: '2026-11-30', expected_discount_pct: 40 },
+  ]),
+}));
 
 import { runAssistant } from '@/lib/assistant/run';
 
@@ -36,6 +41,22 @@ describe('runAssistant (spec: answer simplicity)', () => {
     expect(result.reply).toContain('Get this one');
   });
 
+  it('offers the get_event_calendar tool and runs it for timing questions', async () => {
+    let sawTool = false;
+    let call = 0;
+    const fake = async (params: Anthropic.MessageCreateParamsNonStreaming) => {
+      sawTool ||= (params.tools ?? []).some((t) => t.name === 'get_event_calendar');
+      call++;
+      if (call === 1) {
+        return msg([{ type: 'tool_use', id: 'c1', name: 'get_event_calendar', input: { category: 'laptops' } } as Anthropic.ContentBlock], 'tool_use');
+      }
+      return msg([{ type: 'text', text: 'White Friday is close — you may want to wait.' } as Anthropic.ContentBlock], 'end_turn');
+    };
+    const res = await runAssistant([{ role: 'user', content: 'should I buy a laptop now or wait?' }], fake);
+    expect(sawTool).toBe(true);
+    expect(res.reply).toMatch(/White Friday/);
+  });
+
   it('system prompt carries the answer-page and honesty rules', async () => {
     let seenSystem = '';
     const fake = async (params: Anthropic.MessageCreateParamsNonStreaming) => {
@@ -48,5 +69,6 @@ describe('runAssistant (spec: answer simplicity)', () => {
     expect(seenSystem).toMatch(/never invent/i);
     expect(seenSystem).toMatch(/same language/i);
     expect(seenSystem).toMatch(/no good match|say so/i);
+    expect(seenSystem).toMatch(/get_event_calendar|wait/i);
   });
 });

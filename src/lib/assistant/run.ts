@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { searchListings, searchCatalog } from '@/lib/marketplace/queries';
 import { lookupOrder } from '@/lib/checkout/service';
+import { getEventCalendar } from '@/lib/marketplace/events-service';
 
 /**
  * Buyer-facing shopping assistant (ADR 0014/0016): shopping help, product
@@ -48,6 +49,18 @@ const TOOLS: Anthropic.Tool[] = [
       required: ['ref', 'phone'],
     },
   },
+  {
+    name: 'get_event_calendar',
+    description:
+      'Upcoming UAE shopping events (Back to School, White Friday, DSF, Ramadan, Eid, National Day, GITEX…) within a date window, with each event\'s expected discount and category. Use this to decide whether to advise buying now or waiting for a sale.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        category: { type: 'string', description: 'Optional product category to filter relevant events (e.g. laptops, phones).' },
+        days: { type: 'number', description: 'How many days ahead to look (default 60).' },
+      },
+    },
+  },
 ];
 
 const SYSTEM = `You are the SoukHub shopping agent for a UAE electronics marketplace. The user tells you what they need; you find the best option, not just the cheapest, and give one simple answer.
@@ -57,6 +70,11 @@ Answer shape (when recommending products):
 - Then at most TWO alternatives, each with a one-line plain trade-off label like "Cheaper, but older" or "Better camera, AED 400 more".
 - Never present more than three products in an answer.
 - If nothing fits well, say so honestly and suggest what to change (budget, condition) — do not pad with weak options.
+
+Timing (buy now vs wait):
+- When the shopper asks about timing, or a purchase can clearly wait, call get_event_calendar to see if a sale is near.
+- If a relevant event with a meaningful expected discount falls within the next ~60 days, say so plainly ("White Friday is about 2 weeks away — it usually brings deep discounts, so it may be worth waiting"). Do NOT invent a specific dirham amount you cannot back up.
+- Otherwise, advise buying now. Never tell someone to wait when no relevant event is near.
 
 Question policy:
 - Ask at most three short questions in the whole conversation, and never ask what the request already implies.
@@ -108,6 +126,19 @@ async function runTool(name: string, input: Record<string, unknown>) {
     if (name === 'order_status') {
       const order = await lookupOrder(String(input.ref ?? ''), String(input.phone ?? ''));
       return order ?? { error: 'No order found for that reference + phone combination.' };
+    }
+    if (name === 'get_event_calendar') {
+      const events = await getEventCalendar({
+        category: input.category ? String(input.category) : null,
+        days: typeof input.days === 'number' ? input.days : undefined,
+      });
+      return events.map((e) => ({
+        event: e.name,
+        starts: e.starts_at.slice(0, 10),
+        ends: e.ends_at.slice(0, 10),
+        expected_discount_pct: e.expected_discount_pct,
+        category: e.category ?? 'all',
+      }));
     }
     return { error: 'unknown tool' };
   } catch (e) {
@@ -187,7 +218,7 @@ export async function runAssistant(
     const results: Anthropic.ToolResultBlockParam[] = [];
     for (const tu of toolUses) {
       const result = await runTool(tu.name, tu.input as Record<string, unknown>);
-      if (tu.name !== 'order_status') collect(result);
+      if (tu.name === 'search_products' || tu.name === 'search_market') collect(result);
       results.push({ type: 'tool_result', tool_use_id: tu.id, content: JSON.stringify(result) });
     }
     messages.push({ role: 'assistant', content: response.content });

@@ -8,6 +8,7 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **AI timing advice from the retail calendar**: the shopping agent has a `get_event_calendar` tool — for "buy now or wait?" questions it checks upcoming UAE sales (Back to School, White Friday, DSF, Ramadan…) and gives grounded, honest advice ("White Friday is ~2 weeks away — may be worth waiting"), never inventing a discount it can't back up
 - **UAE retail calendar (ADR 0018 ring-2)**: a seeded schedule of shopping events — Back to School, Emirati Women's Day, GITEX, White Friday, National Day, Dubai Shopping Festival, Chinese New Year, Ramadan, Eid — each with a date window, expected-discount and category. The live event surfaces as a home banner ("🎒 Live now · Back to School — save up to 20%") plus an auto-populated category deals row, localized across all six languages; `events` table with public-read RLS, priority-based active-event selection
 - **Six UAE languages**: full UI in English, Arabic, Hindi, Urdu (RTL), Malayalam, and Tagalog — complete next-intl catalogs with verified key/placeholder parity, a language menu with native names, and an AI agent that detects and mirrors the shopper's language
 - **Seller deals**: sellers run time-boxed prices from a new console Deals page; live deals are promoted in a home-page strip (deal chip, struck list price, seller name) and on product pages, enforced by RLS (public sees only active-window deals, one live deal per product)

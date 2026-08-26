@@ -21,7 +21,7 @@ Adopt the spec incrementally in three rings, keeping the marketplace (browse/sea
 
 **Ring 2 — next (needs new tables/config, no new infra)**
 - Spec floors (`spec_floors` table + `get_spec_floor` tool) for laptops' three launch use cases.
-- UAE retail calendar (`events` table + `get_event_calendar`) with the known events. **(shipped: seeded calendar + active-event home banner + category deals; the `get_event_calendar` agent tool is the remaining half.)**
+- UAE retail calendar (`events` table + `get_event_calendar`) with the known events. **(shipped: seeded calendar + active-event home banner + category deals + the `get_event_calendar` agent tool for honest buy-now/wait advice.)**
 - Price history recording: daily min price per catalog family (`price_points`), started NOW so the 90-day gate is reachable — the long-term asset the spec says to never delete.
 - Offer expiry: mark catalog rows not seen in two ingestion runs as expired (freshness enforcement half).
 - Deterministic `score_offers` with per-use-case weights in config.
