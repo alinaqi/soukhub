@@ -16,6 +16,7 @@ interface MarketplaceData {
 export function AnalyticsSummary({ orders }: AnalyticsSummaryProps) {
   // Calculate stats by marketplace
   const marketplaceColors: Record<string, string> = {
+    soukhub: '#0f766e',
     amazon: '#FF9900',
     cartlow: '#00B67A',
     revibe: '#6366F1',
