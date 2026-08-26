@@ -79,7 +79,12 @@
       "privacy": "Privacy",
       "terms": "Terms",
       "openSource": "Open source",
-      "copyright": "© {year} SoukHub. MIT licensed."
+      "copyright": "© {year} SoukHub. MIT licensed.",
+      "allShops": "All mobile shops",
+      "shopsInDubai": "Shops in Dubai",
+      "shopsInSharjah": "Shops in Sharjah",
+      "shopsInAbuDhabi": "Shops in Abu Dhabi",
+      "claimShop": "Claim your shop"
     },
     "metaTitle": "SoukHub — Buy & Sell Phones and Electronics in the UAE",
     "metaDescription": "The AI-first marketplace for phones and electronics in the UAE. Graded devices from local sellers — cards, Apple Pay or cash on delivery, in English and Arabic.",
@@ -316,5 +321,15 @@
     "claimError": "Something went wrong — please try again.",
     "googleReviewsTitle": "What customers say",
     "googleReviewsSource": "Reviews from Google"
+  },
+  "delivery": {
+    "deliverTo": "Deliver to:",
+    "chooseLocation": "Choose your location",
+    "useMyLocation": "Use my current location",
+    "locating": "Locating…",
+    "manualPlaceholder": "Type your area — e.g. Al Barsha, Dubai",
+    "saveAddress": "Save",
+    "locationFailed": "Couldn't get your location — type your area instead.",
+    "nearYou": "Near you"
   }
 }

@@ -79,7 +79,12 @@
       "privacy": "الخصوصية",
       "terms": "الشروط",
       "openSource": "مفتوح المصدر",
-      "copyright": "© {year} سوق هب. مرخّص بموجب MIT."
+      "copyright": "© {year} سوق هب. مرخّص بموجب MIT.",
+      "allShops": "جميع محلات الهواتف",
+      "shopsInDubai": "محلات في دبي",
+      "shopsInSharjah": "محلات في الشارقة",
+      "shopsInAbuDhabi": "محلات في أبوظبي",
+      "claimShop": "فعّل ملكية متجرك"
     },
     "metaTitle": "سوق هب — بيع وشراء الهواتف والإلكترونيات في الإمارات",
     "metaDescription": "السوق المبني بالذكاء الاصطناعي للهواتف والإلكترونيات في الإمارات. أجهزة مصنّفة الحالة من بائعين محليين — بطاقات أو Apple Pay أو نقدًا عند الاستلام، بالعربية والإنجليزية.",
@@ -316,5 +321,15 @@
     "claimError": "حدث خطأ ما — يرجى المحاولة مرة أخرى.",
     "googleReviewsTitle": "آراء العملاء",
     "googleReviewsSource": "مراجعات من Google"
+  },
+  "delivery": {
+    "deliverTo": "التوصيل إلى:",
+    "chooseLocation": "اختر موقعك",
+    "useMyLocation": "استخدم موقعي الحالي",
+    "locating": "جارٍ تحديد الموقع…",
+    "manualPlaceholder": "اكتب منطقتك — مثل البرشاء، دبي",
+    "saveAddress": "حفظ",
+    "locationFailed": "تعذّر تحديد موقعك — اكتب منطقتك بدلاً من ذلك.",
+    "nearYou": "بالقرب منك"
   }
 }
