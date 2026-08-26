@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
 import { SellLanding } from '@/components/marketplace/SellLanding';
+import { localeAlternates } from '@/i18n/routing';
 
 export async function generateMetadata({
   params,
@@ -12,7 +13,7 @@ export async function generateMetadata({
   return {
     title: { absolute: t('metaTitle') },
     description: t('metaDescription'),
-    alternates: { languages: { en: '/sell', ar: '/ar/sell' } },
+    alternates: { languages: localeAlternates('/sell') },
   };
 }
 

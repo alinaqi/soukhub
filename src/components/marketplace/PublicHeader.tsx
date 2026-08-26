@@ -4,12 +4,13 @@ import { Store, Search } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from './LocaleSwitcher';
 import { BackButton, MobileMenu } from './MobileNav';
+import { localePath } from '@/i18n/routing';
 
 /** Compact header for search / store / product pages. */
 export function PublicHeader({ defaultQuery = '' }: { defaultQuery?: string }) {
   const t = useTranslations('common');
   const locale = useLocale();
-  const searchAction = locale === 'ar' ? '/ar/search' : '/search';
+  const searchAction = localePath(locale, '/search');
 
   return (
     <header className="border-b border-border bg-background">

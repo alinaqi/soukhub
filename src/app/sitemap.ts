@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { createClient } from '@supabase/supabase-js';
+import { localeAlternates } from '@/i18n/routing';
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL || 'https://soukhub.vercel.app';
 
@@ -16,7 +17,7 @@ function entry(path: string, priority: number, freq: MetadataRoute.Sitemap[numbe
     url: `${BASE}${path}`,
     changeFrequency: freq,
     priority,
-    alternates: { languages: { en: `${BASE}${path}`, ar: `${BASE}/ar${path}` } },
+    alternates: { languages: localeAlternates(path, BASE) },
   };
 }
 

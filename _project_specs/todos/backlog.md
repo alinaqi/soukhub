@@ -2284,3 +2284,23 @@ As a seller, I want to contact my supplier via WhatsApp or email depending on ur
 8. **Works offline where possible**
 9. **WhatsApp-like familiarity**
 10. **Zero training needed**
+
+## TODO-068: Spec floors + retail calendar (agent ring 2)
+Curated `spec_floors` (laptops: writing/coding/design) and `events` (White Friday, DSF, Ramadan/Eid, back-to-school, Gitex, launches) tables + read-only agent tools `get_spec_floor` / `get_event_calendar`.
+- Validation: agent recommendations for "laptop for coding" meet the 16GB/512SSD floor; calendar returns events in a date window. Tests: floor lookup, window queries, agent grounding.
+
+## TODO-069: Price history recording (agent ring 2 — schedule-critical)
+Daily min verified price per catalog product family + condition into `price_points` (never deleted). Cron over existing catalog ingestion.
+- Validation: after two ingest runs, price_points has one row per family/day; 90-day gate logic returns empty before threshold. Tests: recorder idempotency, min-price selection.
+
+## TODO-070: Offer expiry sweep (freshness enforcement)
+Catalog rows not seen in two consecutive ingestion runs → is_active=false (spec §7.6). Pair with existing "Verified {n}h ago" display.
+- Validation: stale row hidden from search/home after two runs. Tests: sweep function unit test.
+
+## TODO-071: score_offers + timing advice (agent ring 2/3)
+Deterministic scoring (fit/TCO/condition/trust/timing, per-use-case weights in config) and buy-now/wait line backed by price_points + events; alerts table.
+- Validation: spec §5.2/5.3 decision rules reproduced in unit tests; agent never says "wait" without ≥90d history.
+
+## TODO-072: Agent evaluation suite (spec §9)
+Scenario suite (personas × languages) with graders: intent, question count, no-hallucination, honesty, simplicity. Gate: 100% honesty/no-hallucination.
+- Validation: suite runs in CI on assistant prompt/tool changes.

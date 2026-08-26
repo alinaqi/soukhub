@@ -3,6 +3,9 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { HomeLanding } from '@/components/marketplace/HomeLanding';
 import { getLatestListings, getLatestCatalog, searchCatalog, type PublicListing, type PublicCatalogItem } from '@/lib/marketplace/queries';
 import { getCachedRatings, attachRating } from '@/lib/reviews/cached';
+import { listSellerDeals, type SellerDeal } from '@/lib/marketplace/deals-service';
+import { listProviders, type PublicProvider } from '@/lib/marketplace/queries';
+import { localePath, localeAlternates } from '@/i18n/routing';
 
 export const revalidate = 60;
 
@@ -16,7 +19,7 @@ export async function generateMetadata({
   return {
     title: { absolute: t('metaTitle') },
     description: t('metaDescription'),
-    alternates: { languages: { en: '/', ar: '/ar' } },
+    alternates: { languages: localeAlternates('') },
   };
 }
 
@@ -31,6 +34,13 @@ export default async function HomePage({
   let listings: PublicListing[] = [];
   let catalog: PublicCatalogItem[] = [];
   const deals: PublicCatalogItem[] = [];
+  let sellerDeals: SellerDeal[] = [];
+  let providers: PublicProvider[] = [];
+  try {
+    [sellerDeals, providers] = await Promise.all([listSellerDeals(8), listProviders(24)]);
+  } catch {
+    // promotional strips are best-effort
+  }
   try {
     let dealPool: PublicCatalogItem[] = [];
     [listings, dealPool] = await Promise.all([
@@ -85,8 +95,10 @@ export default async function HomePage({
       listings={listings}
       catalog={catalog}
       deals={deals}
+      sellerDeals={sellerDeals}
+      providers={providers}
       bannerImage={bannerImage}
-      searchAction={locale === 'ar' ? '/ar/search' : '/search'}
+      searchAction={localePath(locale, '/search')}
     />
   );
 }

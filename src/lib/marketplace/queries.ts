@@ -139,6 +139,7 @@ export interface PublicCatalogItem {
   url: string;
   slug?: string | null;
   short_id?: string | null;
+  scraped_at?: string | null;
 }
 
 export async function searchCatalog(filters: SearchFilters): Promise<PublicCatalogItem[]> {
@@ -160,7 +161,7 @@ export async function getLatestCatalog(limit = 8): Promise<PublicCatalogItem[]> 
 }
 
 const CATALOG_COLS =
-  'id, title, title_ar, brand, model, category, condition, price, currency, images, source, url, slug, short_id';
+  'id, title, title_ar, brand, model, category, condition, price, currency, images, source, url, slug, short_id, scraped_at';
 
 export const getCatalogItemById = cache(async (id: string): Promise<PublicCatalogItem | null> => {
   const { data, error } = await publicClient()
@@ -245,6 +246,7 @@ export interface PublicProvider {
   google_review_count: number | null;
   image_url: string | null;
   hours?: Record<string, unknown> | null;
+  category?: string | null;
   claimed_org_id?: string | null;
   google_reviews?: Array<{ author: string; stars: number | null; text: string; date: string | null }>;
   distance_km?: number;
@@ -253,7 +255,7 @@ export interface PublicProvider {
 export async function listProviders(limit = 200): Promise<PublicProvider[]> {
   const { data, error } = await publicClient()
     .from('providers')
-    .select('id, slug, name, phone, whatsapp, address, area, emirate, lat, lng, google_rating, google_review_count, image_url, claimed_org_id')
+    .select('id, slug, name, phone, whatsapp, address, area, emirate, lat, lng, google_rating, google_review_count, image_url, claimed_org_id, category')
     .eq('is_active', true)
     .order('google_review_count', { ascending: false, nullsFirst: false })
     .limit(limit);

@@ -11,8 +11,10 @@ import { getProductByShortId } from '@/lib/marketplace/queries';
 import { formatAED, parseSlugId, productPath, whatsAppOrderLink } from '@/lib/marketplace/format';
 import { productJsonLd, breadcrumbJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
 import { getCachedRatingFor } from '@/lib/reviews/cached';
+import { getLiveDealForProduct } from '@/lib/marketplace/deals-service';
 import { Breadcrumbs } from '@/components/marketplace/Breadcrumbs';
 import { CategoryChips } from '@/components/marketplace/CategoryChips';
+import { localePath, localeAlternates } from '@/i18n/routing';
 
 export const revalidate = 60;
 
@@ -39,7 +41,7 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { languages: { en: path, ar: `/ar${path}` } },
+    alternates: { languages: localeAlternates(path) },
     openGraph: {
       title,
       description,
@@ -64,7 +66,7 @@ export default async function ProductPage({
   // Canonical redirect when the slug half changed (e.g. renamed listing)
   const canonicalPath = productPath(product.slug, product.short_id);
   if (parsed.slug !== product.slug) {
-    permanentRedirect(locale === 'ar' ? `/ar${canonicalPath}` : canonicalPath);
+    permanentRedirect(localePath(locale, canonicalPath));
   }
 
   const t = await getTranslations({ locale, namespace: 'product' });
@@ -76,8 +78,12 @@ export default async function ProductPage({
   const images = (Array.isArray(product.images) ? product.images : []) as string[];
   const storeName =
     locale === 'ar' && product.store?.name_ar ? product.store.name_ar : product.store?.name;
-  const url = `${baseUrl()}${locale === 'ar' ? '/ar' : ''}${canonicalPath}`;
-  const price = Number(product.base_price ?? 0);
+  const url = `${baseUrl()}${localePath(locale, canonicalPath)}`;
+  const basePrice = Number(product.base_price ?? 0);
+
+  // Seller-run deal: live window only; deal price becomes THE price
+  const deal = await getLiveDealForProduct(product.id).catch(() => null);
+  const price = deal ? deal.deal_price : basePrice;
 
   // Cached web-review aggregate → Google rich-snippet stars in organic results
   const cachedRating = await getCachedRatingFor(product.brand, product.name).catch(() => null);
@@ -156,7 +162,19 @@ export default async function ProductPage({
             {product.brand && (
               <p className="mt-1 text-sm text-muted-foreground">{product.brand}</p>
             )}
-            <p className="mt-4 text-3xl font-bold text-accent">{formatAED(price, locale)}</p>
+            <p className="mt-4 flex flex-wrap items-baseline gap-2">
+              <span className="text-3xl font-bold text-accent">{formatAED(price, locale)}</span>
+              {deal && basePrice > price && (
+                <>
+                  <span className="text-lg text-muted-foreground line-through">
+                    {formatAED(basePrice, locale)}
+                  </span>
+                  <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-semibold text-accent">
+                    {t('dealBadge')}
+                  </span>
+                </>
+              )}
+            </p>
 
             {/* Seller card */}
             {product.store && (

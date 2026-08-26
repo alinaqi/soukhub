@@ -1172,3 +1172,29 @@ export const providerRequests = pgTable("provider_requests", {
 		name: "provider_requests_provider_fkey"
 	}).onDelete("cascade"),
 ]);
+
+export const deals = pgTable("deals", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	orgId: uuid("org_id").notNull(),
+	productId: uuid("product_id").notNull(),
+	dealPrice: numeric("deal_price", { precision: 10, scale: 2 }).notNull(),
+	startsAt: timestamp("starts_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	endsAt: timestamp("ends_at", { withTimezone: true, mode: 'string' }).notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_deals_org").using("btree", table.orgId.asc().nullsLast().op("uuid_ops")),
+	index("idx_deals_product").using("btree", table.productId.asc().nullsLast().op("uuid_ops")),
+	index("idx_deals_window").using("btree", table.endsAt.desc().nullsFirst()).where(sql`is_active`),
+	foreignKey({
+		columns: [table.orgId],
+		foreignColumns: [organizations.id],
+		name: "deals_org_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.productId],
+		foreignColumns: [products.id],
+		name: "deals_product_fkey"
+	}).onDelete("cascade"),
+	uniqueIndex("uq_deals_product_active").using("btree", table.productId.asc().nullsLast().op("uuid_ops")).where(sql`is_active`),
+]);

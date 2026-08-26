@@ -2,6 +2,12 @@ import { describe, it, expect } from 'vitest';
 import { routing, getDir, isLocale } from '@/i18n/routing';
 import en from '../../messages/en.json';
 import ar from '../../messages/ar.json';
+import hi from '../../messages/hi.json';
+import ur from '../../messages/ur.json';
+import ml from '../../messages/ml.json';
+import tl from '../../messages/tl.json';
+
+const LOCALES = { ar, hi, ur, ml, tl } as const;
 
 /** TODO-042 — i18n contract: locales, RTL, and full message parity. */
 
@@ -14,14 +20,19 @@ function flattenKeys(obj: Record<string, unknown>, prefix = ''): string[] {
 }
 
 describe('i18n routing', () => {
-  it('supports English and Arabic with English default', () => {
-    expect(routing.locales).toContain('en');
-    expect(routing.locales).toContain('ar');
+  it('supports all six UAE languages with English default', () => {
+    for (const loc of ['en', 'ar', 'hi', 'ur', 'ml', 'tl']) {
+      expect(routing.locales).toContain(loc);
+    }
     expect(routing.defaultLocale).toBe('en');
   });
 
-  it('Arabic is RTL, English is LTR', () => {
+  it('Arabic and Urdu are RTL, the rest LTR', () => {
     expect(getDir('ar')).toBe('rtl');
+    expect(getDir('ur')).toBe('rtl');
+    expect(getDir('hi')).toBe('ltr');
+    expect(getDir('ml')).toBe('ltr');
+    expect(getDir('tl')).toBe('ltr');
     expect(getDir('en')).toBe('ltr');
   });
 
@@ -33,10 +44,11 @@ describe('i18n routing', () => {
 });
 
 describe('message catalogs', () => {
-  it('Arabic covers every English key (no missing translations)', () => {
+  it('every locale covers every English key (no missing translations)', () => {
     const enKeys = flattenKeys(en).sort();
-    const arKeys = flattenKeys(ar).sort();
-    expect(arKeys).toEqual(enKeys);
+    for (const [lang, catalog] of Object.entries(LOCALES)) {
+      expect(flattenKeys(catalog).sort(), lang).toEqual(enKeys);
+    }
   });
 
   it('no Arabic value is left in English (identical to en)', () => {
