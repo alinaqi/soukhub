@@ -10,6 +10,7 @@ const PUBLIC_LOCALIZED = [
   /^\/$/,
   /^\/(en|ar)(\/.*)?$/,
   /^\/search(\/.*)?$/,
+  /^\/sell$/,
   /^\/s\/.+$/, // storefronts (deep paths 404 inside the locale tree, not at /login)
   /^\/p\/.+$/, // product pages
 ];

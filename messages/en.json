@@ -19,11 +19,12 @@
   },
   "nav": {
     "browse": "Browse",
-    "sell": "Sell on SoukHub"
+    "sell": "Sell on SoukHub",
+    "forSellers": "For Sellers"
   },
   "home": {
-    "heroTitle": "The UAE marketplace for phones & electronics",
-    "heroSubtitle": "Buy graded devices from local sellers. Pay by card or cash on delivery. Sell in minutes with a store that runs itself — AI-first, in English and Arabic.",
+    "heroTitle": "Graded phones & electronics from UAE sellers",
+    "heroSubtitle": "Shop verified local stores. Clear condition grades, fair prices — pay by card, Apple Pay, or cash on delivery.",
     "browsePhones": "Browse phones",
     "startSellingFree": "Start selling free",
     "categories": {
@@ -76,7 +77,12 @@
       "copyright": "© {year} SoukHub. MIT licensed."
     },
     "metaTitle": "SoukHub — Buy & Sell Phones and Electronics in the UAE",
-    "metaDescription": "The AI-first marketplace for phones and electronics in the UAE. Graded devices from local sellers — cards, Apple Pay or cash on delivery, in English and Arabic."
+    "metaDescription": "The AI-first marketplace for phones and electronics in the UAE. Graded devices from local sellers — cards, Apple Pay or cash on delivery, in English and Arabic.",
+    "browseAll": "Browse all listings",
+    "sellBannerTitle": "Have phones or electronics to sell?",
+    "sellBannerText": "Open your store in minutes — free to list, AI does the busywork.",
+    "sellBannerCta": "Sell on SoukHub",
+    "noListingsYet": "Listings are arriving — check back soon or be the first to sell."
   },
   "search": {
     "title": "Search",
@@ -111,5 +117,22 @@
     "title": "Page not found",
     "text": "The page you are looking for doesn't exist or is no longer available.",
     "backHome": "Back to home"
+  },
+  "sell": {
+    "metaTitle": "Sell on SoukHub — open your store in minutes",
+    "metaDescription": "Free to list. AI writes your listings in English and Arabic, and a full operations engine — orders, suppliers, WhatsApp automation — comes built in.",
+    "heroTitle": "Open your store. Let AI run the busywork.",
+    "heroSubtitle": "List free, pay only a small commission when you sell. Your storefront goes live the moment you publish your first listing — and you get a back-office most retailers pay thousands for.",
+    "cta": "Start selling free",
+    "ctaSecondary": "Log in to your console",
+    "howTitle": "Live in three steps",
+    "how1Title": "Create your account",
+    "how1Text": "Sign up and name your store — you get a clean storefront address instantly.",
+    "how2Title": "Add a listing",
+    "how2Text": "Type it in or snap a photo and let AI draft title, specs and price in English and Arabic.",
+    "how3Title": "Publish and share",
+    "how3Text": "Publishing your first listing takes your store live. Share the link on WhatsApp and start selling.",
+    "commissionTitle": "Simple, honest pricing",
+    "commissionText": "No setup fees, no monthly fees. We earn a small commission only when you sell."
   }
 }
