@@ -13,7 +13,8 @@ vi.mock('@/lib/marketplace/queries', () => ({
 vi.mock('@/lib/checkout/service', () => ({ lookupOrder: vi.fn(async () => null) }));
 vi.mock('@/lib/marketplace/events-service', () => ({
   getEventCalendar: vi.fn(async () => [
-    { slug: 'white-friday', name: 'White Friday', category: null, starts_at: '2026-11-26', ends_at: '2026-11-30', expected_discount_pct: 40 },
+    { slug: 'back-to-school', name: 'Back to School', category: 'laptops',
+      starts_at: '2000-01-01', ends_at: '2099-12-31', expected_discount_pct: 20 },
   ]),
 }));
 
@@ -41,6 +42,27 @@ describe('runAssistant (spec: answer simplicity)', () => {
     expect(result.reply).toContain('Get this one');
   });
 
+  it('feeds the model today\'s date and a live/upcoming status for events', async () => {
+    let toolResult = '';
+    let seenSystem = '';
+    let call = 0;
+    const fake = async (params: Anthropic.MessageCreateParamsNonStreaming) => {
+      seenSystem = String(params.system);
+      call++;
+      if (call === 1) {
+        return msg([{ type: 'tool_use', id: 'c1', name: 'get_event_calendar', input: {} } as Anthropic.ContentBlock], 'tool_use');
+      }
+      // 2nd call: the tool_result the loop fed back is in the last user message
+      const last = params.messages[params.messages.length - 1];
+      toolResult = JSON.stringify(last.content);
+      return msg([{ type: 'text', text: 'ok' } as Anthropic.ContentBlock], 'end_turn');
+    };
+    await runAssistant([{ role: 'user', content: 'sale coming?' }], fake);
+    expect(seenSystem).toMatch(/Today's date is \d{4}-\d{2}-\d{2}/);
+    expect(toolResult).toMatch(/today/);
+    expect(toolResult).toMatch(/live now/);
+  });
+
   it('offers the get_event_calendar tool and runs it for timing questions', async () => {
     let sawTool = false;
     let call = 0;
@@ -50,11 +72,11 @@ describe('runAssistant (spec: answer simplicity)', () => {
       if (call === 1) {
         return msg([{ type: 'tool_use', id: 'c1', name: 'get_event_calendar', input: { category: 'laptops' } } as Anthropic.ContentBlock], 'tool_use');
       }
-      return msg([{ type: 'text', text: 'White Friday is close — you may want to wait.' } as Anthropic.ContentBlock], 'end_turn');
+      return msg([{ type: 'text', text: 'Back to School is live now — buy now.' } as Anthropic.ContentBlock], 'end_turn');
     };
     const res = await runAssistant([{ role: 'user', content: 'should I buy a laptop now or wait?' }], fake);
     expect(sawTool).toBe(true);
-    expect(res.reply).toMatch(/White Friday/);
+    expect(res.reply).toMatch(/Back to School/);
   });
 
   it('system prompt carries the answer-page and honesty rules', async () => {
