@@ -1,16 +1,26 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
+import { safeInternalPath } from '@/lib/marketplace/format';
 
 export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -29,7 +39,10 @@ export default function LoginPage() {
       return;
     }
 
-    router.push('/dashboard');
+    // ?next= comes from user navigation but is still validated against the
+    // internal route allowlist (open-redirect guard)
+    const next = safeInternalPath(searchParams.get('next') ?? '');
+    router.push(next ?? '/dashboard');
     router.refresh();
   };
 

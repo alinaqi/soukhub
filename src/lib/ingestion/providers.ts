@@ -7,6 +7,13 @@ import { runActorSync } from './apify';
  * the catalog pipeline: scraped shapes drift, broken rows are dropped.
  */
 
+export interface ProviderGoogleReview {
+  author: string;
+  stars: number | null;
+  text: string;
+  date: string | null;
+}
+
 export interface ProviderItem {
   google_place_id: string;
   name: string;
@@ -23,6 +30,7 @@ export interface ProviderItem {
   category: string | null;
   hours: Record<string, unknown>;
   image_url: string | null;
+  google_reviews: ProviderGoogleReview[];
 }
 
 const EMIRATES = [
@@ -48,6 +56,19 @@ export function toWhatsApp(phone: string | null): string | null {
   if (digits.length === 9 && digits.startsWith('5')) digits = '971' + digits;
   // Only mobile numbers (9715x) do WhatsApp; landlines (9714x etc.) don't
   return /^9715\d{8}$/.test(digits) ? digits : null;
+}
+
+export function mapGoogleReviews(raw: unknown): ProviderGoogleReview[] {
+  if (!Array.isArray(raw)) return [];
+  return (raw as Array<Record<string, unknown>>)
+    .filter((r) => !!r && typeof r === 'object' && typeof r.text === 'string' && r.text.trim().length > 10)
+    .slice(0, 5)
+    .map((r) => ({
+      author: typeof r.name === 'string' && r.name ? (r.name as string).slice(0, 60) : 'Google user',
+      stars: typeof r.stars === 'number' && r.stars >= 1 && r.stars <= 5 ? r.stars : null,
+      text: (r.text as string).trim().slice(0, 350),
+      date: typeof r.publishedAtDate === 'string' ? (r.publishedAtDate as string).slice(0, 10) : null,
+    }));
 }
 
 function asString(v: unknown): string | null {
@@ -91,6 +112,7 @@ export function mapPlaceItem(raw: Raw): ProviderItem | null {
     category: asString(raw.categoryName),
     hours: Array.isArray(raw.openingHours) ? { openingHours: raw.openingHours } : {},
     image_url: asString(raw.imageUrl),
+    google_reviews: mapGoogleReviews(raw.reviews),
   };
 }
 
@@ -141,6 +163,8 @@ export async function ingestProviders(emirate: string, max = 60): Promise<Provid
       skipClosedPlaces: true,
       scrapeContacts: false,
       maxImages: 1,
+      maxReviews: 5,
+      reviewsSort: 'mostRelevant',
     },
     { timeoutSecs: 600 }
   );
