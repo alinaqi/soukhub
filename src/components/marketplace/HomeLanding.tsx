@@ -21,7 +21,8 @@ import NextLink from 'next/link';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from '@/components/marketplace/LocaleSwitcher';
 import { ProductCard } from '@/components/marketplace/ProductCard';
-import type { PublicListing } from '@/lib/marketplace/queries';
+import type { PublicListing, PublicCatalogItem } from '@/lib/marketplace/queries';
+import { CatalogCard } from '@/components/marketplace/CatalogCard';
 
 const CATEGORY_ICONS = [
   { key: 'phones', icon: Smartphone },
@@ -45,11 +46,14 @@ const TRUST_ICONS = [
  */
 export function HomeLanding({
   listings,
+  catalog = [],
   searchAction,
 }: {
   listings: PublicListing[];
+  catalog?: PublicCatalogItem[];
   searchAction: string;
 }) {
+  const tcat = useTranslations('catalog');
   const t = useTranslations('home');
   const tn = useTranslations('nav');
   const tc = useTranslations('common');
@@ -69,6 +73,12 @@ export function HomeLanding({
             <Suspense>
               <LocaleSwitcher />
             </Suspense>
+            <Link
+              href="/trade-in"
+              className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
+            >
+              {tn('tradeIn')}
+            </Link>
             <Link
               href="/sell"
               className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5"
@@ -154,6 +164,19 @@ export function HomeLanding({
           </div>
         )}
       </section>
+
+      {/* Market catalog filler (ADR 0016) */}
+      {catalog.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+          <h2 className="text-2xl font-bold">{tcat('fromMarket')}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{tcat('marketNote')}</p>
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            {catalog.slice(0, 8).map((item) => (
+              <CatalogCard key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Buyer trust */}
       <section className="border-y border-border bg-surface-warm">

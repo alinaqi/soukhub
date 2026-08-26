@@ -11,12 +11,18 @@ const PUBLIC_LOCALIZED = [
   /^\/(en|ar)(\/.*)?$/,
   /^\/search(\/.*)?$/,
   /^\/sell$/,
+  /^\/trade-in$/,
   /^\/s\/.+$/, // storefronts (deep paths 404 inside the locale tree, not at /login)
   /^\/p\/.+$/, // product pages
 ];
 
 // Public but outside the locale tree (legal pages live at the root)
-const PUBLIC_PLAIN = [/^\/privacy$/, /^\/terms$/];
+const PUBLIC_PLAIN = [
+  /^\/privacy$/,
+  /^\/terms$/,
+  /^\/api\/trade-in\/evaluate$/, // guests get valuations; validates its own input
+  /^\/api\/admin\/ingest$/, // guarded by INGEST_SECRET header, not a session
+];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;

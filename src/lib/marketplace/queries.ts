@@ -119,3 +119,40 @@ export const getProductByShortId = cache(
     return { ...(data as PublicListing), store: (org as PublicStore | null) ?? null };
   }
 );
+
+// ------------------------------------------------------------------
+// External reference catalog (ADR 0016) — market data that fills
+// discovery and powers trade-in pricing. Clearly badged in the UI.
+// ------------------------------------------------------------------
+export interface PublicCatalogItem {
+  id: string;
+  title: string;
+  title_ar: string | null;
+  brand: string | null;
+  model: string | null;
+  category: string | null;
+  condition: string | null;
+  price: number | null;
+  currency: string;
+  images: string[] | null;
+  source: 'amazon' | 'cartlow' | 'revibe';
+  url: string;
+}
+
+export async function searchCatalog(filters: SearchFilters): Promise<PublicCatalogItem[]> {
+  const { data, error } = await publicClient().rpc('search_catalog', {
+    p_query: filters.q ?? '',
+    p_brand: filters.brand ?? null,
+    p_category: filters.category ?? null,
+    p_min_price: filters.minPrice ?? null,
+    p_max_price: filters.maxPrice ?? null,
+    p_limit: filters.limit ?? 12,
+    p_offset: filters.offset ?? 0,
+  });
+  if (error) throw error;
+  return (data ?? []) as PublicCatalogItem[];
+}
+
+export async function getLatestCatalog(limit = 8): Promise<PublicCatalogItem[]> {
+  return searchCatalog({ limit });
+}

@@ -902,7 +902,7 @@ export const products = pgTable("products", {
 }, (table) => [
 	index("idx_products_brand").using("btree", table.brand.asc().nullsLast().op("text_ops")),
 	index("idx_products_category").using("btree", table.category.asc().nullsLast().op("text_ops")),
-	index("idx_products_name_trgm").using("gin", sql`((COALESCE(name, ''::text) || ' '::text) || COALESCE(brand, ''::text))`),
+	index("idx_products_name_trgm").using("gin", sql`((COALESCE(name, ''::text) || ' '::text) || COALESCE(brand, ''::text)) gin_trgm_ops`),
 	index("idx_products_org").using("btree", table.orgId.asc().nullsLast().op("uuid_ops")),
 	index("idx_products_published").using("btree", table.isPublished.asc().nullsLast().op("uuid_ops"), table.orgId.asc().nullsLast().op("uuid_ops")).where(sql`is_published`),
 	index("idx_products_search_vector").using("gin", table.searchVector.asc().nullsLast().op("tsvector_ops")),
@@ -1035,3 +1035,49 @@ export const inventorySummary = pgMaterializedView("inventory_summary", {	userId
 	// You can use { mode: "bigint" } if numbers are exceeding js number limitations
 	outOfStockCount: bigint("out_of_stock_count", { mode: "number" }),
 }).as(sql`SELECT p.user_id, count(DISTINCT p.id) AS total_products, COALESCE(sum(i.quantity), 0::bigint) AS total_units, COALESCE(sum(i.quantity - i.reserved), 0::bigint) AS available_units, COALESCE(sum(i.reserved), 0::bigint) AS reserved_units, count(*) FILTER (WHERE i.quantity > 0 AND i.quantity <= i.reorder_point) AS low_stock_count, count(*) FILTER (WHERE i.quantity = 0) AS out_of_stock_count FROM products p LEFT JOIN product_variants pv ON pv.product_id = p.id LEFT JOIN inventory i ON i.variant_id = pv.id GROUP BY p.user_id`);
+// ============================================================
+// External reference catalog (ADR 0016) — scraped market data
+// (Amazon.ae / Cartlow / Revibe via Apify) that fills discovery
+// and powers trade-in pricing. NOT seller listings.
+// ============================================================
+export const catalogProducts = pgTable("catalog_products", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	source: text().notNull(),
+	sourceId: text("source_id").notNull(),
+	url: text().notNull(),
+	title: text().notNull(),
+	titleAr: text("title_ar"),
+	brand: text(),
+	model: text(),
+	category: text(),
+	condition: text(),
+	price: numeric({ precision: 10, scale: 2 }),
+	currency: text().default('AED').notNull(),
+	images: jsonb().default([]),
+	attributes: jsonb().default({}),
+	isActive: boolean("is_active").default(true).notNull(),
+	scrapedAt: timestamp("scraped_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	searchVector: tsvector("search_vector"),
+}, (table) => [
+	unique("uq_catalog_source_item").on(table.source, table.sourceId),
+	index("idx_catalog_brand").using("btree", table.brand.asc().nullsLast().op("text_ops")),
+	index("idx_catalog_category").using("btree", table.category.asc().nullsLast().op("text_ops")),
+	index("idx_catalog_active").using("btree", table.isActive.asc().nullsLast()),
+]);
+
+// AI trade-in requests: photo assessment + valuation snapshot
+export const tradeInRequests = pgTable("trade_in_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	userId: uuid("user_id"),
+	contactPhone: text("contact_phone"),
+	notes: text(),
+	aiAssessment: jsonb("ai_assessment").default({}),
+	estimatedValue: numeric("estimated_value", { precision: 10, scale: 2 }),
+	currency: text().default('AED').notNull(),
+	status: text().default('evaluated').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_tradein_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	index("idx_tradein_created").using("btree", table.createdAt.desc().nullsFirst()),
+]);

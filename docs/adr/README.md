@@ -21,6 +21,7 @@ This directory records the significant architectural decisions made in SoukHub â
 | [0013](0013-search-and-seo-architecture.md) | Search & discovery: staged Postgres-native; SEO by construction | Accepted |
 | [0014](0014-ai-provider-tiering.md) | AI provider tiering: Cerebras / Gemini / Claude | Accepted |
 | [0015](0015-drizzle-orm-ci-migrations.md) | Drizzle ORM as schema authority; CI/CD migration deploys | Accepted |
+| [0016](0016-catalog-ingestion-tradein.md) | External catalog ingestion (Apify) + AI trade-in engine | Accepted |
 
 ## How to add an ADR
 
