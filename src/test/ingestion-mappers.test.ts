@@ -120,6 +120,18 @@ describe('scraped price/url hardening', () => {
     expect(item.price).toBe(989);
   });
 
+  it('maps Cartlow product-detail URLs with graded conditions', () => {
+    const item = mapCartlowItem({
+      title: 'Apple iPhone 15 256 GB - Blue',
+      url: 'https://cartlow.com/uae/en/product-detail/apple-iphone-15-256-gb-blue-14824100006/10644567',
+      price: '1,779.00',
+      condition: 'Very Good',
+    })!;
+    expect(item).not.toBeNull();
+    expect(item.price).toBe(1779);
+    expect(item.condition).toBe('very_good');
+  });
+
   it('drops non-product links that leak through card selectors', () => {
     expect(mapRevibeItem({ title: 'Apple', url: 'https://revibe.me/collections/vendors?q=Apple', price: '' })).toBeNull();
   });

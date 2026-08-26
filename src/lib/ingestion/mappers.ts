@@ -114,7 +114,7 @@ function mapGenericItem(source: 'cartlow' | 'revibe') {
     const url = asString(raw.url);
     if (!title || !url) return null;
     // Only actual product pages — category/vendor links match the selectors too
-    if (!/\/products?\//.test(url)) return null;
+    if (!/\/(products?|product-detail)\//.test(url)) return null;
     const sourceId = asString(raw.sourceId) ?? url.replace(/^https?:\/\//, '').split('?')[0].slice(0, 200);
     const price = parsePrice(raw.price);
     const image = asString(raw.image);
