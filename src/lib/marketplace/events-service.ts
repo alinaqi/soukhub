@@ -58,3 +58,32 @@ export async function listUpcomingEvents(now: Date = new Date(), limit = 4): Pro
   if (error) throw error;
   return (data ?? []) as RetailEvent[];
 }
+
+export interface EventCalendarQuery {
+  now?: Date;
+  days?: number;
+  category?: string | null;
+}
+
+/**
+ * Retail-calendar view for the shopping agent (spec §6 get_event_calendar):
+ * events overlapping [now, now+days] relevant to a category. An event with a
+ * null category applies to everything; a category filter also keeps matching
+ * category-specific events. Ordered soonest-ending first so "wait for X" cites
+ * the nearest opportunity.
+ */
+export async function getEventCalendar(query: EventCalendarQuery = {}): Promise<RetailEvent[]> {
+  const now = query.now ?? new Date();
+  const horizon = new Date(now.getTime() + (query.days ?? 60) * 86_400_000);
+  const { data, error } = await publicClient()
+    .from('events')
+    .select(COLS)
+    .eq('is_active', true)
+    .lte('starts_at', horizon.toISOString()) // starts before the horizon
+    .gt('ends_at', now.toISOString()) // hasn't ended yet
+    .order('ends_at', { ascending: true });
+  if (error) throw error;
+  const rows = (data ?? []) as RetailEvent[];
+  if (!query.category) return rows;
+  return rows.filter((e) => e.category == null || e.category === query.category);
+}

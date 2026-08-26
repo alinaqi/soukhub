@@ -58,3 +58,31 @@ d('retail calendar', () => {
     }
   });
 });
+
+d('getEventCalendar (agent tool source)', () => {
+  it('returns active + upcoming events inside the window, relevant to a category', async () => {
+    // Late Oct 2026: GITEX just ended, White Friday + National Day within 60 days
+    const cal = await svc.getEventCalendar({
+      now: new Date('2026-10-25T12:00:00Z'),
+      days: 60,
+      category: 'laptops',
+    });
+    const slugs = cal.map((e) => e.slug);
+    expect(slugs).toContain('white-friday'); // all-category (category null)
+    // gaming/phone-only events should not appear for a laptops query
+    expect(slugs).not.toContain('chinese-new-year');
+    // each entry carries the fields the agent needs to reason about timing
+    for (const e of cal) {
+      expect(typeof e.slug).toBe('string');
+      expect(e).toHaveProperty('expected_discount_pct');
+      expect(new Date(e.ends_at).getTime()).toBeGreaterThan(Date.parse('2026-10-25'));
+    }
+  });
+
+  it('includes the live event and respects the window bound', async () => {
+    const cal = await svc.getEventCalendar({ now: new Date('2026-08-27T12:00:00Z'), days: 14 });
+    // back-to-school is live; DSF (Dec) is outside a 14-day window
+    expect(cal.some((e) => e.slug === 'back-to-school')).toBe(true);
+    expect(cal.some((e) => e.slug === 'dubai-shopping-festival')).toBe(false);
+  });
+});
