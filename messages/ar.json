@@ -111,7 +111,8 @@
     "kmAway": "على بعد {km} كم",
     "heroPlaceholder": "ماذا تحتاج؟ مثلاً: لابتوب للجامعة…",
     "askAi": "اسأل الذكاء الاصطناعي",
-    "topShopsIn": "أفضل المحلات في {location}"
+    "topShopsIn": "أفضل المحلات في {location}",
+    "eventDealsTitle": "عروض {event}"
   },
   "search": {
     "title": "بحث",
@@ -346,5 +347,12 @@
     "saveAddress": "حفظ",
     "locationFailed": "تعذّر تحديد موقعك — اكتب منطقتك بدلاً من ذلك.",
     "nearYou": "بالقرب منك"
+  },
+  "events": {
+    "liveNow": "الآن",
+    "tagline": "عروض موسمية على سوق هب — حتى نفاد العروض.",
+    "taglineWithDiscount": "وفّر حتى {pct}% هذا الموسم — حتى نفاد العروض.",
+    "shopDeals": "تسوّق العروض",
+    "eventDealsTitle": "عروض {event}"
   }
 }

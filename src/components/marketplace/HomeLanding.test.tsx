@@ -64,6 +64,17 @@ describe('Consumer home (HomeLanding)', () => {
     expect(within(form).queryByText('Ask AI')).not.toBeInTheDocument();
   });
 
+  it('shows the active retail-calendar event banner', () => {
+    const event = {
+      id: 'e1', slug: 'back-to-school', name: 'Back to School', name_ar: null,
+      emoji: '🎒', category: 'laptops', starts_at: '2026-08-01', ends_at: '2026-09-20',
+      expected_discount_pct: 20, priority: 10,
+    };
+    renderWith(<HomeLanding listings={[]} activeEvent={event} />);
+    expect(screen.getByText('Back to School')).toBeInTheDocument();
+    expect(screen.getByText('Live now')).toBeInTheDocument();
+  });
+
   it('shows real listings when available', () => {
     renderWith(<HomeLanding listings={[LISTING]} />);
     expect(screen.getByText('iPhone 15 Pro 256GB')).toBeInTheDocument();
