@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { routing, getDir, isLocale } from '@/i18n/routing';
+import { routing, getDir, isLocale, localePath, localeAlternates } from '@/i18n/routing';
 import en from '../../messages/en.json';
 import ar from '../../messages/ar.json';
 import hi from '../../messages/hi.json';
@@ -40,6 +40,25 @@ describe('i18n routing', () => {
     expect(isLocale('ar')).toBe(true);
     expect(isLocale('fr')).toBe(false);
     expect(isLocale('search')).toBe(false);
+  });
+});
+
+describe('locale path helpers', () => {
+  it('never returns an empty string for the home path (RSC-crash regression)', () => {
+    // localeAlternates('') on the home page must not yield '' hrefs — an
+    // empty alternate URL crashed the production RSC render
+    expect(localePath('en', '')).toBe('/');
+    expect(localePath('hi', '')).toBe('/hi');
+    for (const url of Object.values(localeAlternates(''))) {
+      expect(url.length).toBeGreaterThan(0);
+      expect(url.startsWith('/')).toBe(true);
+    }
+  });
+
+  it('prefixes non-default locales and leaves the default bare', () => {
+    expect(localePath('en', '/search')).toBe('/search');
+    expect(localePath('ar', '/search')).toBe('/ar/search');
+    expect(localeAlternates('/search', 'https://x.co').hi).toBe('https://x.co/hi/search');
   });
 });
 
