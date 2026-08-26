@@ -110,7 +110,8 @@
     "allShops": "Lahat ng tindahan",
     "kmAway": "{km} km ang layo",
     "heroPlaceholder": "Ano ang kailangan mo? hal. laptop para sa unibersidad…",
-    "askAi": "Magtanong sa AI"
+    "askAi": "Magtanong sa AI",
+    "topShopsIn": "Top na tindahan sa {location}"
   },
   "search": {
     "title": "Maghanap",

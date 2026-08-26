@@ -110,7 +110,8 @@
     "allShops": "सभी दुकानें",
     "kmAway": "{km} किमी दूर",
     "heroPlaceholder": "आपको क्या चाहिए? जैसे: यूनिवर्सिटी के लिए लैपटॉप…",
-    "askAi": "AI से पूछें"
+    "askAi": "AI से पूछें",
+    "topShopsIn": "{location} की टॉप दुकानें"
   },
   "search": {
     "title": "खोजें",

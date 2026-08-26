@@ -110,7 +110,8 @@
     "allShops": "All shops",
     "kmAway": "{km} km away",
     "heroPlaceholder": "What do you need? e.g. a laptop for university…",
-    "askAi": "Ask AI"
+    "askAi": "Ask AI",
+    "topShopsIn": "Top shops across {location}"
   },
   "search": {
     "title": "Search",

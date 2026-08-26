@@ -5,7 +5,7 @@ import { getLatestListings, getLatestCatalog, searchCatalog, type PublicListing,
 import { getCachedRatings, attachRating } from '@/lib/reviews/cached';
 import { listSellerDeals, type SellerDeal } from '@/lib/marketplace/deals-service';
 import { listProviders, type PublicProvider } from '@/lib/marketplace/queries';
-import { localePath, localeAlternates } from '@/i18n/routing';
+import { localeAlternates } from '@/i18n/routing';
 
 export const revalidate = 60;
 
@@ -98,7 +98,6 @@ export default async function HomePage({
       sellerDeals={sellerDeals}
       providers={providers}
       bannerImage={bannerImage}
-      searchAction={localePath(locale, '/search')}
     />
   );
 }
