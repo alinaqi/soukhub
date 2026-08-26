@@ -15,6 +15,7 @@ function svc() {
 const TABLES = {
   catalog: 'catalog_requests',
   tradein: 'trade_in_requests',
+  provider: 'provider_requests',
 } as const;
 
 const STATUSES = ['new', 'evaluated', 'contacted', 'completed', 'closed'] as const;
@@ -25,7 +26,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const { kind, id, status } = await request.json();
     if (!(kind in TABLES) || typeof id !== 'string') {
-      return NextResponse.json({ error: 'kind (catalog|tradein) and id required' }, { status: 400 });
+      return NextResponse.json({ error: 'kind (catalog|tradein|provider) and id required' }, { status: 400 });
     }
     if (!STATUSES.includes(status)) {
       return NextResponse.json({ error: `status must be one of ${STATUSES.join(', ')}` }, { status: 400 });

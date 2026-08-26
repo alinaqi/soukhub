@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   ArrowLeft,
+  MapPin,
   Menu,
   X,
   Home,
@@ -119,6 +120,10 @@ export function MobileMenu() {
           <Link href="/trade-in" className="flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium hover:bg-muted">
             <Sparkles className="h-4.5 w-4.5 text-primary" aria-hidden />
             {t('tradeIn')}
+          </Link>
+          <Link href="/providers" className="flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium hover:bg-muted">
+            <MapPin className="h-4.5 w-4.5 text-primary" aria-hidden />
+            {t('shops')}
           </Link>
           <Link href="/sell" className="flex items-center gap-3 rounded-lg px-3 py-2.5 font-medium hover:bg-muted">
             <Store className="h-4.5 w-4.5 text-primary" aria-hidden />

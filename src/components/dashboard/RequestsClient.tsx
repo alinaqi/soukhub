@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { MessageCircle, Sparkles, ExternalLink } from 'lucide-react';
+import { MessageCircle, Sparkles, ExternalLink, Truck } from 'lucide-react';
 
 export interface CatalogRequestRow {
   id: string;
@@ -60,18 +60,38 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+export interface ProviderRequestRow {
+  id: string;
+  name: string | null;
+  contact_phone: string;
+  item_wanted: string;
+  delivery_address: string | null;
+  status: string;
+  created_at: string;
+  providers: {
+    name: string;
+    area: string | null;
+    emirate: string | null;
+    phone: string | null;
+    whatsapp: string | null;
+  } | null;
+}
+
 export function RequestsClient({
   catalogRequests,
   tradeIns,
+  providerRequests = [],
 }: {
   catalogRequests: CatalogRequestRow[];
   tradeIns: TradeInRow[];
+  providerRequests?: ProviderRequestRow[];
 }) {
   const [catalog, setCatalog] = useState(catalogRequests);
   const [trades, setTrades] = useState(tradeIns);
+  const [shopRequests, setShopRequests] = useState(providerRequests);
   const [busyId, setBusyId] = useState<string | null>(null);
 
-  const setStatus = async (kind: 'catalog' | 'tradein', id: string, status: string) => {
+  const setStatus = async (kind: 'catalog' | 'tradein' | 'provider', id: string, status: string) => {
     setBusyId(id);
     try {
       const res = await fetch('/api/requests', {
@@ -82,15 +102,17 @@ export function RequestsClient({
       if (!res.ok) return;
       if (kind === 'catalog') {
         setCatalog((rows) => rows.map((r) => (r.id === id ? { ...r, status } : r)));
-      } else {
+      } else if (kind === 'tradein') {
         setTrades((rows) => rows.map((r) => (r.id === id ? { ...r, status } : r)));
+      } else {
+        setShopRequests((rows) => rows.map((r) => (r.id === id ? { ...r, status } : r)));
       }
     } finally {
       setBusyId(null);
     }
   };
 
-  const actions = (kind: 'catalog' | 'tradein', row: { id: string; status: string }) => (
+  const actions = (kind: 'catalog' | 'tradein' | 'provider', row: { id: string; status: string }) => (
     <div className="flex gap-1.5">
       {NEXT_STATUSES.filter((s) => s !== row.status).map((s) => (
         <button
@@ -162,6 +184,55 @@ export function RequestsClient({
                 <div className="flex flex-col items-end gap-2">
                   <StatusPill status={row.status} />
                   {actions('catalog', row)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Shop (provider) requests */}
+      <section>
+        <h2 className="flex items-center gap-2 text-lg font-semibold">
+          <Truck className="h-5 w-5 text-primary" aria-hidden />
+          Nearest-shop delivery requests
+          <span className="text-sm font-normal text-muted-foreground">({shopRequests.length})</span>
+        </h2>
+        <div className="mt-3 space-y-3">
+          {shopRequests.length === 0 && (
+            <p className="rounded-xl border border-border p-6 text-center text-muted-foreground">
+              No shop requests yet.
+            </p>
+          )}
+          {shopRequests.map((row) => (
+            <div key={row.id} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="font-medium">“{row.item_wanted}”</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    from <span className="font-medium text-foreground">{row.providers?.name ?? 'shop removed'}</span>
+                    {row.providers?.area && ` (${row.providers.area}, ${row.providers.emirate ?? ''})`}
+                    {row.providers?.whatsapp && (
+                      <>
+                        {' · shop: '}
+                        <a href={`https://wa.me/${row.providers.whatsapp}`} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                          WhatsApp
+                        </a>
+                      </>
+                    )}
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    buyer: {row.name || 'Anonymous'} ·{' '}
+                    <a href={waLink(row.contact_phone)} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline">
+                      {row.contact_phone}
+                    </a>{' '}
+                    · {new Date(row.created_at).toLocaleString('en-AE', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </p>
+                  {row.delivery_address && <p className="mt-1 text-sm">📍 {row.delivery_address}</p>}
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  <StatusPill status={row.status} />
+                  {actions('provider', row)}
                 </div>
               </div>
             </div>

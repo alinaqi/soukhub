@@ -22,6 +22,7 @@ This directory records the significant architectural decisions made in SoukHub â
 | [0014](0014-ai-provider-tiering.md) | AI provider tiering: Cerebras / Gemini / Claude | Accepted |
 | [0015](0015-drizzle-orm-ci-migrations.md) | Drizzle ORM as schema authority; CI/CD migration deploys | Accepted |
 | [0016](0016-catalog-ingestion-tradein.md) | External catalog ingestion (Apify) + AI trade-in engine | Accepted |
+| [0017](0017-provider-directory.md) | Provider directory: every UAE mobile shop, Talabat-style | Accepted |
 
 ## How to add an ADR
 

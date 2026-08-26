@@ -1115,3 +1115,58 @@ export const productReviews = pgTable("product_reviews", {
 }, (table) => [
 	unique("uq_product_reviews_key").on(table.productKey),
 ]);
+
+// ============================================================
+// Provider directory (ADR 0017) — every mobile shop in the UAE,
+// scraped from Google Maps via Apify. Talabat-style coverage:
+// browse, call/WhatsApp, request from the nearest shop.
+// ============================================================
+export const providers = pgTable("providers", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	googlePlaceId: text("google_place_id").notNull(),
+	slug: text(),
+	name: text().notNull(),
+	phone: text(),
+	whatsapp: text(),
+	website: text(),
+	address: text(),
+	area: text(),
+	emirate: text(),
+	lat: numeric({ precision: 10, scale: 7 }),
+	lng: numeric({ precision: 10, scale: 7 }),
+	googleRating: numeric("google_rating", { precision: 2, scale: 1 }),
+	googleReviewCount: integer("google_review_count"),
+	category: text(),
+	hours: jsonb().default({}),
+	imageUrl: text("image_url"),
+	isActive: boolean("is_active").default(true).notNull(),
+	claimedOrgId: uuid("claimed_org_id"),
+	scrapedAt: timestamp("scraped_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	unique("uq_providers_place").on(table.googlePlaceId),
+	index("idx_providers_emirate").using("btree", table.emirate.asc().nullsLast().op("text_ops")),
+	index("idx_providers_active").using("btree", table.isActive.asc().nullsLast()),
+]);
+
+// Buyer requests routed to a specific provider (nearest-shop flow)
+export const providerRequests = pgTable("provider_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	providerId: uuid("provider_id").notNull(),
+	userId: uuid("user_id"),
+	name: text(),
+	contactPhone: text("contact_phone").notNull(),
+	itemWanted: text("item_wanted").notNull(),
+	deliveryAddress: text("delivery_address"),
+	emirate: text(),
+	status: text().default('new').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_provider_requests_provider").using("btree", table.providerId.asc().nullsLast().op("uuid_ops")),
+	index("idx_provider_requests_created").using("btree", table.createdAt.desc().nullsFirst()),
+	foreignKey({
+		columns: [table.providerId],
+		foreignColumns: [providers.id],
+		name: "provider_requests_provider_fkey"
+	}).onDelete("cascade"),
+]);

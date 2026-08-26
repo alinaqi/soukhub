@@ -12,6 +12,7 @@ const PUBLIC_LOCALIZED = [
   /^\/search(\/.*)?$/,
   /^\/sell$/,
   /^\/trade-in$/,
+  /^\/providers(\/.*)?$/,
   /^\/m\/.+$/, // catalog item pages
   /^\/checkout\/.+$/,
   /^\/s\/.+$/, // storefronts (deep paths 404 inside the locale tree, not at /login)
@@ -33,6 +34,7 @@ const PUBLIC_PLAIN = [
   /^\/api\/catalog\/request$/, // guest interest capture; validates input
   /^\/api\/checkout$/, // guest checkout; validates input
   /^\/api\/assistant$/, // public shopping assistant
+  /^\/api\/providers\/request$/, // guest shop requests; validates input
 ];
 
 export async function middleware(request: NextRequest) {

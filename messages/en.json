@@ -24,7 +24,8 @@
     "tradeIn": "Trade in",
     "menu": "Menu",
     "home": "Home",
-    "categories": "Categories"
+    "categories": "Categories",
+    "shops": "Shops"
   },
   "home": {
     "heroTitle": "Graded phones & electronics from UAE sellers",
@@ -274,5 +275,37 @@
         "How fast can my store go live?"
       ]
     }
+  },
+  "providers": {
+    "navLabel": "Shops",
+    "metaTitle": "Mobile shops directory — every phone shop in the UAE",
+    "metaDescription": "Browse mobile phone shops across the UAE: ratings, phone numbers, WhatsApp, and the shops closest to you. Request any device from the nearest shop.",
+    "title": "UAE mobile shops directory",
+    "subtitle": "Every phone shop on one map — call, WhatsApp, or get a device delivered from the closest one.",
+    "searchPlaceholder": "Search shops by name or area…",
+    "allEmirates": "All emirates",
+    "nearMe": "Shops near me",
+    "locating": "Locating…",
+    "locationDenied": "Location unavailable — showing all shops instead.",
+    "kmAway": "{km} km away",
+    "reviews": "({count})",
+    "call": "Call",
+    "whatsapp": "WhatsApp",
+    "directions": "Directions",
+    "requestTitle": "Get a device from this shop",
+    "requestText": "Tell us what you need and where you are — we arrange it with the shop and a local courier delivers it to you.",
+    "itemLabel": "What are you looking for?",
+    "itemPlaceholder": "e.g. iPhone 13 128GB, good condition",
+    "nameLabel": "Your name",
+    "phoneLabel": "WhatsApp number",
+    "addressLabel": "Delivery address",
+    "submit": "Request from this shop",
+    "submitting": "Sending…",
+    "successTitle": "Request received",
+    "successText": "We'll confirm availability with the shop and message you on WhatsApp with the price and delivery time.",
+    "phoneInvalid": "Enter a valid WhatsApp number so we can reach you.",
+    "itemRequired": "Tell us what device you're looking for.",
+    "hoursTitle": "Opening hours",
+    "noResults": "No shops match — try a different search or emirate."
   }
 }
