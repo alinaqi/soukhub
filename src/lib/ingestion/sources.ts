@@ -15,26 +15,30 @@ export interface SourceConfig {
 
 const CHEERIO_ACTOR = 'apify/cheerio-scraper';
 
-function browserPageFunction(): string {
-  // Runs in the page (apify/web-scraper); jQuery injected as context.jQuery.
+function cartlowPageFunction(): string {
+  // Cartlow search pages (apify/web-scraper, jQuery injected). Cards use
+  // .lst_card with /uae/en/product-detail/{slug}/{id} links; the title lives
+  // in the product image's alt; card text carries "Condition: X" and prices.
   return `async function pageFunction(context) {
   const $ = context.jQuery;
-  await new Promise(r => setTimeout(r, 3000)); // let client-side rendering settle
+  await new Promise(r => setTimeout(r, 6000)); // client-side rendering
   const items = [];
-  $('a[href*="/product"], a[href*="/p/"], .product-card a, .product-item a, [class*="ProductCard"] a').each((_, el) => {
+  $('a[href*="/product-detail/"]').each((_, el) => {
     const a = $(el);
-    const card = a.closest('.product-card, .product-item, li, article, [class*="ProductCard"], div');
-    const title = (card.find('h2, h3, .title, [class*="title"], [class*="name"]').first().text() || a.attr('title') || '').trim();
-    const priceText = (card.find('.price, [class*="price"], [class*="Price"]').first().text() || '').trim();
-    const image = card.find('img').first().attr('src') || card.find('img').first().attr('data-src') || null;
+    const card = a.closest('.lst_card').length ? a.closest('.lst_card') : a;
+    const img = card.find('img').first();
+    const text = card.text().replace(/\\s+/g, ' ').trim();
+    const title = (img.attr('alt') || '').trim() || (text.split('Condition:')[0] || '').replace(/Trusted Seller/i, '').trim();
+    const conditionMatch = /Condition:\\s*([A-Za-z ]+?)(?=\\d|ê|AED|$)/.exec(text);
+    const priceMatch = /([0-9][0-9,]*\\.?[0-9]*)/.exec(text.split('Condition:')[1] || text);
     const href = a.attr('href');
     if (!title || !href) return;
     items.push({
       title,
       url: new URL(href, context.request.loadedUrl).href,
-      price: priceText,
-      image,
-      condition: (card.find('[class*="condition"], .badge').first().text() || '').trim() || null,
+      price: priceMatch ? priceMatch[1] : '',
+      image: img.attr('src') || img.attr('data-src') || null,
+      condition: conditionMatch ? conditionMatch[1].trim() : null,
     });
   });
   return items;
@@ -88,13 +92,15 @@ export const SOURCES: Record<CatalogItem['source'], SourceConfig> = {
     actorId: 'apify/web-scraper',
     input: {
       startUrls: [
-        { url: 'https://cartlow.com/uae/en/category/smartphones' },
-        { url: 'https://cartlow.com/uae/en' },
+        { url: 'https://cartlow.com/uae/en/search?query=iphone' },
+        { url: 'https://cartlow.com/uae/en/search?query=samsung+galaxy' },
+        { url: 'https://cartlow.com/uae/en/search?query=smartphone' },
       ],
-      pageFunction: browserPageFunction(),
+      pageFunction: cartlowPageFunction(),
       injectJQuery: true,
-      maxRequestsPerCrawl: 8,
-      proxyConfiguration: { useApifyProxy: true },
+      maxRequestsPerCrawl: 6,
+      // Cartlow blocks datacenter IPs; residential AE passes (validated)
+      proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'], apifyProxyCountry: 'AE' },
     },
   },
   revibe: {
