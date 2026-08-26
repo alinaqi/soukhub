@@ -45,6 +45,11 @@ export function SiteFooter() {
                   {tn('tradeIn')}
                 </Link>
               </li>
+              <li>
+                <Link href="/providers" className="hover:text-primary">
+                  {tn('shops')}
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

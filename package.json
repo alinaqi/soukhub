@@ -19,7 +19,8 @@
     "db:generate": "drizzle-kit generate",
     "db:reset": "supabase db reset && drizzle-kit migrate",
     "db:gen-types": "supabase gen types typescript --local > src/types/supabase.ts",
-    "catalog:ingest": "tsx scripts/ingest-catalog.ts"
+    "catalog:ingest": "tsx scripts/ingest-catalog.ts",
+    "providers:ingest": "tsx scripts/ingest-providers.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.2",

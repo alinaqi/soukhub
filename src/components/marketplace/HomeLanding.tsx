@@ -86,6 +86,12 @@ export function HomeLanding({
                 {tn('tradeIn')}
               </Link>
               <Link
+                href="/providers"
+                className="rounded-lg px-3 py-2 text-sm font-medium hover:bg-muted"
+              >
+                {tn('shops')}
+              </Link>
+              <Link
                 href="/sell"
                 className="rounded-lg px-3 py-2 text-sm font-medium text-primary hover:bg-primary/5"
               >

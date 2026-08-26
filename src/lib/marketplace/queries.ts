@@ -225,3 +225,47 @@ export async function getSimilarItems(opts: {
     catalog: catalog.filter((c) => c.id !== opts.excludeCatalogId).slice(0, 4),
   };
 }
+
+// ------------------------------------------------------------------
+// Provider directory (ADR 0017)
+// ------------------------------------------------------------------
+export interface PublicProvider {
+  id: string;
+  slug: string;
+  name: string;
+  phone: string | null;
+  whatsapp: string | null;
+  website?: string | null;
+  address: string | null;
+  area: string | null;
+  emirate: string | null;
+  lat: number | null;
+  lng: number | null;
+  google_rating: number | null;
+  google_review_count: number | null;
+  image_url: string | null;
+  hours?: Record<string, unknown> | null;
+  distance_km?: number;
+}
+
+export async function listProviders(limit = 200): Promise<PublicProvider[]> {
+  const { data, error } = await publicClient()
+    .from('providers')
+    .select('id, slug, name, phone, whatsapp, address, area, emirate, lat, lng, google_rating, google_review_count, image_url')
+    .eq('is_active', true)
+    .order('google_review_count', { ascending: false, nullsFirst: false })
+    .limit(limit);
+  if (error) throw error;
+  return (data ?? []) as PublicProvider[];
+}
+
+export const getProviderBySlug = cache(async (slug: string): Promise<PublicProvider | null> => {
+  const { data, error } = await publicClient()
+    .from('providers')
+    .select('id, slug, name, phone, whatsapp, website, address, area, emirate, lat, lng, google_rating, google_review_count, image_url, hours')
+    .eq('slug', slug)
+    .eq('is_active', true)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as PublicProvider | null) ?? null;
+});

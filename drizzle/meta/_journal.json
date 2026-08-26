@@ -64,6 +64,20 @@
       "when": 1787729904993,
       "tag": "0008_catalog_slugs",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1787746695570,
+      "tag": "0009_providers",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1787746696010,
+      "tag": "0010_providers_rls_geo",
+      "breakpoints": true
     }
   ]
 }
