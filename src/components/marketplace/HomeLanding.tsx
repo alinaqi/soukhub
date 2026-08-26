@@ -21,6 +21,7 @@ import NextLink from 'next/link';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from '@/components/marketplace/LocaleSwitcher';
 import { MobileMenu } from '@/components/marketplace/MobileNav';
+import { DeliveryLocationBar } from '@/components/marketplace/DeliveryLocationBar';
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import type { PublicListing, PublicCatalogItem } from '@/lib/marketplace/queries';
 import { CatalogCard } from '@/components/marketplace/CatalogCard';
@@ -110,6 +111,8 @@ export function HomeLanding({
           </div>
         </div>
       </nav>
+
+      <DeliveryLocationBar />
 
       {/* Hero: search-first */}
       <section className="border-b border-border bg-surface-warm">

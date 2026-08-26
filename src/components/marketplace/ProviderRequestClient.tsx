@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Check, AlertCircle, Truck } from 'lucide-react';
+import { loadStoredLocation } from '@/lib/delivery-location';
 
 /** Nearest-shop fulfilment: buyer says what they want; we arrange with the
  * shop and a local courier. Lands in the operator Requests inbox. */
@@ -12,6 +13,12 @@ export function ProviderRequestClient({ providerId }: { providerId: string }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  // Prefill from the saved "Deliver to" location (home-page bar)
+  useEffect(() => {
+    const stored = loadStoredLocation();
+    if (stored) setForm((f) => (f.address ? f : { ...f, address: stored.label }));
+  }, []);
 
   const submit = async () => {
     if (form.item.trim().length < 3) {

@@ -22,10 +22,13 @@ export async function generateMetadata({
 
 export default async function ProvidersPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ emirate?: string }>;
 }) {
   const { locale } = await params;
+  const { emirate } = await searchParams;
   setRequestLocale(locale);
 
   let providers: PublicProvider[] = [];
@@ -38,7 +41,7 @@ export default async function ProvidersPage({
   return (
     <div className="min-h-screen bg-background text-foreground">
       <PublicHeader />
-      <ProvidersDirectoryClient providers={providers} />
+      <ProvidersDirectoryClient providers={providers} initialEmirate={emirate} />
     </div>
   );
 }

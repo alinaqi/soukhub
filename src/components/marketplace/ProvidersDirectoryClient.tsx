@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { loadStoredLocation } from '@/lib/delivery-location';
 import { MapPin, Phone, MessageCircle, Star, LocateFixed, Store, BadgeCheck } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { PublicProvider } from '@/lib/marketplace/queries';
@@ -30,11 +31,33 @@ export function ProviderRating({ rating, count }: { rating: number | null; count
   );
 }
 
-export function ProvidersDirectoryClient({ providers }: { providers: PublicProvider[] }) {
+const EMIRATE_OPTIONS = new Set([
+  'Dubai', 'Abu Dhabi', 'Sharjah', 'Ajman', 'Ras Al Khaimah', 'Fujairah', 'Umm Al Quwain',
+]);
+
+export function ProvidersDirectoryClient({
+  providers,
+  initialEmirate,
+}: {
+  providers: PublicProvider[];
+  initialEmirate?: string;
+}) {
   const t = useTranslations('providers');
   const [query, setQuery] = useState('');
-  const [emirate, setEmirate] = useState('all');
+  const [emirate, setEmirate] = useState(
+    initialEmirate && EMIRATE_OPTIONS.has(initialEmirate) ? initialEmirate : 'all'
+  );
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
+
+  // A saved "Deliver to" location with coordinates sorts the directory by
+  // distance immediately, Talabat-style
+  useEffect(() => {
+    const stored = loadStoredLocation();
+    if (stored?.lat != null && stored?.lng != null) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe read of localStorage
+      setMe({ lat: stored.lat, lng: stored.lng });
+    }
+  }, []);
   const [locating, setLocating] = useState(false);
   const [locationError, setLocationError] = useState(false);
 

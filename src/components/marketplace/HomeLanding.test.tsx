@@ -43,6 +43,12 @@ describe('Consumer home (HomeLanding)', () => {
     expect(screen.queryByText(/operations engine/i)).not.toBeInTheDocument();
   });
 
+  it('shows the Talabat-style delivery location bar', () => {
+    renderWith(<HomeLanding listings={[]} searchAction="/search" />);
+    expect(screen.getByText('Deliver to:')).toBeInTheDocument();
+    expect(screen.getByText('Choose your location')).toBeInTheDocument();
+  });
+
   it('offers search and categories', () => {
     renderWith(<HomeLanding listings={[]} searchAction="/search" />);
     expect(screen.getAllByRole('search').length).toBeGreaterThan(0);
