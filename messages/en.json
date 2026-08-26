@@ -20,7 +20,8 @@
   "nav": {
     "browse": "Browse",
     "sell": "Sell on SoukHub",
-    "forSellers": "For Sellers"
+    "forSellers": "For Sellers",
+    "tradeIn": "Trade in"
   },
   "home": {
     "heroTitle": "Graded phones & electronics from UAE sellers",
@@ -134,5 +135,40 @@
     "how3Text": "Publishing your first listing takes your store live. Share the link on WhatsApp and start selling.",
     "commissionTitle": "Simple, honest pricing",
     "commissionText": "No setup fees, no monthly fees. We earn a small commission only when you sell."
+  },
+  "catalog": {
+    "fromMarket": "From the market",
+    "marketNote": "Live market listings from partner marketplaces — price reference and availability.",
+    "viewOn": "View on {source}",
+    "sources": {
+      "amazon": "Amazon.ae",
+      "cartlow": "Cartlow",
+      "revibe": "Revibe"
+    }
+  },
+  "tradein": {
+    "navLabel": "Trade in",
+    "metaTitle": "Trade in your phone — instant AI valuation",
+    "metaDescription": "Upload photos of your phone or device. AI grades its condition and gives you an instant AED value and exchange offers from the market.",
+    "heroTitle": "Trade in your device in minutes",
+    "heroSubtitle": "Upload a few photos — AI identifies your device, grades its condition, and gives you an instant value with exchange offers.",
+    "uploadLabel": "Photos of your device (up to 3)",
+    "uploadHint": "Front, back, and screen-on shots work best.",
+    "notesLabel": "Anything we should know? (optional)",
+    "notesPlaceholder": "e.g. battery health 88%, small scratch on corner, with box",
+    "phoneLabel": "WhatsApp number (optional — for your offer)",
+    "submit": "Get my valuation",
+    "evaluating": "AI is inspecting your photos…",
+    "resultTitle": "Your device",
+    "conditionLabel": "Condition",
+    "defectsLabel": "What we noticed",
+    "valueTitle": "Estimated trade-in value",
+    "valueNote": "Based on current market prices for comparable devices. Final offer confirmed on inspection.",
+    "exchangeTitle": "Exchange it against",
+    "topUp": "+ {amount} top-up",
+    "youReceive": "you receive {amount}",
+    "notIdentified": "We couldn't confidently identify a device in these photos. Try clearer shots of the front and back.",
+    "errorGeneric": "Something went wrong evaluating your device. Please try again.",
+    "confidence": "AI confidence"
   }
 }

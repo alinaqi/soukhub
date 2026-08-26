@@ -3,7 +3,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Link } from '@/i18n/navigation';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProductCard } from '@/components/marketplace/ProductCard';
-import { searchListings } from '@/lib/marketplace/queries';
+import { searchListings, searchCatalog, type PublicCatalogItem } from '@/lib/marketplace/queries';
+import { CatalogCard } from '@/components/marketplace/CatalogCard';
 
 type SearchParams = Promise<{
   q?: string;
@@ -42,14 +43,25 @@ export default async function SearchPage({
   const t = await getTranslations({ locale, namespace: 'search' });
 
   const query = sp.q?.trim() ?? '';
-  const listings = await searchListings({
+  const filterArgs = {
     q: query,
     brand: sp.brand,
     category: sp.category,
     minPrice: sp.min ? Number(sp.min) : undefined,
     maxPrice: sp.max ? Number(sp.max) : undefined,
-    limit: 36,
-  });
+  };
+  const listings = await searchListings({ ...filterArgs, limit: 36 });
+
+  // Never an empty result: back-fill with badged market-catalog items (ADR 0016)
+  let catalogItems: PublicCatalogItem[] = [];
+  if (listings.length < 8) {
+    try {
+      catalogItems = await searchCatalog({ ...filterArgs, limit: 12 });
+    } catch {
+      // catalog is best-effort
+    }
+  }
+  const tcat = await getTranslations({ locale, namespace: 'catalog' });
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -118,16 +130,31 @@ export default async function SearchPage({
             <h1 className="text-xl font-bold">
               {query ? t('resultsFor', { query }) : t('allListings')}
             </h1>
-            {listings.length === 0 ? (
+            {listings.length === 0 && catalogItems.length === 0 ? (
               <p className="mt-8 rounded-xl border border-border bg-surface-warm p-8 text-center text-muted-foreground">
                 {t('noResults')}
               </p>
             ) : (
-              <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
-                {listings.map((listing) => (
-                  <ProductCard key={listing.id} listing={listing} />
-                ))}
-              </div>
+              <>
+                {listings.length > 0 && (
+                  <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                    {listings.map((listing) => (
+                      <ProductCard key={listing.id} listing={listing} />
+                    ))}
+                  </div>
+                )}
+                {catalogItems.length > 0 && (
+                  <div className="mt-10">
+                    <h2 className="text-lg font-semibold">{tcat('fromMarket')}</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">{tcat('marketNote')}</p>
+                    <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+                      {catalogItems.map((item) => (
+                        <CatalogCard key={item.id} item={item} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </section>
         </div>

@@ -5,6 +5,14 @@
 Next: promote **M2 — Transact** (TODO-048…052) from backlog.md when starting checkout/payments work:
 cart + guest checkout, Stripe + COD, marketplace orders → seller ops engine, seller ledger + commission, buyer tracking.
 
+New (promoted by user request):
+
+### TODO-066: Consumer accounts — orders, status, trade-ins
+**P1** · Buyer-facing account area (/account): my orders (status timeline — lands with M2 checkout), my trade-in requests (already persisted), profile + addresses. Buyer signup distinct from seller onboarding path.
+
+### TODO-067: Scheduled catalog re-ingestion + Cartlow/Revibe activation
+**P2** · Weekly GH Actions cron with APIFY_TOKEN secret; approve apify/cheerio-scraper in the Apify console; tune Cartlow/Revibe selectors in src/lib/ingestion/sources.ts; catalog freshness pruning (deactivate items not seen in N runs).
+
 Known follow-ups carried into M2:
 - [ ] Column-privilege hardening for *authenticated* buyers (anon is locked down; logged-in users can still read full published rows — move cost data to a member-only table) — fold into TODO-051 ledger work
 - [ ] CI database service so the DB integration tests run in CI (they auto-skip today) — fold into TODO-061
