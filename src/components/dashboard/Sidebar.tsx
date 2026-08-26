@@ -45,6 +45,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: 'Insights',
     items: [
       { href: '/analytics', label: 'Analytics', icon: '📈' },
+      { href: '/knowledge', label: 'Knowledge', icon: '📚' },
     ],
   },
   {

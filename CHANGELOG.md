@@ -8,6 +8,7 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **Knowledge Center for sellers** (`/knowledge` in the console): ten in-repo guides across Getting Started, Procurement & Sourcing, Orders & Fulfillment, Pricing & Trade-ins, and Growing Your Store — searchable index with category filters, article pages with a dependency-free markdown renderer, related-reading, and deep links into the relevant console sections
 - **Seller console: multi-channel orders + operator inbox** — Orders page shows a per-channel breakdown (SoukHub first, then Amazon/Cartlow/Revibe/Noon) with SoukHub channel branding in tables and analytics; new **Requests** inbox (operator-gated via `OPERATOR_EMAILS`) surfaces order-through-SoukHub catalog requests and AI trade-in valuations with WhatsApp deep links and one-click status flow (new → contacted → completed/closed)
 - **Google rich-snippet stars**: product and catalog pages emit `AggregateRating` in Product JSON-LD (cached web-review score + count) so ratings can appear as organic stars in search results; catalog pages gain full Product JSON-LD
 - **Star ratings on product cards**: home, search and deals cards show cached web-review scores (fractional stars + count) via batched cache reads — no live AI calls on grid paths; `scripts/warm-reviews.ts` pre-fills the cache; family keys collapse storage/color/SKU variants
