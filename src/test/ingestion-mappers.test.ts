@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   mapAmazonItem,
   mapCartlowItem,
+  mapRevibeItem,
   mapItems,
   inferBrand,
   inferCategory,
@@ -106,5 +107,26 @@ describe('mapAmazonItem imageUrl variant', () => {
       imageUrl: 'https://m.media-amazon.com/images/I/61exS6m4ZGL._AC_UL320_.jpg',
     })!;
     expect(item.images).toHaveLength(1);
+  });
+});
+
+describe('scraped price/url hardening', () => {
+  it('takes the first money token from repeated Shopify price blocks', () => {
+    const item = mapRevibeItem({
+      title: 'iPhone 12 Pro',
+      url: 'https://revibe.me/products/iphone-12-pro?variant=1',
+      price: 'Regular price\n AED 989\n AED 989\n Regular price',
+    })!;
+    expect(item.price).toBe(989);
+  });
+
+  it('drops non-product links that leak through card selectors', () => {
+    expect(mapRevibeItem({ title: 'Apple', url: 'https://revibe.me/collections/vendors?q=Apple', price: '' })).toBeNull();
+  });
+
+  it('strips query params from derived source ids', () => {
+    const a = mapRevibeItem({ title: 'X', url: 'https://revibe.me/products/x?variant=1', price: '10' })!;
+    const b = mapRevibeItem({ title: 'X', url: 'https://revibe.me/products/x?variant=2', price: '10' })!;
+    expect(a.source_id).toBe(b.source_id);
   });
 });

@@ -63,10 +63,15 @@ export function inferCondition(text: string | null | undefined): string | null {
 }
 
 function parsePrice(value: unknown): number | null {
-  if (typeof value === 'number' && isFinite(value) && value > 0) return value;
+  if (typeof value === 'number' && isFinite(value) && value > 0 && value < 200000) return value;
   if (typeof value === 'string') {
-    const n = Number(value.replace(/[^0-9.]/g, ''));
-    if (isFinite(n) && n > 0) return n;
+    // First money-looking token only — scraped price blocks often repeat the
+    // amount ("AED 989 ... AED 989"), and naive stripping concatenates them.
+    const m = /(\d{1,3}(?:,\d{3})*(?:\.\d+)?)/.exec(value);
+    if (m) {
+      const n = Number(m[1].replace(/,/g, ''));
+      if (isFinite(n) && n > 0 && n < 200000) return n;
+    }
   }
   return null;
 }
@@ -108,7 +113,9 @@ function mapGenericItem(source: 'cartlow' | 'revibe') {
     const title = asString(raw.title);
     const url = asString(raw.url);
     if (!title || !url) return null;
-    const sourceId = asString(raw.sourceId) ?? url.replace(/^https?:\/\//, '').slice(0, 200);
+    // Only actual product pages — category/vendor links match the selectors too
+    if (!/\/products?\//.test(url)) return null;
+    const sourceId = asString(raw.sourceId) ?? url.replace(/^https?:\/\//, '').split('?')[0].slice(0, 200);
     const price = parsePrice(raw.price);
     const image = asString(raw.image);
     return {
