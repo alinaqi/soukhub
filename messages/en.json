@@ -105,7 +105,9 @@
       "minPrice": "Min price",
       "maxPrice": "Max price",
       "apply": "Apply filters",
-      "clear": "Clear"
+      "clear": "Clear",
+      "price": "Price",
+      "anyCategory": "All categories"
     },
     "metaTitle": "Search phones & electronics",
     "metaDescription": "Search graded phones and electronics from UAE sellers. Pay by card or cash on delivery."
@@ -238,6 +240,32 @@
     "hello": "Hi! I can help you find the right device, compare prices, check your order status, or value a trade-in. What are you looking for?",
     "send": "Send",
     "thinking": "Thinking…",
-    "error": "Sorry — something went wrong. Try again."
+    "error": "Sorry — something went wrong. Try again.",
+    "suggestions": {
+      "home": [
+        "Best phone under AED 1,500",
+        "What deals are on right now?",
+        "How does trade-in work?"
+      ],
+      "search": [
+        "Which of these is the best value?",
+        "Anything similar but cheaper?",
+        "Only show very good condition"
+      ],
+      "product": [
+        "Is this a fair price?",
+        "Show me alternatives",
+        "How do I pay and get delivery?"
+      ],
+      "tradein": [
+        "How is my phone valued?",
+        "What condition counts as Excellent?",
+        "Can I exchange instead of cash?"
+      ],
+      "sell": [
+        "What does selling cost?",
+        "How fast can my store go live?"
+      ]
+    }
   }
 }

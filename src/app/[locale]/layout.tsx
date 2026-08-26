@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider, hasLocale } from 'next-intl';
 import { setRequestLocale } from 'next-intl/server';
@@ -24,7 +25,9 @@ export default async function LocaleLayout({
   return (
     <NextIntlClientProvider>
       {children}
-      <AssistantWidget />
+      <Suspense>
+        <AssistantWidget />
+      </Suspense>
     </NextIntlClientProvider>
   );
 }
