@@ -117,3 +117,21 @@ describe('safeInternalPath (assistant link guard)', () => {
     expect(safeInternalPath('/dashboard')).toBeNull();
   });
 });
+
+describe('AggregateRating rich snippet', () => {
+  it('emits Google-format aggregateRating when provided', async () => {
+    const { productJsonLd } = await import('@/lib/marketplace/jsonld');
+    const ld = productJsonLd({
+      name: 'iPhone 15', images: [], price: 3000, storeName: 's', url: 'u',
+      aggregateRating: { rating: 4.4, count: 1250 },
+    });
+    expect(ld.aggregateRating).toEqual({
+      '@type': 'AggregateRating', ratingValue: 4.4, reviewCount: 1250, bestRating: 5, worstRating: 1,
+    });
+  });
+  it('omits aggregateRating when absent', async () => {
+    const { productJsonLd } = await import('@/lib/marketplace/jsonld');
+    const ld = productJsonLd({ name: 'x', images: [], price: 1, storeName: 's', url: 'u' });
+    expect(ld).not.toHaveProperty('aggregateRating');
+  });
+});

@@ -42,6 +42,15 @@ export async function getCachedRatings(
   return map;
 }
 
+/** Cached-only single-family lookup (fast; used for JSON-LD rich snippets). */
+export async function getCachedRatingFor(
+  brand: string | null,
+  title: string
+): Promise<CachedRating | null> {
+  const map = await getCachedRatings([{ brand, title }]);
+  return map.get(productReviewKey(brand, title)) ?? null;
+}
+
 /** Attach a cached rating (when present) to each item, non-destructively. */
 export function attachRating<T extends { brand: string | null }>(
   items: Array<T & { name?: string; title?: string }>,

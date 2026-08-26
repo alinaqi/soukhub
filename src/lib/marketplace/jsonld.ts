@@ -17,6 +17,8 @@ export interface ProductJsonLdInput {
   storeName: string;
   url: string;
   inStock?: boolean;
+  /** Cached web-review aggregate → Google rich-snippet stars */
+  aggregateRating?: { rating: number; count: number } | null;
 }
 
 const CONDITION_MAP: Record<string, string> = {
@@ -38,6 +40,17 @@ export function productJsonLd(p: ProductJsonLdInput) {
     name: p.name,
     ...(p.description ? { description: p.description } : {}),
     ...(p.images.length ? { image: p.images } : {}),
+    ...(p.aggregateRating
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: p.aggregateRating.rating,
+            reviewCount: p.aggregateRating.count,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
     offers: {
       '@type': 'Offer',
       url: p.url,

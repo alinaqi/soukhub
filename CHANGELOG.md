@@ -8,6 +8,7 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **Google rich-snippet stars**: product and catalog pages emit `AggregateRating` in Product JSON-LD (cached web-review score + count) so ratings can appear as organic stars in search results; catalog pages gain full Product JSON-LD
 - **Star ratings on product cards**: home, search and deals cards show cached web-review scores (fractional stars + count) via batched cache reads — no live AI calls on grid paths; `scripts/warm-reviews.ts` pre-fills the cache; family keys collapse storage/color/SKU variants
 - **Mobile navigation**: hamburger menu (full site nav, categories, login, language) and a back button on all sub-pages; header decluttered on small screens
 - **SEO-friendly catalog URLs**: `/m/{slug}-{shortId}` (≤60-char word-boundary slugs) with 308 redirects from legacy UUID links; search_catalog returns URL fields

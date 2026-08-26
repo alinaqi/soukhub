@@ -12,6 +12,8 @@ import {
   type PublicCatalogItem,
 } from '@/lib/marketplace/queries';
 import { parseSlugId, catalogPath } from '@/lib/marketplace/format';
+import { productJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
+import { getCachedRatingFor } from '@/lib/reviews/cached';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
@@ -81,8 +83,31 @@ export default async function CatalogItemPage({
   const title = locale === 'ar' && item.title_ar ? item.title_ar : item.title;
   const image = Array.isArray(item.images) ? (item.images[0] as string | undefined) : undefined;
 
+  const cachedRating = await getCachedRatingFor(item.brand, item.title).catch(() => null);
+  const base = process.env.NEXT_PUBLIC_APP_URL || 'https://soukhub.vercel.app';
+  const jsonLd = item.price != null
+    ? productJsonLd({
+        name: title,
+        images: image ? [image] : [],
+        price: Number(item.price),
+        condition: item.condition,
+        storeName: 'SoukHub',
+        url: `${base}${locale === 'ar' ? '/ar' : ''}${canonical}`,
+        aggregateRating:
+          cachedRating && cachedRating.review_count
+            ? { rating: cachedRating.rating, count: cachedRating.review_count }
+            : null,
+      })
+    : null;
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
+        />
+      )}
       <PublicHeader />
       <CatalogRequestClient
         item={{

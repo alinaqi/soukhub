@@ -19,6 +19,7 @@ import {
   Watch,
   Gamepad2,
 } from 'lucide-react';
+import NextLink from 'next/link';
 import { Link } from '@/i18n/navigation';
 import { LocaleSwitcher } from './LocaleSwitcher';
 
@@ -60,8 +61,11 @@ export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
-  // Close on navigation
-  useEffect(() => setOpen(false), [pathname]);
+  // Close on navigation (route change is an external event we sync to)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setOpen(false);
+  }, [pathname]);
 
   return (
     <>
@@ -137,13 +141,13 @@ export function MobileMenu() {
         </div>
 
         <div className="flex items-center justify-between gap-2 border-t border-border p-4">
-          <a
+          <NextLink
             href="/login"
             className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted"
           >
             <LogIn className="h-4 w-4" aria-hidden />
             {tc('login')}
-          </a>
+          </NextLink>
           <LocaleSwitcher />
         </div>
       </nav>
