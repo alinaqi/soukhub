@@ -11,6 +11,8 @@ import { getProductByShortId } from '@/lib/marketplace/queries';
 import { formatAED, parseSlugId, productPath, whatsAppOrderLink } from '@/lib/marketplace/format';
 import { productJsonLd, breadcrumbJsonLd, safeJsonLd } from '@/lib/marketplace/jsonld';
 import { getCachedRatingFor } from '@/lib/reviews/cached';
+import { Breadcrumbs } from '@/components/marketplace/Breadcrumbs';
+import { CategoryChips } from '@/components/marketplace/CategoryChips';
 
 export const revalidate = 60;
 
@@ -120,7 +122,17 @@ export default async function ProductPage({
         dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbs) }}
       />
       <PublicHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8 pb-28 sm:px-6 lg:px-8 lg:pb-8">
+      <main className="mx-auto max-w-7xl px-4 py-5 pb-28 sm:px-6 lg:px-8 lg:pb-8">
+        <div className="mb-6 space-y-3">
+          <Breadcrumbs
+            locale={locale}
+            category={product.category}
+            title={title}
+            currentPath={canonicalPath}
+            includeJsonLd={false}
+          />
+          <CategoryChips locale={locale} active={product.category} />
+        </div>
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Gallery */}
           <div className="relative aspect-square overflow-hidden rounded-xl border border-border bg-muted">
