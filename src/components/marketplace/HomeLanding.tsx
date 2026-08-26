@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import { useTranslations } from 'next-intl';
 import {
-  Search,
   Store,
   Smartphone,
   Laptop,
@@ -25,7 +24,7 @@ import { ProductCard } from '@/components/marketplace/ProductCard';
 import type { PublicListing, PublicCatalogItem } from '@/lib/marketplace/queries';
 import { CatalogCard } from '@/components/marketplace/CatalogCard';
 import { SellerDealsStrip } from '@/components/marketplace/SellerDealsStrip';
-import { AskAiButton } from '@/components/marketplace/AskAiButton';
+import { HeroSearch } from '@/components/marketplace/HeroSearch';
 import { HomeShopsStrip } from '@/components/marketplace/HomeShopsStrip';
 import type { SellerDeal } from '@/lib/marketplace/deals-service';
 import type { PublicProvider } from '@/lib/marketplace/queries';
@@ -57,7 +56,6 @@ export function HomeLanding({
   bannerImage = null,
   sellerDeals = [],
   providers = [],
-  searchAction,
 }: {
   listings: PublicListing[];
   catalog?: PublicCatalogItem[];
@@ -65,7 +63,6 @@ export function HomeLanding({
   bannerImage?: string | null;
   sellerDeals?: SellerDeal[];
   providers?: PublicProvider[];
-  searchAction: string;
 }) {
   const tcat = useTranslations('catalog');
   const t = useTranslations('home');
@@ -128,27 +125,7 @@ export function HomeLanding({
           <div className="mx-auto max-w-3xl text-center">
             <h1 className="sr-only">{t('heroTitle')}</h1>
 
-            <form action={searchAction} className="mx-auto mt-8 flex max-w-xl items-center gap-2" role="search">
-              <div className="relative flex-1">
-                <Search
-                  className="pointer-events-none absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
-                  aria-hidden
-                />
-                <input
-                  type="search"
-                  name="q"
-                  placeholder={t('heroPlaceholder')}
-                  className="w-full rounded-lg border border-border bg-card py-3 ps-10 pe-4 text-base outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                />
-              </div>
-              <AskAiButton label={t('askAi')} />
-              <button
-                type="submit"
-                className="rounded-lg bg-primary px-5 py-3 font-semibold text-primary-foreground hover:bg-primary-hover"
-              >
-                {tc('search')}
-              </button>
-            </form>
+            <HeroSearch placeholder={t('heroPlaceholder')} searchLabel={tc('search')} />
           </div>
 
           {/* Categories */}

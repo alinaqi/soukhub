@@ -110,7 +110,8 @@
     "allShops": "تمام دکانیں",
     "kmAway": "{km} کلومیٹر دور",
     "heroPlaceholder": "آپ کو کیا چاہیے؟ مثلاً یونیورسٹی کے لیے لیپ ٹاپ…",
-    "askAi": "AI سے پوچھیں"
+    "askAi": "AI سے پوچھیں",
+    "topShopsIn": "{location} کی بہترین دکانیں"
   },
   "search": {
     "title": "تلاش",

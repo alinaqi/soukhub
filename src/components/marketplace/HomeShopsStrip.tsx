@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ArrowRight, MapPin, Store } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
-import { loadStoredLocation } from '@/lib/delivery-location';
+import { loadStoredLocation, type DeliveryLocation } from '@/lib/delivery-location';
 import { ProviderRating } from '@/components/marketplace/ProvidersDirectoryClient';
 import type { PublicProvider } from '@/lib/marketplace/queries';
 
@@ -22,36 +22,41 @@ function haversineKm(aLat: number, aLng: number, bLat: number, bLng: number) {
  * "Deliver to" location, falling back to top-rated across the UAE. */
 export function HomeShopsStrip({ providers }: { providers: PublicProvider[] }) {
   const t = useTranslations('home');
-  const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
+  const [place, setPlace] = useState<DeliveryLocation | null>(null);
 
   useEffect(() => {
     const stored = loadStoredLocation();
-    if (stored?.lat != null && stored?.lng != null) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe read of localStorage
-      setMe({ lat: stored.lat, lng: stored.lng });
-    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- hydration-safe read of localStorage
+    if (stored) setPlace(stored);
   }, []);
 
+  const lat = place?.lat ?? null;
+  const lng = place?.lng ?? null;
+
   const rows = useMemo(() => {
-    if (!me) return providers.slice(0, 6);
+    if (lat == null || lng == null) return providers.slice(0, 6);
     return [...providers]
       .map((p) => ({
         ...p,
         distance_km:
           p.lat != null && p.lng != null
-            ? haversineKm(me.lat, me.lng, Number(p.lat), Number(p.lng))
+            ? haversineKm(lat, lng, Number(p.lat), Number(p.lng))
             : Number.POSITIVE_INFINITY,
       }))
       .sort((a, b) => (a.distance_km ?? 0) - (b.distance_km ?? 0))
       .slice(0, 6);
-  }, [providers, me]);
+  }, [providers, lat, lng]);
+
+  const located = lat != null && lng != null;
 
   if (rows.length === 0) return null;
 
   return (
     <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">{me ? t('shopsNearYou') : t('topShops')}</h2>
+        <h2 className="text-2xl font-bold">
+          {place?.label ? t('topShopsIn', { location: place.label }) : t('topShops')}
+        </h2>
         <Link
           href="/providers"
           className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline"
@@ -84,7 +89,7 @@ export function HomeShopsStrip({ providers }: { providers: PublicProvider[] }) {
             <span className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
               <MapPin className="h-3 w-3 shrink-0" aria-hidden />
               <span className="truncate">
-                {me && isFinite(p.distance_km ?? Infinity)
+                {located && isFinite(p.distance_km ?? Infinity)
                   ? t('kmAway', { km: (p.distance_km as number).toFixed(1) })
                   : [p.area, p.emirate].filter(Boolean).join(', ')}
               </span>

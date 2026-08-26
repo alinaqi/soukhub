@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { NextIntlClientProvider } from 'next-intl';
 import en from '../../../messages/en.json';
 import ar from '../../../messages/ar.json';
@@ -36,7 +36,7 @@ function renderWith(ui: React.ReactNode, locale: 'en' | 'ar' = 'en') {
 
 describe('Consumer home (HomeLanding)', () => {
   it('leads with a buyer hero, not a seller pitch', () => {
-    renderWith(<HomeLanding listings={[]} searchAction="/search" />);
+    renderWith(<HomeLanding listings={[]} />);
     expect(
       screen.getByRole('heading', { level: 1, name: /graded phones/i })
     ).toBeInTheDocument();
@@ -44,32 +44,39 @@ describe('Consumer home (HomeLanding)', () => {
   });
 
   it('shows the Talabat-style delivery location bar', () => {
-    renderWith(<HomeLanding listings={[]} searchAction="/search" />);
+    renderWith(<HomeLanding listings={[]} />);
     expect(screen.getByText('Deliver to:')).toBeInTheDocument();
     expect(screen.getByText('Choose your location')).toBeInTheDocument();
   });
 
   it('offers search and categories', () => {
-    renderWith(<HomeLanding listings={[]} searchAction="/search" />);
+    renderWith(<HomeLanding listings={[]} />);
     expect(screen.getAllByRole('search').length).toBeGreaterThan(0);
     for (const cat of ['Phones', 'Laptops', 'Gaming']) {
       expect(screen.getAllByText(cat).length).toBeGreaterThan(0);
     }
   });
 
+  it('has a single Search button (no separate Ask AI)', () => {
+    renderWith(<HomeLanding listings={[]} />);
+    const form = screen.getAllByRole('search')[0];
+    expect(within(form).getByRole('button', { name: 'Search' })).toBeInTheDocument();
+    expect(within(form).queryByText('Ask AI')).not.toBeInTheDocument();
+  });
+
   it('shows real listings when available', () => {
-    renderWith(<HomeLanding listings={[LISTING]} searchAction="/search" />);
+    renderWith(<HomeLanding listings={[LISTING]} />);
     expect(screen.getByText('iPhone 15 Pro 256GB')).toBeInTheDocument();
     expect(screen.getByText(/AED 3,799/)).toBeInTheDocument();
   });
 
   it('shows the empty state when no listings exist', () => {
-    renderWith(<HomeLanding listings={[]} searchAction="/search" />);
+    renderWith(<HomeLanding listings={[]} />);
     expect(screen.getByText(/listings are arriving/i)).toBeInTheDocument();
   });
 
   it('links sellers to /sell instead of pitching them inline', () => {
-    renderWith(<HomeLanding listings={[]} searchAction="/search" />);
+    renderWith(<HomeLanding listings={[]} />);
     const sellerLinks = screen.getAllByRole('link', { name: /for sellers|sell on soukhub/i });
     expect(sellerLinks.length).toBeGreaterThan(0);
     for (const link of sellerLinks) {
@@ -78,7 +85,7 @@ describe('Consumer home (HomeLanding)', () => {
   });
 
   it('renders in Arabic', () => {
-    renderWith(<HomeLanding listings={[]} searchAction="/ar/search" />, 'ar');
+    renderWith(<HomeLanding listings={[]} />, 'ar');
     expect(
       screen.getByRole('heading', { level: 1, name: /هواتف وإلكترونيات/ })
     ).toBeInTheDocument();
