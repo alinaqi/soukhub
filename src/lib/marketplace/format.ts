@@ -28,3 +28,19 @@ export function whatsAppOrderLink(phone: string, message: string): string {
   else if (cleaned.length === 9 && !cleaned.startsWith('971')) cleaned = '971' + cleaned;
   return `https://wa.me/${cleaned}?text=${encodeURIComponent(message)}`;
 }
+
+/** Allowlisted internal route prefixes the assistant may link to. */
+const INTERNAL_LINK_PREFIXES = ['/p/', '/m/', '/s/', '/search', '/trade-in', '/sell', '/checkout/'];
+
+/**
+ * Accept only same-origin internal paths (rejects protocol-relative "//evil"
+ * and anything off the route allowlist) — LLM output is untrusted.
+ */
+export function safeInternalPath(href: string): string | null {
+  if (!href.startsWith('/') || href.startsWith('//')) return null;
+  const path = href.split(/[?#]/)[0];
+  const normalized = path.startsWith('/ar/') ? path.slice(3) : path;
+  return INTERNAL_LINK_PREFIXES.some((p) => normalized === p.replace(/\/$/, '') || normalized.startsWith(p))
+    ? href
+    : null;
+}

@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { ImageOff } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
@@ -18,12 +17,13 @@ export function ProductCard({ listing }: { listing: PublicListing }) {
     >
       <div className="relative aspect-square bg-muted">
         {image ? (
-          <Image
+          // Arbitrary seller/marketplace CDN hosts — served directly
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
             src={image}
             alt={title}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-contain"
           />
         ) : (
           <span className="flex h-full items-center justify-center text-muted-foreground">

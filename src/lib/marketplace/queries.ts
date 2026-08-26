@@ -156,3 +156,14 @@ export async function searchCatalog(filters: SearchFilters): Promise<PublicCatal
 export async function getLatestCatalog(limit = 8): Promise<PublicCatalogItem[]> {
   return searchCatalog({ limit });
 }
+
+export const getCatalogItemById = cache(async (id: string): Promise<PublicCatalogItem | null> => {
+  const { data, error } = await publicClient()
+    .from('catalog_products')
+    .select('id, title, title_ar, brand, model, category, condition, price, currency, images, source, url')
+    .eq('id', id)
+    .eq('is_active', true)
+    .maybeSingle();
+  if (error) throw error;
+  return (data as PublicCatalogItem | null) ?? null;
+});

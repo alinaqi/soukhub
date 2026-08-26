@@ -1,5 +1,6 @@
 import { useLocale, useTranslations } from 'next-intl';
-import { ImageOff, ExternalLink } from 'lucide-react';
+import { ImageOff, ArrowRight } from 'lucide-react';
+import { Link } from '@/i18n/navigation';
 import { formatAED } from '@/lib/marketplace/format';
 import type { PublicCatalogItem } from '@/lib/marketplace/queries';
 
@@ -15,10 +16,8 @@ export function CatalogCard({ item }: { item: PublicCatalogItem }) {
   const sourceName = t(`sources.${item.source}`);
 
   return (
-    <a
-      href={item.url}
-      target="_blank"
-      rel="noopener noreferrer nofollow"
+    <Link
+      href={`/m/${item.id}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-dashed border-border bg-card transition-colors hover:border-primary"
     >
       <div className="relative aspect-square bg-muted">
@@ -45,11 +44,11 @@ export function CatalogCard({ item }: { item: PublicCatalogItem }) {
         {item.price != null && (
           <p className="text-base font-bold">{formatAED(Number(item.price), locale)}</p>
         )}
-        <p className="mt-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-          <ExternalLink className="h-3 w-3" aria-hidden />
-          {t('viewOn', { source: sourceName })}
+        <p className="mt-auto inline-flex items-center gap-1 text-xs font-medium text-primary">
+          {t('requestTitle')}
+          <ArrowRight className="h-3 w-3 rtl:rotate-180" aria-hidden />
         </p>
       </div>
-    </a>
+    </Link>
   );
 }

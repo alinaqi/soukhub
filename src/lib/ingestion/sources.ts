@@ -55,7 +55,10 @@ function cheerioPageFunction(): string {
     const card = a.closest('.product-card, .product-item, li, article, div');
     const title = (card.find('h2, h3, .title, .product-title, .name').first().text() || a.attr('title') || '').trim();
     const priceText = (card.find('.price, [class*="price"]').first().text() || '').trim();
-    const image = card.find('img').first().attr('src') || card.find('img').first().attr('data-src') || null;
+    const img = card.find('img').first();
+    let image = img.attr('src') || img.attr('data-src') || (img.attr('srcset') || img.attr('data-srcset') || '').trim().split(' ')[0] || null;
+    if (image && image.startsWith('//')) image = 'https:' + image;
+    if (image && image.startsWith('data:')) image = null; // lazy-load placeholder
     const href = a.attr('href');
     if (!title || !href) return;
     items.push({
@@ -79,8 +82,13 @@ export const SOURCES: Record<CatalogItem['source'], SourceConfig> = {
         { url: 'https://www.amazon.ae/s?k=smartphone' },
         { url: 'https://www.amazon.ae/s?k=iphone' },
         { url: 'https://www.amazon.ae/s?k=samsung+galaxy' },
+        { url: 'https://www.amazon.ae/s?k=laptop' },
+        { url: 'https://www.amazon.ae/s?k=tablet+ipad' },
+        { url: 'https://www.amazon.ae/s?k=wireless+earbuds+headphones' },
+        { url: 'https://www.amazon.ae/s?k=smartwatch' },
+        { url: 'https://www.amazon.ae/s?k=playstation+5' },
       ],
-      maxItemsPerStartUrl: 25,
+      maxItemsPerStartUrl: 20,
       proxyCountry: 'AE',
       scrapeProductDetails: false,
       useCaptchaSolver: false,
@@ -95,10 +103,15 @@ export const SOURCES: Record<CatalogItem['source'], SourceConfig> = {
         { url: 'https://cartlow.com/uae/en/search?query=iphone' },
         { url: 'https://cartlow.com/uae/en/search?query=samsung+galaxy' },
         { url: 'https://cartlow.com/uae/en/search?query=smartphone' },
+        { url: 'https://cartlow.com/uae/en/search?query=laptop' },
+        { url: 'https://cartlow.com/uae/en/search?query=ipad' },
+        { url: 'https://cartlow.com/uae/en/search?query=airpods' },
+        { url: 'https://cartlow.com/uae/en/search?query=apple+watch' },
+        { url: 'https://cartlow.com/uae/en/search?query=playstation' },
       ],
       pageFunction: cartlowPageFunction(),
       injectJQuery: true,
-      maxRequestsPerCrawl: 6,
+      maxRequestsPerCrawl: 12,
       // Cartlow blocks datacenter IPs; residential AE passes (validated)
       proxyConfiguration: { useApifyProxy: true, apifyProxyGroups: ['RESIDENTIAL'], apifyProxyCountry: 'AE' },
     },
@@ -109,6 +122,9 @@ export const SOURCES: Record<CatalogItem['source'], SourceConfig> = {
     input: {
       startUrls: [
         { url: 'https://revibe.me/collections/smartphones' },
+        { url: 'https://revibe.me/collections/laptops' },
+        { url: 'https://revibe.me/collections/tablets' },
+        { url: 'https://revibe.me/collections/smartwatches' },
         { url: 'https://revibe.me/collections/all' },
       ],
       pageFunction: cheerioPageFunction(),

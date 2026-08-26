@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Store } from 'lucide-react';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
@@ -49,13 +48,8 @@ export default async function StorePage({
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <header className="flex items-center gap-4 rounded-xl border border-border bg-surface-warm p-6">
           {store.logo_url ? (
-            <Image
-              src={store.logo_url}
-              alt={name}
-              width={64}
-              height={64}
-              className="h-16 w-16 rounded-xl object-cover"
-            />
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={store.logo_url} alt={name} className="h-16 w-16 rounded-xl object-cover" />
           ) : (
             <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-primary text-primary-foreground">
               <Store className="h-7 w-7" aria-hidden />

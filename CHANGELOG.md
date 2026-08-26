@@ -7,6 +7,15 @@ Every PR must add an entry under **[Unreleased]**.
 
 ## [Unreleased]
 
+### Added
+- **Buy online (COD checkout v1)**: guest checkout on every listing — order lands directly in the seller's ops console as a real `soukhub` order (SH- reference), with public status lookup by reference + phone; cards follow with Stripe (ADR 0012)
+- **AI shopping assistant**: floating "Ask SoukHub" on every public page — grounded product discovery over live listings + market catalog with internal links, order-status lookup (ref+phone), trade-in guidance; guests welcome
+- **Keep-on-SoukHub catalog flow**: market items now open internal pages (`/m/{id}`) with an "Order through SoukHub" request form (WhatsApp follow-up) instead of sending buyers to Amazon/Cartlow/Revibe
+- **Retail home**: trade-in promo banner, COD/sell tiles, "Deals under AED 500" from live market data; hero copy removed (sr-only for SEO)
+
+### Fixed
+- All product imagery renders via direct <img> (arbitrary marketplace/seller CDNs previously broke next/image); imageless catalog rows deactivated
+
 ### Changed
 - **Database workflow (ADR 0015, supersedes 0002)**: Drizzle ORM is now the schema authority — `src/db/schema.ts` + migrations in `drizzle/` (full pre-Drizzle history preserved as the baseline). New `Database` CI workflow validates the entire migration history from zero on every PR (postgres service + Supabase shim) and deploys pending migrations to the hosted DB on merge via the `DATABASE_URL` secret — no more laptop `supabase db push`. The supabase CLI now only runs the local stack; server-only Drizzle client added (`src/db`), supabase-js remains the RLS/auth surface
 

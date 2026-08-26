@@ -47,10 +47,14 @@ const TRUST_ICONS = [
 export function HomeLanding({
   listings,
   catalog = [],
+  deals = [],
+  bannerImage = null,
   searchAction,
 }: {
   listings: PublicListing[];
   catalog?: PublicCatalogItem[];
+  deals?: PublicCatalogItem[];
+  bannerImage?: string | null;
   searchAction: string;
 }) {
   const tcat = useTranslations('catalog');
@@ -99,8 +103,7 @@ export function HomeLanding({
       <section className="border-b border-border bg-surface-warm">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-3xl font-bold tracking-tight sm:text-5xl">{t('heroTitle')}</h1>
-            <p className="mt-4 text-lg text-muted-foreground">{t('heroSubtitle')}</p>
+            <h1 className="sr-only">{t('heroTitle')}</h1>
 
             <form action={searchAction} className="mx-auto mt-8 flex max-w-xl items-center gap-2" role="search">
               <div className="relative flex-1">
@@ -139,6 +142,73 @@ export function HomeLanding({
           </div>
         </div>
       </section>
+
+      {/* Promo banners */}
+      <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <Link
+            href="/trade-in"
+            className="group relative flex min-h-[220px] flex-col justify-center overflow-hidden rounded-2xl bg-primary p-8 text-primary-foreground lg:col-span-2"
+          >
+            <div className="relative z-10 max-w-md">
+              <p className="text-sm font-semibold uppercase tracking-wider opacity-80">SoukHub Trade-in</p>
+              <h2 className="mt-2 text-3xl font-bold leading-tight sm:text-4xl">{t('bannerDealsTitle')}</h2>
+              <p className="mt-2 opacity-90">{t('bannerDealsText')}</p>
+              <span className="mt-5 inline-flex items-center gap-2 rounded-lg bg-background px-5 py-2.5 font-semibold text-primary">
+                {t('bannerDealsCta')}
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+              </span>
+            </div>
+            {bannerImage && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={bannerImage}
+                alt=""
+                aria-hidden
+                className="absolute -end-6 top-1/2 hidden h-[130%] -translate-y-1/2 object-contain opacity-90 transition-transform group-hover:scale-105 sm:block"
+              />
+            )}
+          </Link>
+          <div className="grid gap-4">
+            <div className="flex items-center gap-4 rounded-2xl border border-border bg-surface-warm p-6">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Banknote className="h-6 w-6" aria-hidden />
+              </span>
+              <div>
+                <h3 className="font-bold">{t('bannerCodTitle')}</h3>
+                <p className="text-sm text-muted-foreground">{t('bannerCodText')}</p>
+              </div>
+            </div>
+            <Link href="/sell" className="flex items-center gap-4 rounded-2xl border border-border bg-surface-warm p-6 hover:border-primary">
+              <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-accent/10 text-accent">
+                <Store className="h-6 w-6" aria-hidden />
+              </span>
+              <div>
+                <h3 className="font-bold">{t('bannerSellTitle')}</h3>
+                <p className="text-sm text-muted-foreground">{t('bannerSellText')}</p>
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Deals under AED 500 */}
+      {deals.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-accent">{t('dealsTitle')}</h2>
+            <Link href="/search?max=500" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+              {t('dealsAll')}
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" aria-hidden />
+            </Link>
+          </div>
+          <div className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {deals.slice(0, 4).map((item) => (
+              <CatalogCard key={item.id} item={item} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Latest listings — real inventory above the fold */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
