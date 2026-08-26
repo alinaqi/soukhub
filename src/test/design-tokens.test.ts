@@ -8,7 +8,10 @@ import { resolve } from 'path';
  */
 
 const css = readFileSync(resolve(__dirname, '../app/globals.css'), 'utf8');
-const landing = readFileSync(resolve(__dirname, '../app/[locale]/page.tsx'), 'utf8');
+const landing = [
+  readFileSync(resolve(__dirname, '../components/marketplace/HomeLanding.tsx'), 'utf8'),
+  readFileSync(resolve(__dirname, '../components/marketplace/SellLanding.tsx'), 'utf8'),
+].join('\n');
 
 describe('Clean Souk design tokens (globals.css)', () => {
   it('defines the souk-teal primary', () => {
@@ -39,7 +42,7 @@ describe('Clean Souk design tokens (globals.css)', () => {
   });
 });
 
-describe('Landing page follows the design system', () => {
+describe('Landing pages follow the design system', () => {
   it('contains no gradient washes', () => {
     expect(landing).not.toMatch(/gradient/i);
   });
