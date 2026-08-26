@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { mapPlaceItem, mapPlaces, toWhatsApp, inferEmirate } from '@/lib/ingestion/providers';
+import {
+  mapPlaceItem, mapPlaces, toWhatsApp, inferEmirate, mapGoogleReviews,
+} from '@/lib/ingestion/providers';
 
 const RAW = {
   placeId: 'ChIJabc123',
@@ -64,5 +66,49 @@ describe('inferEmirate / dedupe', () => {
   it('dedupes by place id', () => {
     const out = mapPlaces([RAW, { ...RAW }, { ...RAW, placeId: 'other' }]);
     expect(out).toHaveLength(2);
+  });
+});
+
+describe('mapGoogleReviews', () => {
+  const review = {
+    name: 'Ahmed K',
+    stars: 5,
+    text: 'Great prices and honest staff, swapped my screen in 20 minutes.',
+    publishedAtDate: '2026-05-14T09:30:00.000Z',
+  };
+
+  it('maps reviews and appears on the mapped place', () => {
+    const reviews = mapGoogleReviews([review]);
+    expect(reviews).toHaveLength(1);
+    expect(reviews[0]).toEqual({
+      author: 'Ahmed K',
+      stars: 5,
+      text: 'Great prices and honest staff, swapped my screen in 20 minutes.',
+      date: '2026-05-14',
+    });
+    const p = mapPlaceItem({ ...RAW, reviews: [review] })!;
+    expect(p.google_reviews).toHaveLength(1);
+  });
+
+  it('drops empty/short texts, caps at 5, tolerates junk shapes', () => {
+    const junk = [{ name: 'x' }, { text: 'ok' }, 'nope', null];
+    expect(mapGoogleReviews(junk)).toHaveLength(0);
+    expect(mapGoogleReviews(undefined)).toEqual([]);
+    const many = Array.from({ length: 8 }, (_, i) => ({ ...review, text: `${review.text} ${i}` }));
+    expect(mapGoogleReviews(many)).toHaveLength(5);
+  });
+
+  it('clamps author/text length and invalid stars', () => {
+    const r = mapGoogleReviews([{
+      name: 'A'.repeat(100), stars: 9, text: 'B'.repeat(500), publishedAtDate: 42,
+    }])[0];
+    expect(r.author).toHaveLength(60);
+    expect(r.stars).toBeNull();
+    expect(r.text).toHaveLength(350);
+    expect(r.date).toBeNull();
+  });
+
+  it('defaults to empty on places without reviews', () => {
+    expect(mapPlaceItem(RAW)!.google_reviews).toEqual([]);
   });
 });

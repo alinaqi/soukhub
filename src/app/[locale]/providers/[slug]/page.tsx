@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { MapPin, Phone, MessageCircle, Store, Navigation } from 'lucide-react';
+import { Suspense } from 'react';
+import { MapPin, Phone, MessageCircle, Store, Navigation, BadgeCheck, Star } from 'lucide-react';
 import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProviderRequestClient } from '@/components/marketplace/ProviderRequestClient';
+import { ProviderClaimClient } from '@/components/marketplace/ProviderClaimClient';
 import { ProviderRating } from '@/components/marketplace/ProvidersDirectoryClient';
 import { getProviderBySlug } from '@/lib/marketplace/queries';
 import { safeJsonLd } from '@/lib/marketplace/jsonld';
@@ -65,6 +67,19 @@ export default async function ProviderPage({
           },
         }
       : {}),
+    ...(Array.isArray(provider.google_reviews) && provider.google_reviews.length > 0
+      ? {
+          review: provider.google_reviews
+            .filter((r) => r.stars != null)
+            .map((r) => ({
+              '@type': 'Review',
+              author: { '@type': 'Person', name: r.author },
+              reviewRating: { '@type': 'Rating', ratingValue: r.stars, bestRating: 5 },
+              reviewBody: r.text,
+              ...(r.date ? { datePublished: r.date } : {}),
+            })),
+        }
+      : {}),
   };
 
   return (
@@ -82,7 +97,15 @@ export default async function ProviderPage({
             )}
           </span>
           <div className="min-w-0">
-            <h1 className="text-2xl font-bold leading-tight">{provider.name}</h1>
+            <h1 className="flex items-center gap-2 text-2xl font-bold leading-tight">
+              {provider.name}
+              {provider.claimed_org_id && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  <BadgeCheck className="h-3.5 w-3.5" aria-hidden />
+                  {t('claimedBadge')}
+                </span>
+              )}
+            </h1>
             <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
               <MapPin className="h-4 w-4 shrink-0" aria-hidden />
               {[provider.address, provider.emirate].filter(Boolean).join(' — ')}
@@ -139,7 +162,47 @@ export default async function ProviderPage({
           </details>
         )}
 
+        {Array.isArray(provider.google_reviews) && provider.google_reviews.length > 0 && (
+          <section className="mt-8">
+            <h2 className="flex items-center gap-2 font-semibold">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" aria-hidden />
+              {t('googleReviewsTitle')}
+            </h2>
+            <p className="mt-1 text-xs text-muted-foreground">{t('googleReviewsSource')}</p>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+              {provider.google_reviews.map((review, i) => (
+                <li key={i} className="rounded-xl border border-border bg-card p-4">
+                  <div className="flex items-center justify-between gap-2 text-sm">
+                    <span className="font-medium">{review.author}</span>
+                    {review.stars != null && (
+                      <span className="flex items-center gap-0.5" aria-label={`${review.stars}/5`}>
+                        {Array.from({ length: 5 }, (_, star) => (
+                          <Star
+                            key={star}
+                            className={`h-3.5 w-3.5 ${star < review.stars! ? 'fill-amber-400 text-amber-400' : 'text-border'}`}
+                            aria-hidden
+                          />
+                        ))}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">“{review.text}”</p>
+                  {review.date && (
+                    <p className="mt-2 text-xs text-muted-foreground/70">{review.date}</p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <ProviderRequestClient providerId={provider.id} />
+
+        {!provider.claimed_org_id && (
+          <Suspense>
+            <ProviderClaimClient providerId={provider.id} slug={provider.slug} />
+          </Suspense>
+        )}
       </main>
     </div>
   );

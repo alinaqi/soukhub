@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { MapPin, Phone, MessageCircle, Star, LocateFixed, Store } from 'lucide-react';
+import { MapPin, Phone, MessageCircle, Star, LocateFixed, Store, BadgeCheck } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { PublicProvider } from '@/lib/marketplace/queries';
 
@@ -130,7 +130,12 @@ export function ProvidersDirectoryClient({ providers }: { providers: PublicProvi
                   )}
                 </span>
                 <span className="min-w-0">
-                  <span className="line-clamp-2 font-semibold leading-snug group-hover:text-primary">{p.name}</span>
+                  <span className="line-clamp-2 font-semibold leading-snug group-hover:text-primary">
+                    {p.name}
+                    {p.claimed_org_id && (
+                      <BadgeCheck className="ms-1.5 inline h-4 w-4 text-primary" aria-label={t('claimedBadge')} />
+                    )}
+                  </span>
                   <span className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3 shrink-0" aria-hidden />
                     <span className="truncate">{[p.area, p.emirate].filter(Boolean).join(', ')}</span>

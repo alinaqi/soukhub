@@ -306,6 +306,15 @@
     "phoneInvalid": "Enter a valid WhatsApp number so we can reach you.",
     "itemRequired": "Tell us what device you're looking for.",
     "hoursTitle": "Opening hours",
-    "noResults": "No shops match — try a different search or emirate."
+    "noResults": "No shops match — try a different search or emirate.",
+    "claimedBadge": "On SoukHub",
+    "claimTitle": "Own this shop?",
+    "claimText": "Claim your listing to get a free SoukHub seller account — manage your store, list products, and receive orders.",
+    "claimButton": "Claim my store",
+    "claiming": "Setting up your store…",
+    "claimTaken": "This shop has already been claimed by its owner on SoukHub.",
+    "claimError": "Something went wrong — please try again.",
+    "googleReviewsTitle": "What customers say",
+    "googleReviewsSource": "Reviews from Google"
   }
 }

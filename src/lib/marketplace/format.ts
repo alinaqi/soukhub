@@ -35,7 +35,7 @@ export function whatsAppOrderLink(phone: string, message: string): string {
 }
 
 /** Allowlisted internal route prefixes the assistant may link to. */
-const INTERNAL_LINK_PREFIXES = ['/p/', '/m/', '/s/', '/search', '/trade-in', '/sell', '/checkout/'];
+const INTERNAL_LINK_PREFIXES = ['/p/', '/m/', '/s/', '/search', '/trade-in', '/sell', '/checkout/', '/providers/'];
 
 /**
  * Accept only same-origin internal paths (rejects protocol-relative "//evil"

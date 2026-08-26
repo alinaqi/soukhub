@@ -1141,6 +1141,8 @@ export const providers = pgTable("providers", {
 	imageUrl: text("image_url"),
 	isActive: boolean("is_active").default(true).notNull(),
 	claimedOrgId: uuid("claimed_org_id"),
+	claimedAt: timestamp("claimed_at", { withTimezone: true, mode: 'string' }),
+	googleReviews: jsonb("google_reviews").default([]),
 	scrapedAt: timestamp("scraped_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [

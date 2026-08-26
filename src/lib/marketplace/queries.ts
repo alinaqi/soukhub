@@ -245,13 +245,15 @@ export interface PublicProvider {
   google_review_count: number | null;
   image_url: string | null;
   hours?: Record<string, unknown> | null;
+  claimed_org_id?: string | null;
+  google_reviews?: Array<{ author: string; stars: number | null; text: string; date: string | null }>;
   distance_km?: number;
 }
 
 export async function listProviders(limit = 200): Promise<PublicProvider[]> {
   const { data, error } = await publicClient()
     .from('providers')
-    .select('id, slug, name, phone, whatsapp, address, area, emirate, lat, lng, google_rating, google_review_count, image_url')
+    .select('id, slug, name, phone, whatsapp, address, area, emirate, lat, lng, google_rating, google_review_count, image_url, claimed_org_id')
     .eq('is_active', true)
     .order('google_review_count', { ascending: false, nullsFirst: false })
     .limit(limit);
@@ -262,7 +264,7 @@ export async function listProviders(limit = 200): Promise<PublicProvider[]> {
 export const getProviderBySlug = cache(async (slug: string): Promise<PublicProvider | null> => {
   const { data, error } = await publicClient()
     .from('providers')
-    .select('id, slug, name, phone, whatsapp, website, address, area, emirate, lat, lng, google_rating, google_review_count, image_url, hours')
+    .select('id, slug, name, phone, whatsapp, website, address, area, emirate, lat, lng, google_rating, google_review_count, image_url, hours, claimed_org_id, google_reviews')
     .eq('slug', slug)
     .eq('is_active', true)
     .maybeSingle();
