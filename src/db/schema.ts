@@ -1081,3 +1081,24 @@ export const tradeInRequests = pgTable("trade_in_requests", {
 	index("idx_tradein_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
 	index("idx_tradein_created").using("btree", table.createdAt.desc().nullsFirst()),
 ]);
+
+// Buyer interest in catalog items — sales complete ON SoukHub (operator
+// confirms availability/fulfilment via WhatsApp), no outbound handoff.
+export const catalogRequests = pgTable("catalog_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	catalogProductId: uuid("catalog_product_id").notNull(),
+	userId: uuid("user_id"),
+	name: text(),
+	contactPhone: text("contact_phone").notNull(),
+	note: text(),
+	status: text().default('new').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_catalog_requests_item").using("btree", table.catalogProductId.asc().nullsLast().op("uuid_ops")),
+	index("idx_catalog_requests_created").using("btree", table.createdAt.desc().nullsFirst()),
+	foreignKey({
+		columns: [table.catalogProductId],
+		foreignColumns: [catalogProducts.id],
+		name: "catalog_requests_item_fkey"
+	}).onDelete("cascade"),
+]);

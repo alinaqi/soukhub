@@ -83,7 +83,16 @@
     "sellBannerTitle": "Have phones or electronics to sell?",
     "sellBannerText": "Open your store in minutes — free to list, AI does the busywork.",
     "sellBannerCta": "Sell on SoukHub",
-    "noListingsYet": "Listings are arriving — check back soon or be the first to sell."
+    "noListingsYet": "Listings are arriving — check back soon or be the first to sell.",
+    "bannerDealsTitle": "Trade in. Top up. Upgrade.",
+    "bannerDealsText": "Instant AI valuation for your old phone — exchange it against anything on SoukHub.",
+    "bannerDealsCta": "Value my phone",
+    "bannerCodTitle": "Cash on delivery, UAE-wide",
+    "bannerCodText": "Order online, pay at your door.",
+    "bannerSellTitle": "Sell your electronics",
+    "bannerSellText": "Open a store in minutes — free.",
+    "dealsTitle": "Deals under AED 500",
+    "dealsAll": "See all deals"
   },
   "search": {
     "title": "Search",
@@ -110,7 +119,7 @@
     "soldBy": "Sold by",
     "aboutItem": "About this item",
     "whatsappMessage": "Hi! I would like to order: {product} ({url})",
-    "buyOnline": "Buy online — coming soon",
+    "buyOnline": "Buy online — cash on delivery",
     "delivery": "Seller-arranged delivery across the UAE",
     "codAvailable": "Cash on delivery available"
   },
@@ -144,7 +153,20 @@
       "amazon": "Amazon.ae",
       "cartlow": "Cartlow",
       "revibe": "Revibe"
-    }
+    },
+    "detailTagline": "Sourced from the market, delivered through SoukHub.",
+    "requestTitle": "Order through SoukHub",
+    "requestText": "Tell us where to reach you — we confirm availability and final price on WhatsApp, arrange delivery, and you pay cash on delivery or by card.",
+    "nameLabel": "Your name",
+    "phoneLabel": "WhatsApp number",
+    "noteLabel": "Anything to add? (optional)",
+    "submit": "Request this item",
+    "submitting": "Sending…",
+    "successTitle": "Request received",
+    "successText": "We'll message you on WhatsApp shortly to confirm availability, price, and delivery.",
+    "priceRef": "Market price reference: {source}",
+    "conditionLabel": "Condition",
+    "phoneInvalid": "Enter a valid WhatsApp number so we can reach you."
   },
   "tradein": {
     "navLabel": "Trade in",
@@ -170,5 +192,52 @@
     "notIdentified": "We couldn't confidently identify a device in these photos. Try clearer shots of the front and back.",
     "errorGeneric": "Something went wrong evaluating your device. Please try again.",
     "confidence": "AI confidence"
+  },
+  "checkout": {
+    "metaTitle": "Checkout",
+    "buyOnline": "Buy online — cash on delivery",
+    "title": "Complete your order",
+    "itemLabel": "You're ordering",
+    "nameLabel": "Full name",
+    "phoneLabel": "WhatsApp number",
+    "emirateLabel": "Emirate",
+    "addressLabel": "Delivery address",
+    "noteLabel": "Note for the seller (optional)",
+    "paymentLabel": "Payment",
+    "cod": "Cash on delivery",
+    "codHint": "Pay when your order arrives.",
+    "cardSoon": "Card / Apple Pay — coming soon",
+    "placeOrder": "Place order",
+    "placing": "Placing order…",
+    "successTitle": "Order placed!",
+    "successText": "The seller will confirm on WhatsApp shortly. Keep your order reference:",
+    "trackHint": "Check your order status anytime with your reference and phone number.",
+    "trackCta": "Track order",
+    "errors": {
+      "name_required": "Please enter your name.",
+      "phone_invalid": "Enter a valid WhatsApp number.",
+      "emirate_required": "Choose your emirate.",
+      "address_required": "Enter your delivery address.",
+      "product_unavailable": "This item is no longer available.",
+      "checkout_failed": "Something went wrong. Please try again."
+    },
+    "emirates": {
+      "dubai": "Dubai",
+      "abudhabi": "Abu Dhabi",
+      "sharjah": "Sharjah",
+      "ajman": "Ajman",
+      "rak": "Ras Al Khaimah",
+      "fujairah": "Fujairah",
+      "uaq": "Umm Al Quwain"
+    }
+  },
+  "assistant": {
+    "open": "Ask SoukHub",
+    "title": "SoukHub Assistant",
+    "placeholder": "Ask anything — products, prices, your order…",
+    "hello": "Hi! I can help you find the right device, compare prices, check your order status, or value a trade-in. What are you looking for?",
+    "send": "Send",
+    "thinking": "Thinking…",
+    "error": "Sorry — something went wrong. Try again."
   }
 }

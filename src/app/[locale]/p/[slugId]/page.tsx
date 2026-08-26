@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
-import Image from 'next/image';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { Store, Truck, Banknote, MessageCircle, ShoppingBag } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
@@ -115,13 +114,11 @@ export default async function ProductPage({
           {/* Gallery */}
           <div className="relative aspect-square overflow-hidden rounded-xl border border-border bg-muted">
             {images[0] ? (
-              <Image
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
                 src={images[0]}
                 alt={title}
-                fill
-                priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                className="object-cover"
+                className="absolute inset-0 h-full w-full object-contain"
               />
             ) : (
               <span className="flex h-full items-center justify-center text-muted-foreground">
@@ -180,9 +177,12 @@ export default async function ProductPage({
                 <MessageCircle className="h-5 w-5" aria-hidden />
                 {tc('orderOnWhatsApp')}
               </a>
-              <span className="inline-flex flex-1 items-center justify-center rounded-lg border border-border px-6 py-3 font-medium text-muted-foreground">
+              <Link
+                href={`/checkout/${product.slug}-${product.short_id}`}
+                className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-6 py-3 font-semibold text-accent-foreground hover:opacity-90"
+              >
                 {t('buyOnline')}
-              </span>
+              </Link>
             </div>
 
             {description && (
@@ -201,15 +201,12 @@ export default async function ProductPage({
       <div className="fixed inset-x-0 bottom-0 border-t border-border bg-background p-3 lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center gap-3">
           <span className="text-lg font-bold text-accent">{formatAED(price, locale)}</span>
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground"
+          <Link
+            href={`/checkout/${product.slug}-${product.short_id}`}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-accent px-4 py-3 font-semibold text-accent-foreground"
           >
-            <MessageCircle className="h-5 w-5" aria-hidden />
-            {tc('orderOnWhatsApp')}
-          </a>
+            {t('buyOnline')}
+          </Link>
         </div>
       </div>
     </div>
