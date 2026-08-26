@@ -86,3 +86,60 @@ body {
 [lang="ar"] body {
   font-family: var(--font-plex-arabic), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Dual-thumb price range (SearchFiltersPanel) */
+.dual-range {
+  position: relative;
+  height: 24px;
+}
+.dual-range input[type='range'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+}
+.dual-range input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: 2px solid var(--background);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+  margin-top: 3px;
+}
+.dual-range input[type='range']::-moz-range-thumb {
+  pointer-events: auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--primary);
+  border: 2px solid var(--background);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.25);
+  cursor: pointer;
+}
+.dual-range .track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 9999px;
+  background: var(--border);
+}
+.dual-range .track-fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 9999px;
+  background: var(--primary);
+}

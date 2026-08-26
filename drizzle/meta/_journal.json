@@ -57,6 +57,13 @@
       "when": 1787727117710,
       "tag": "0007_product_reviews_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787729904993,
+      "tag": "0008_catalog_slugs",
+      "breakpoints": true
     }
   ]
 }

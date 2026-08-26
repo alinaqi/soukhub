@@ -8,6 +8,11 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **Star ratings on product cards**: home, search and deals cards show cached web-review scores (fractional stars + count) via batched cache reads — no live AI calls on grid paths; `scripts/warm-reviews.ts` pre-fills the cache; family keys collapse storage/color/SKU variants
+- **Mobile navigation**: hamburger menu (full site nav, categories, login, language) and a back button on all sub-pages; header decluttered on small screens
+- **SEO-friendly catalog URLs**: `/m/{slug}-{shortId}` (≤60-char word-boundary slugs) with 308 redirects from legacy UUID links; search_catalog returns URL fields
+- **Social previews + sitemaps**: metadataBase with site-wide OpenGraph/Twitter-card defaults, product-image previews on catalog pages, `sitemap.xml` (static + products + stores + catalog with en/ar alternates) and `robots.txt`
+- **Dual-thumb price slider**: single-track range with two thumbs replacing stacked sliders
 - **Assistant side drawer**: full-height drawer with backdrop, animated slide-in, product cards with images/prices/conditions from tool results, page-aware suggestion bubbles (home/search/product/trade-in/sell) and page context passed to the model, bold+link markdown rendering, Escape-to-close
 - **PWA**: web manifest + icons, installable standalone app, service worker (cache-first static assets, network-first pages, offline fallback page), theme color, apple-touch-icon
 - **Search filters v2**: brand autocomplete (from live catalog brands), category dropdown, dual price-range sliders with live AED readout

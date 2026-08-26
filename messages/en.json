@@ -21,7 +21,10 @@
     "browse": "Browse",
     "sell": "Sell on SoukHub",
     "forSellers": "For Sellers",
-    "tradeIn": "Trade in"
+    "tradeIn": "Trade in",
+    "menu": "Menu",
+    "home": "Home",
+    "categories": "Categories"
   },
   "home": {
     "heroTitle": "Graded phones & electronics from UAE sellers",

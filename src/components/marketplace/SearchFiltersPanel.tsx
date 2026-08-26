@@ -78,30 +78,36 @@ export function SearchFiltersPanel({ action, brands, initial }: Props) {
             {formatAED(min, locale)} – {max >= PRICE_CAP ? `${formatAED(PRICE_CAP, locale)}+` : formatAED(max, locale)}
           </span>
         </div>
-        <label className="block">
-          <span className="sr-only">{t('filters.minPrice')}</span>
+        <div className="dual-range" dir="ltr">
+          <div className="track" />
+          <div
+            className="track-fill"
+            style={{
+              left: `${(min / PRICE_CAP) * 100}%`,
+              width: `${((max - min) / PRICE_CAP) * 100}%`,
+            }}
+          />
           <input
             type="range"
+            aria-label={t('filters.minPrice')}
             min={0}
             max={PRICE_CAP}
             step={STEP}
             value={min}
             onChange={(e) => setMinSafe(Number(e.target.value))}
-            className="w-full accent-[var(--primary)]"
+            style={{ zIndex: min > PRICE_CAP - STEP * 4 ? 5 : 3 }}
           />
-        </label>
-        <label className="-mt-1 block">
-          <span className="sr-only">{t('filters.maxPrice')}</span>
           <input
             type="range"
+            aria-label={t('filters.maxPrice')}
             min={0}
             max={PRICE_CAP}
             step={STEP}
             value={max}
             onChange={(e) => setMaxSafe(Number(e.target.value))}
-            className="w-full accent-[var(--primary)]"
+            style={{ zIndex: 4 }}
           />
-        </label>
+        </div>
       </div>
 
       <div className="col-span-2 flex gap-2 lg:col-span-1">
