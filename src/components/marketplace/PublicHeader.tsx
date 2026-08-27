@@ -13,7 +13,7 @@ export function PublicHeader({ defaultQuery = '' }: { defaultQuery?: string }) {
   const searchAction = localePath(locale, '/search');
 
   return (
-    <header className="border-b border-border bg-background">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-2 px-3 sm:gap-4 sm:px-6 lg:px-8">
         <Suspense>
           <BackButton />

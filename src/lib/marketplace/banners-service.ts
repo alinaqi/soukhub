@@ -26,13 +26,15 @@ function publicClient() {
 export interface PromoBanner {
   id: string;
   event_slug: string | null;
+  category: string | null;
   headline: string;
   image_url: string;
   href: string;
+  sort_order: number;
   locale: string;
 }
 
-const COLS = 'id, event_slug, headline, image_url, href, locale';
+const COLS = 'id, event_slug, category, headline, image_url, href, sort_order, locale';
 
 /** The live banner for an event (public read). */
 export async function getBannerForEvent(
@@ -71,27 +73,55 @@ export async function persistBannerImage(sketchUrl: string, key: string): Promis
 
 /** Upsert the banner record for an event+locale (one live banner per pair). */
 export async function saveBanner(input: {
-  event_slug: string;
+  event_slug?: string | null;
+  category?: string | null;
   headline: string;
   image_url: string;
   href: string;
+  sort_order?: number;
   locale?: string;
 }): Promise<void> {
   const svc = serviceClient();
   const locale = input.locale ?? 'en';
-  // Retire any prior live banner for this event+locale, then insert the new one
-  await svc
+  // Retire the prior live banner for the same slot (event OR category), then insert
+  const retire = svc
     .from('promo_banners')
     .update({ is_active: false })
-    .eq('event_slug', input.event_slug)
     .eq('locale', locale)
     .eq('is_active', true);
+  if (input.event_slug) await retire.eq('event_slug', input.event_slug);
+  else if (input.category) await retire.eq('category', input.category);
   const { error } = await svc.from('promo_banners').insert({
-    event_slug: input.event_slug,
+    event_slug: input.event_slug ?? null,
+    category: input.category ?? null,
     headline: input.headline,
     image_url: input.image_url,
     href: input.href,
+    sort_order: input.sort_order ?? 0,
     locale,
   });
   if (error) throw error;
+}
+
+/**
+ * All active banners for the rotating carousel, English base with per-locale
+ * overrides, ordered by sort_order (event banner leads at 0). One row per slot.
+ */
+export async function listActiveBanners(locale = 'en'): Promise<PromoBanner[]> {
+  const { data, error } = await publicClient()
+    .from('promo_banners')
+    .select(COLS)
+    .eq('is_active', true)
+    .in('locale', [locale, 'en'])
+    .order('sort_order', { ascending: true });
+  if (error) throw error;
+  const rows = (data ?? []) as PromoBanner[];
+  // Collapse to one banner per slot, preferring the requested locale over 'en'
+  const bySlot = new Map<string, PromoBanner>();
+  for (const b of rows) {
+    const slot = b.event_slug ? `e:${b.event_slug}` : b.category ? `c:${b.category}` : `id:${b.id}`;
+    const existing = bySlot.get(slot);
+    if (!existing || (existing.locale !== locale && b.locale === locale)) bySlot.set(slot, b);
+  }
+  return [...bySlot.values()].sort((a, b) => a.sort_order - b.sort_order);
 }

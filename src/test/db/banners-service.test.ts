@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll } from 'vitest';
+import { createClient } from '@supabase/supabase-js';
 import { execSync } from 'node:child_process';
 import { localStackUp } from './helpers';
 
@@ -20,6 +21,12 @@ beforeAll(async () => {
   process.env.SUPABASE_SERVICE_ROLE_KEY = get('SECRET_KEY') ?? get('SERVICE_ROLE_KEY');
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = get('PUBLISHABLE_KEY') ?? get('ANON_KEY');
   svc = await import('@/lib/marketplace/banners-service');
+});
+
+afterAll(async () => {
+  if (!up) return;
+  const svcClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
+  await svcClient.from('promo_banners').delete().eq('event_slug', slug);
 });
 
 d('banners-service', () => {

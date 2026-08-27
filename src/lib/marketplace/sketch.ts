@@ -79,10 +79,33 @@ export function bannerPrompt(input: {
   const what = input.category ? input.category : 'phones, laptops and electronics';
   const off = input.discountPct ? `up to ${input.discountPct}% off` : 'seasonal deals';
   return (
-    `Wide horizontal web promo banner for SoukHub, a UAE marketplace for graded phones and electronics. ` +
+    `Wide horizontal web promo banner for a UAE marketplace of graded phones and electronics. ` +
     `Campaign: ${input.eventName} — ${off} on ${what}. ` +
-    `Clean modern marketplace style, SoukHub teal and sienna accents, real device photography, plenty of whitespace. ` +
+    `Clean modern marketplace style, teal and sienna accents, real device photography, plenty of whitespace. ` +
     `English text ONLY (no Arabic). Big headline "${input.eventName}", a short subtext line with the offer, and a "Shop now" button. ` +
-    `No paragraphs, no fake prices, no logos other than SoukHub.`
+    `No brand names, logos, or wordmarks anywhere in the image (this runs ON the marketplace already). No paragraphs, no fake prices.`
   );
+}
+
+const CATEGORY_COPY: Record<string, { title: string; sub: string }> = {
+  phones: { title: 'Smartphones', sub: 'iPhone, Samsung, Google — new and graded' },
+  laptops: { title: 'Laptops', sub: 'MacBooks, ultrabooks and everyday laptops' },
+  tablets: { title: 'Tablets', sub: 'iPads and Android tablets, new and graded' },
+  audio: { title: 'Audio', sub: 'AirPods, headphones and speakers' },
+  wearables: { title: 'Smartwatches & Wearables', sub: 'Apple Watch, Galaxy Watch and more' },
+  gaming: { title: 'Gaming', sub: 'Consoles, handhelds and accessories' },
+};
+
+export const BANNER_CATEGORIES = Object.keys(CATEGORY_COPY);
+
+/** Prompt for an evergreen category banner (rotating carousel). English only,
+ * no brand names in the art — it runs on the marketplace itself. */
+export function categoryBannerPrompt(category: string): { prompt: string; title: string } {
+  const copy = CATEGORY_COPY[category] ?? { title: category, sub: 'Shop the best deals' };
+  const prompt =
+    `Wide horizontal web promo banner for a UAE electronics marketplace, category: ${copy.title}. ` +
+    `Clean modern marketplace style, teal and sienna accents, real ${copy.title.toLowerCase()} product photography on a bright uncluttered background. ` +
+    `English text ONLY (no Arabic). Big headline "${copy.title}", short subtext "${copy.sub}", and a "Shop now" button. ` +
+    `No brand names, logos, or wordmarks anywhere in the image. No paragraphs, no fake prices.`;
+  return { prompt, title: copy.title };
 }
