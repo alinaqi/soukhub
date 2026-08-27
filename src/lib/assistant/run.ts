@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { searchListings, searchCatalog } from '@/lib/marketplace/queries';
 import { lookupOrder } from '@/lib/checkout/service';
 import { getEventCalendar } from '@/lib/marketplace/events-service';
+import { searchUaeMarket } from '@/lib/assistant/web-search';
 
 /**
  * Buyer-facing shopping assistant (ADR 0014/0016): shopping help, product
@@ -50,6 +51,18 @@ const TOOLS: Anthropic.Tool[] = [
     },
   },
   {
+    name: 'search_web_market',
+    description:
+      "Search the wider UAE market on the web for products SoukHub does NOT stock. Use ONLY after search_products and search_market both come up empty. Returns an external market summary with source links — these are NOT SoukHub listings.",
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        query: { type: 'string', description: 'What the shopper is looking for.' },
+      },
+      required: ['query'],
+    },
+  },
+  {
     name: 'get_event_calendar',
     description:
       'Upcoming UAE shopping events (Back to School, White Friday, DSF, Ramadan, Eid, National Day, GITEX…) within a date window, with each event\'s expected discount and category. Use this to decide whether to advise buying now or waiting for a sale.',
@@ -70,6 +83,7 @@ Answer shape (when recommending products):
 - Then at most TWO alternatives, each with a one-line plain trade-off label like "Cheaper, but older" or "Better camera, AED 400 more".
 - Never present more than three products in an answer.
 - If nothing fits well, say so honestly and suggest what to change (budget, condition) — do not pad with weak options.
+- If search_products AND search_market both return nothing, call search_web_market to check the wider UAE market. Present those results clearly as external ("not on SoukHub yet, but here's what's available in the UAE market: …"), cite the sources it returns, and offer to help source it. Never present web results as SoukHub stock.
 
 Timing (buy now vs wait):
 - When the shopper asks about timing, or a purchase can clearly wait, call get_event_calendar to see if a sale is near.
@@ -126,6 +140,10 @@ async function runTool(name: string, input: Record<string, unknown>) {
     if (name === 'order_status') {
       const order = await lookupOrder(String(input.ref ?? ''), String(input.phone ?? ''));
       return order ?? { error: 'No order found for that reference + phone combination.' };
+    }
+    if (name === 'search_web_market') {
+      const result = await searchUaeMarket(String(input.query ?? ''), null);
+      return result ?? { error: 'No web results found.' };
     }
     if (name === 'get_event_calendar') {
       const now = Date.now();
