@@ -52,7 +52,7 @@ export function HomeShopsStrip({ providers }: { providers: PublicProvider[] }) {
   if (rows.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold">
           {place?.label ? t('topShopsIn', { location: place.label }) : t('topShops')}
