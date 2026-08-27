@@ -14,7 +14,7 @@ export function HeroSearch({ placeholder, searchLabel }: { placeholder: string; 
   };
 
   return (
-    <form onSubmit={submit} className="mx-auto mt-8 flex max-w-xl items-center gap-2" role="search">
+    <form id="hero-search" onSubmit={submit} className="mx-auto mt-8 flex max-w-xl items-center gap-2" role="search">
       <div className="relative flex-1">
         <Search
           className="pointer-events-none absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground"
