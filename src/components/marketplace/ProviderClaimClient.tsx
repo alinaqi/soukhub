@@ -55,29 +55,27 @@ export function ProviderClaimClient({ providerId, slug }: { providerId: string; 
 
   if (state === 'taken') {
     return (
-      <p className="mt-6 flex items-center gap-2 rounded-xl border border-border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+      <div className="fixed bottom-20 end-5 z-40 flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm text-muted-foreground shadow-lg">
         <BadgeCheck className="h-4 w-4 shrink-0 text-primary" aria-hidden />
         {t('claimTaken')}
-      </p>
+      </div>
     );
   }
 
+  // Floating CTA, stacked above the Souky launcher (which sits at bottom-5).
   return (
-    <div className="mt-6 flex flex-col gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="flex items-center gap-2 text-sm font-semibold">
-          <Store className="h-4 w-4 text-primary" aria-hidden />
-          {t('claimTitle')}
-        </p>
-        <p className="mt-0.5 text-sm text-muted-foreground">{t('claimText')}</p>
-        {state === 'error' && <p className="mt-1 text-sm text-error">{t('claimError')}</p>}
-      </div>
+    <div className="fixed bottom-20 end-5 z-40 flex flex-col items-end gap-2">
+      {state === 'error' && (
+        <span className="rounded-lg bg-card px-3 py-1.5 text-xs text-error shadow">{t('claimError')}</span>
+      )}
       <button
         onClick={claim}
         disabled={state === 'claiming'}
-        className="shrink-0 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary-hover disabled:opacity-50"
+        title={t('claimText')}
+        className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-card px-5 py-3 text-sm font-semibold text-primary shadow-lg transition-transform hover:scale-105 hover:bg-primary/5 disabled:opacity-60"
       >
-        {state === 'claiming' ? t('claiming') : t('claimButton')}
+        <Store className="h-4 w-4" aria-hidden />
+        {state === 'claiming' ? t('claiming') : t('claimTitle')}
       </button>
     </div>
   );
