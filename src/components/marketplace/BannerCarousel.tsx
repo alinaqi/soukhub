@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from '@/i18n/navigation';
 import type { PromoBanner } from '@/lib/marketplace/banners-service';
@@ -16,13 +16,10 @@ export function BannerCarousel({ banners }: { banners: PromoBanner[] }) {
 
   const go = useCallback((next: number) => setIndex((next % count + count) % count), [count]);
 
-  const reducedMotion = useRef(false);
+  // Auto-advance. Under reduced-motion we still rotate but the slide swap is
+  // instant (motion-reduce:transition-none below), honouring the intent.
   useEffect(() => {
-    reducedMotion.current = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-  }, []);
-
-  useEffect(() => {
-    if (count <= 1 || paused || reducedMotion.current) return;
+    if (count <= 1 || paused) return;
     const id = setInterval(() => setIndex((i) => (i + 1) % count), INTERVAL);
     return () => clearInterval(id);
   }, [count, paused, index]);
@@ -30,7 +27,7 @@ export function BannerCarousel({ banners }: { banners: PromoBanner[] }) {
   if (count === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
       <div
         className="relative overflow-hidden rounded-2xl border border-border"
         onMouseEnter={() => setPaused(true)}

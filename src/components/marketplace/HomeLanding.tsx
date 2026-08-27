@@ -164,7 +164,7 @@ export function HomeLanding({
       )}
 
       {activeEvent && eventDeals.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
           <div className="flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-2xl font-bold">
               <span aria-hidden>{activeEvent.emoji}</span>
@@ -187,7 +187,7 @@ export function HomeLanding({
       )}
 
       {/* Promo banners */}
-      <section className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="grid gap-4 lg:grid-cols-3">
           <Link
             href="/trade-in"
@@ -239,7 +239,7 @@ export function HomeLanding({
       <SellerDealsStrip deals={sellerDeals} />
 
       {deals.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold text-accent">{t('dealsTitle')}</h2>
             <Link href="/search?max=500" className="inline-flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
@@ -258,7 +258,7 @@ export function HomeLanding({
       <HomeShopsStrip providers={providers} />
 
       {/* Latest listings — real inventory above the fold */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">{t('latestListings')}</h2>
           <Link
@@ -284,7 +284,7 @@ export function HomeLanding({
 
       {/* Market catalog filler (ADR 0016) */}
       {catalog.length > 0 && (
-        <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
           <h2 className="text-2xl font-bold">{tcat('fromMarket')}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{tcat('marketNote')}</p>
           <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
@@ -297,7 +297,7 @@ export function HomeLanding({
 
       {/* Buyer trust */}
       <section className="border-y border-border bg-surface-warm">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
           <h2 className="text-center text-2xl font-bold sm:text-3xl">{t('trustTitle')}</h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {TRUST_ICONS.map(({ key, icon: Icon }) => (
@@ -314,7 +314,7 @@ export function HomeLanding({
       </section>
 
       {/* Compact seller banner → /sell */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-border bg-card p-8 text-center sm:flex-row sm:text-start">
           <div>
             <h2 className="text-xl font-bold">{t('sellBannerTitle')}</h2>
@@ -331,7 +331,7 @@ export function HomeLanding({
       </section>
 
       {/* Trust strip */}
-      <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
         <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-border p-6 text-center sm:flex-row sm:gap-8">
           <span className="inline-flex items-center gap-2 font-medium">
             <Banknote className="h-5 w-5 text-primary" aria-hidden />

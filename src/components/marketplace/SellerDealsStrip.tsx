@@ -12,7 +12,7 @@ export function SellerDealsStrip({ deals }: { deals: SellerDeal[] }) {
   if (deals.length === 0) return null;
 
   return (
-    <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
       <h2 className="flex items-center gap-2 text-2xl font-bold">
         <Flame className="h-6 w-6 text-accent" aria-hidden />
         {t('sellerDealsTitle')}
