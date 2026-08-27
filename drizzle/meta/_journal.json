@@ -99,6 +99,13 @@
       "when": 1787755314371,
       "tag": "0013_retail_calendar",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1787806650504,
+      "tag": "0014_promo_banners",
+      "breakpoints": true
     }
   ]
 }

@@ -1217,3 +1217,17 @@ export const events = pgTable("events", {
 	index("idx_events_window").using("btree", table.endsAt.desc().nullsFirst()).where(sql`is_active`),
 	check("events_window_valid", sql`ends_at > starts_at`),
 ]);
+
+export const promoBanners = pgTable("promo_banners", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventSlug: text("event_slug"),
+	headline: text().notNull(),
+	imageUrl: text("image_url").notNull(),
+	href: text().notNull(),
+	locale: text().default('en').notNull(),
+	isActive: boolean("is_active").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
+}, (table) => [
+	index("idx_promo_banners_event").using("btree", table.eventSlug.asc().nullsLast().op("text_ops")).where(sql`is_active`),
+	uniqueIndex("uq_promo_banners_event_locale").using("btree", table.eventSlug.asc().nullsLast().op("text_ops"), table.locale.asc().nullsLast().op("text_ops")).where(sql`is_active`),
+]);

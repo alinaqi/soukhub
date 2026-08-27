@@ -5,6 +5,7 @@ import { getLatestListings, getLatestCatalog, searchCatalog, type PublicListing,
 import { getCachedRatings, attachRating } from '@/lib/reviews/cached';
 import { listSellerDeals, type SellerDeal } from '@/lib/marketplace/deals-service';
 import { getActiveEvent, type RetailEvent } from '@/lib/marketplace/events-service';
+import { getBannerForEvent } from '@/lib/marketplace/banners-service';
 import { listProviders, type PublicProvider } from '@/lib/marketplace/queries';
 import { localeAlternates } from '@/i18n/routing';
 
@@ -39,14 +40,20 @@ export default async function HomePage({
   let providers: PublicProvider[] = [];
   let activeEvent: RetailEvent | null = null;
   let eventDeals: PublicCatalogItem[] = [];
+  let eventBannerImage: string | null = null;
   try {
     [sellerDeals, providers, activeEvent] = await Promise.all([
       listSellerDeals(8),
       listProviders(24),
       getActiveEvent(),
     ]);
-    if (activeEvent?.category) {
-      eventDeals = await searchCatalog({ category: activeEvent.category, limit: 8 });
+    if (activeEvent) {
+      const [deals, banner] = await Promise.all([
+        activeEvent.category ? searchCatalog({ category: activeEvent.category, limit: 8 }) : Promise.resolve([]),
+        getBannerForEvent(activeEvent.slug, locale).catch(() => null),
+      ]);
+      eventDeals = deals;
+      eventBannerImage = banner?.image_url ?? null;
     }
   } catch {
     // promotional strips are best-effort
@@ -111,6 +118,7 @@ export default async function HomePage({
       providers={providers}
       activeEvent={activeEvent}
       eventDeals={eventDeals}
+      eventBannerImage={eventBannerImage}
       bannerImage={bannerImage}
     />
   );
