@@ -28,3 +28,12 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT ALL ON FUNCTIONS TO anon, authenticated, service_role;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
   GRANT ALL ON SEQUENCES TO anon, authenticated, service_role;
+
+-- Storage stub: real Supabase provides this; CI needs it so migrations that
+-- register public buckets validate from zero.
+CREATE SCHEMA IF NOT EXISTS storage;
+CREATE TABLE IF NOT EXISTS storage.buckets (
+  id text PRIMARY KEY,
+  name text NOT NULL,
+  public boolean DEFAULT false
+);

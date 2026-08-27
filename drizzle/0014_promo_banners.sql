@@ -15,5 +15,10 @@ CREATE UNIQUE INDEX "uq_promo_banners_event_locale" ON "promo_banners" USING btr
 ALTER TABLE promo_banners ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 CREATE POLICY public_read_promo_banners ON promo_banners FOR SELECT TO public USING (is_active);--> statement-breakpoint
 GRANT SELECT ON promo_banners TO anon, authenticated;--> statement-breakpoint
-INSERT INTO storage.buckets (id, name, public) VALUES ('promo-banners', 'promo-banners', true)
-  ON CONFLICT (id) DO NOTHING;
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema='storage' AND table_name='buckets') THEN
+    INSERT INTO storage.buckets (id, name, public) VALUES ('promo-banners', 'promo-banners', true)
+      ON CONFLICT (id) DO NOTHING;
+  END IF;
+END $$;
