@@ -260,8 +260,8 @@
     }
   },
   "assistant": {
-    "open": "Ask SoukHub",
-    "title": "SoukHub Assistant",
+    "open": "Ask Souky",
+    "title": "Souky",
     "placeholder": "Ask anything — products, prices, your order…",
     "hello": "Hi! I can help you find the right device, compare prices, check your order status, or value a trade-in. What are you looking for?",
     "send": "Send",
@@ -292,7 +292,8 @@
         "What does selling cost?",
         "How fast can my store go live?"
       ]
-    }
+    },
+    "subtitle": "ask anything"
   },
   "providers": {
     "navLabel": "Shops",

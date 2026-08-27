@@ -11,6 +11,12 @@ vi.mock('@/lib/marketplace/queries', () => ({
   searchCatalog: vi.fn(async () => []),
 }));
 vi.mock('@/lib/checkout/service', () => ({ lookupOrder: vi.fn(async () => null) }));
+vi.mock('@/lib/assistant/web-search', () => ({
+  searchUaeMarket: vi.fn(async () => ({
+    summary: 'Nokia 105 keypad phone is available at Sharaf DG for about AED 65.',
+    sources: [{ title: 'Sharaf DG', url: 'https://sharafdg.com/nokia-105' }],
+  })),
+}));
 vi.mock('@/lib/marketplace/events-service', () => ({
   getEventCalendar: vi.fn(async () => [
     { slug: 'back-to-school', name: 'Back to School', category: 'laptops',
@@ -63,6 +69,22 @@ describe('runAssistant (spec: answer simplicity)', () => {
     expect(toolResult).toMatch(/live now/);
   });
 
+  it('offers search_web_market and uses it when the catalog has nothing', async () => {
+    let sawTool = false;
+    let call = 0;
+    const fake = async (params: Anthropic.MessageCreateParamsNonStreaming) => {
+      sawTool ||= (params.tools ?? []).some((t) => t.name === 'search_web_market');
+      call++;
+      if (call === 1) {
+        return msg([{ type: 'tool_use', id: 'w1', name: 'search_web_market', input: { query: 'keypad phone for kids' } } as Anthropic.ContentBlock], 'tool_use');
+      }
+      return msg([{ type: 'text', text: 'Not on SoukHub yet, but in the UAE market: Nokia 105 at Sharaf DG (~AED 65).' } as Anthropic.ContentBlock], 'end_turn');
+    };
+    const res = await runAssistant([{ role: 'user', content: 'non-smart phones for kids?' }], fake);
+    expect(sawTool).toBe(true);
+    expect(res.reply).toMatch(/Nokia 105|Sharaf DG/);
+  });
+
   it('offers the get_event_calendar tool and runs it for timing questions', async () => {
     let sawTool = false;
     let call = 0;
@@ -92,5 +114,6 @@ describe('runAssistant (spec: answer simplicity)', () => {
     expect(seenSystem).toMatch(/same language/i);
     expect(seenSystem).toMatch(/no good match|say so/i);
     expect(seenSystem).toMatch(/get_event_calendar|wait/i);
+    expect(seenSystem).toMatch(/search_web_market|wider (uae )?market/i);
   });
 });

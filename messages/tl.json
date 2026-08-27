@@ -260,8 +260,8 @@
     }
   },
   "assistant": {
-    "open": "Tanungin ang SoukHub",
-    "title": "SoukHub Assistant",
+    "open": "Magtanong kay Souky",
+    "title": "Souky",
     "placeholder": "Magtanong ng kahit ano — mga produkto, presyo, order mo…",
     "hello": "Hi! Matutulungan kitang hanapin ang tamang device, magkumpara ng presyo, tingnan ang status ng order mo, o magpa-value ng trade-in. Ano ang hinahanap mo?",
     "send": "Ipadala",
@@ -292,7 +292,8 @@
         "Magkano ang gastos sa pagbebenta?",
         "Gaano kabilis magiging live ang tindahan ko?"
       ]
-    }
+    },
+    "subtitle": "magtanong ng kahit ano"
   },
   "providers": {
     "navLabel": "Mga Tindahan",

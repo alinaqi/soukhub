@@ -204,7 +204,7 @@ export function AssistantWidget() {
             </span>
             <span>
               <span className="block font-bold leading-tight">{t('title')}</span>
-              <span className="block text-xs text-muted-foreground">SoukHub AI</span>
+              <span className="block text-xs text-muted-foreground">{t('subtitle')}</span>
             </span>
           </span>
           <button
