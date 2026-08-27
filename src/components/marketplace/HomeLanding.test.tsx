@@ -57,11 +57,10 @@ describe('Consumer home (HomeLanding)', () => {
     }
   });
 
-  it('has a single Search button (no separate Ask AI)', () => {
+  it('has a Search button (AI search) and no separate Ask AI button', () => {
     renderWith(<HomeLanding listings={[]} />);
-    const form = screen.getAllByRole('search')[0];
-    expect(within(form).getByRole('button', { name: 'Search' })).toBeInTheDocument();
-    expect(within(form).queryByText('Ask AI')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument();
+    expect(screen.queryByText('Ask AI')).not.toBeInTheDocument();
   });
 
   it('shows the active retail-calendar event banner', () => {

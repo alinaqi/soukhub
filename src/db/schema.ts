@@ -1224,10 +1224,14 @@ export const promoBanners = pgTable("promo_banners", {
 	headline: text().notNull(),
 	imageUrl: text("image_url").notNull(),
 	href: text().notNull(),
+	category: text(),
+	sortOrder: integer("sort_order").default(0).notNull(),
 	locale: text().default('en').notNull(),
 	isActive: boolean("is_active").default(true).notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow(),
 }, (table) => [
 	index("idx_promo_banners_event").using("btree", table.eventSlug.asc().nullsLast().op("text_ops")).where(sql`is_active`),
-	uniqueIndex("uq_promo_banners_event_locale").using("btree", table.eventSlug.asc().nullsLast().op("text_ops"), table.locale.asc().nullsLast().op("text_ops")).where(sql`is_active`),
+	uniqueIndex("uq_promo_banners_event_locale").using("btree", table.eventSlug.asc().nullsLast().op("text_ops"), table.locale.asc().nullsLast().op("text_ops")).where(sql`is_active AND event_slug IS NOT NULL`),
+	uniqueIndex("uq_promo_banners_category_locale").using("btree", table.category.asc().nullsLast().op("text_ops"), table.locale.asc().nullsLast().op("text_ops")).where(sql`is_active AND category IS NOT NULL`),
+	index("idx_promo_banners_active_sort").using("btree", table.sortOrder.asc().nullsLast().op("int4_ops")).where(sql`is_active`),
 ]);

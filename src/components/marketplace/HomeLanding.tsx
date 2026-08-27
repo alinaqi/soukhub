@@ -26,7 +26,10 @@ import { CatalogCard } from '@/components/marketplace/CatalogCard';
 import { SellerDealsStrip } from '@/components/marketplace/SellerDealsStrip';
 import { HeroSearch } from '@/components/marketplace/HeroSearch';
 import { HomeShopsStrip } from '@/components/marketplace/HomeShopsStrip';
+import { BannerCarousel } from '@/components/marketplace/BannerCarousel';
+import { NavAiSearch } from '@/components/marketplace/NavAiSearch';
 import { EventBanner } from '@/components/marketplace/EventBanner';
+import type { PromoBanner } from '@/lib/marketplace/banners-service';
 import type { RetailEvent } from '@/lib/marketplace/events-service';
 import type { SellerDeal } from '@/lib/marketplace/deals-service';
 import type { PublicProvider } from '@/lib/marketplace/queries';
@@ -59,7 +62,7 @@ export function HomeLanding({
   sellerDeals = [],
   activeEvent = null,
   eventDeals = [],
-  eventBannerImage = null,
+  banners = [],
   providers = [],
 }: {
   listings: PublicListing[];
@@ -69,7 +72,7 @@ export function HomeLanding({
   sellerDeals?: SellerDeal[];
   activeEvent?: RetailEvent | null;
   eventDeals?: PublicCatalogItem[];
-  eventBannerImage?: string | null;
+  banners?: PromoBanner[];
   providers?: PublicProvider[];
 }) {
   const tcat = useTranslations('catalog');
@@ -81,7 +84,7 @@ export function HomeLanding({
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Nav */}
-      <nav className="border-b border-border">
+      <nav className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-2">
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -89,6 +92,7 @@ export function HomeLanding({
             </span>
             <span className="text-xl font-bold tracking-tight">{tc('brand')}</span>
           </Link>
+          <NavAiSearch />
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="hidden items-center gap-2 lg:flex">
               <Suspense>
@@ -153,7 +157,11 @@ export function HomeLanding({
         </div>
       </section>
 
-      {activeEvent && <EventBanner event={activeEvent} bannerImage={eventBannerImage} />}
+      {banners.length > 0 ? (
+        <BannerCarousel banners={banners} />
+      ) : (
+        activeEvent && <EventBanner event={activeEvent} />
+      )}
 
       {activeEvent && eventDeals.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
