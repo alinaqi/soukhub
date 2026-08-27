@@ -337,7 +337,11 @@
     "googleReviewsSource": "مراجعات من Google",
     "kindAll": "جميع المحلات",
     "kindMobile": "هواتف محمولة",
-    "kindComputer": "كمبيوترات ولابتوبات"
+    "kindComputer": "كمبيوترات ولابتوبات",
+    "productsMobile": "هواتف وإكسسوارات",
+    "productsComputer": "لابتوبات وكمبيوترات",
+    "productsNote": "متوفرة على سوق هب — توصيل في جميع أنحاء الإمارات",
+    "nearbyTitle": "محلات قريبة"
   },
   "delivery": {
     "deliverTo": "التوصيل إلى:",

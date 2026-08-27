@@ -337,7 +337,11 @@
     "googleReviewsSource": "Google سے ریویوز",
     "kindAll": "تمام دکانیں",
     "kindMobile": "موبائل فون",
-    "kindComputer": "کمپیوٹر اور لیپ ٹاپ"
+    "kindComputer": "کمپیوٹر اور لیپ ٹاپ",
+    "productsMobile": "فون اور لوازمات",
+    "productsComputer": "لیپ ٹاپ اور کمپیوٹر",
+    "productsNote": "SoukHub پر دستیاب — پورے یو اے ای میں ڈیلیوری",
+    "nearbyTitle": "قریبی دکانیں"
   },
   "delivery": {
     "deliverTo": "ڈیلیوری یہاں:",

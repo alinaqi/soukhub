@@ -337,7 +337,11 @@
     "googleReviewsSource": "Reviews from Google",
     "kindAll": "All shops",
     "kindMobile": "Mobile phones",
-    "kindComputer": "Computers & laptops"
+    "kindComputer": "Computers & laptops",
+    "productsMobile": "Phones & accessories",
+    "productsComputer": "Laptops & computers",
+    "productsNote": "Available on SoukHub — delivered UAE-wide",
+    "nearbyTitle": "Shops nearby"
   },
   "delivery": {
     "deliverTo": "Deliver to:",
