@@ -14,12 +14,14 @@ export async function Breadcrumbs({
   category,
   title,
   currentPath,
+  parent,
   includeJsonLd = true,
 }: {
   locale: string;
-  category: string | null;
+  category?: string | null;
   title: string;
   currentPath: string;
+  parent?: { name: string; href: string };
   includeJsonLd?: boolean;
 }) {
   const tn = await getTranslations({ locale, namespace: 'nav' });
@@ -31,11 +33,15 @@ export async function Breadcrumbs({
   const categoryLabel = knownCategory ? th(`categories.${knownCategory}`) : null;
   const shortTitle = title.length > 48 ? `${title.slice(0, 48).trimEnd()}…` : title;
 
+  const middle = parent
+    ? { name: parent.name, href: parent.href }
+    : knownCategory && categoryLabel
+      ? { name: categoryLabel, href: `/search?category=${knownCategory}` }
+      : null;
+
   const jsonLd = breadcrumbJsonLd([
     { name: tn('home'), url: `${base}${prefix}/` },
-    ...(knownCategory && categoryLabel
-      ? [{ name: categoryLabel, url: `${base}${prefix}/search?category=${knownCategory}` }]
-      : []),
+    ...(middle ? [{ name: middle.name, url: `${base}${prefix}${middle.href}` }] : []),
     { name: title, url: `${base}${prefix}${currentPath}` },
   ]);
 
@@ -54,12 +60,12 @@ export async function Breadcrumbs({
               {tn('home')}
             </Link>
           </li>
-          {knownCategory && categoryLabel && (
+          {middle && (
             <>
               <ChevronRight className="h-3.5 w-3.5 shrink-0 rtl:rotate-180" aria-hidden />
               <li className="shrink-0">
-                <Link href={`/search?category=${knownCategory}`} className="hover:text-primary">
-                  {categoryLabel}
+                <Link href={middle.href} className="hover:text-primary">
+                  {middle.name}
                 </Link>
               </li>
             </>

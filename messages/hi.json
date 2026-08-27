@@ -337,7 +337,11 @@
     "googleReviewsSource": "Google से रिव्यू",
     "kindAll": "सभी दुकानें",
     "kindMobile": "मोबाइल फ़ोन",
-    "kindComputer": "कंप्यूटर और लैपटॉप"
+    "kindComputer": "कंप्यूटर और लैपटॉप",
+    "productsMobile": "फ़ोन और एक्सेसरीज़",
+    "productsComputer": "लैपटॉप और कंप्यूटर",
+    "productsNote": "SoukHub पर उपलब्ध — पूरे UAE में डिलीवरी",
+    "nearbyTitle": "आस-पास की दुकानें"
   },
   "delivery": {
     "deliverTo": "डिलीवरी यहाँ:",

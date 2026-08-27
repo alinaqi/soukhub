@@ -273,3 +273,63 @@ export const getProviderBySlug = cache(async (slug: string): Promise<PublicProvi
   if (error) throw error;
   return (data as PublicProvider | null) ?? null;
 });
+
+/** Is this provider a computer/laptop shop (vs a mobile shop)? */
+export function isComputerProvider(p: Pick<PublicProvider, 'name' | 'category'>): boolean {
+  return /computer|laptop|\bpc\b/i.test(`${p.category ?? ''} ${p.name}`);
+}
+
+/**
+ * Products to surface on a provider page. Scraped shops have no inventory of
+ * their own, so we show relevant SoukHub catalog items (honestly framed as
+ * "on SoukHub") — phones + accessories for mobile shops, laptops + tablets
+ * for computer shops — so the page is never empty.
+ */
+export async function getProviderProducts(
+  provider: Pick<PublicProvider, 'name' | 'category'>
+): Promise<PublicCatalogItem[]> {
+  const cats = isComputerProvider(provider) ? ['laptops', 'tablets'] : ['phones', 'audio'];
+  const groups = await Promise.all(
+    cats.map((category) => searchCatalog({ category, limit: 4 }).catch(() => [] as PublicCatalogItem[]))
+  );
+  // Interleave so both categories show, dedupe by id
+  const out: PublicCatalogItem[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < 4; i++) {
+    for (const group of groups) {
+      const item = group[i];
+      if (item && !seen.has(item.id)) {
+        seen.add(item.id);
+        out.push(item);
+      }
+    }
+  }
+  return out.slice(0, 8);
+}
+
+/** Nearby shops for the "similar shops" section — by distance when we have
+ * coordinates, else same-emirate. Excludes the provider itself. */
+export async function getNearbyProviders(
+  provider: PublicProvider,
+  limit = 6
+): Promise<PublicProvider[]> {
+  if (provider.lat != null && provider.lng != null) {
+    const { data, error } = await publicClient().rpc('nearby_providers', {
+      p_lat: provider.lat,
+      p_lng: provider.lng,
+      p_limit: limit + 1,
+    });
+    if (!error && data) {
+      return (data as PublicProvider[]).filter((p) => p.slug !== provider.slug).slice(0, limit);
+    }
+  }
+  const { data } = await publicClient()
+    .from('providers')
+    .select('id, slug, name, phone, whatsapp, address, area, emirate, lat, lng, google_rating, google_review_count, image_url')
+    .eq('is_active', true)
+    .eq('emirate', provider.emirate ?? '')
+    .neq('slug', provider.slug)
+    .order('google_review_count', { ascending: false, nullsFirst: false })
+    .limit(limit);
+  return (data ?? []) as PublicProvider[];
+}

@@ -7,7 +7,15 @@ import { PublicHeader } from '@/components/marketplace/PublicHeader';
 import { ProviderRequestClient } from '@/components/marketplace/ProviderRequestClient';
 import { ProviderClaimClient } from '@/components/marketplace/ProviderClaimClient';
 import { ProviderRating } from '@/components/marketplace/ProvidersDirectoryClient';
-import { getProviderBySlug } from '@/lib/marketplace/queries';
+import { ProviderCard } from '@/components/marketplace/ProviderCard';
+import { CatalogCard } from '@/components/marketplace/CatalogCard';
+import { Breadcrumbs } from '@/components/marketplace/Breadcrumbs';
+import {
+  getProviderBySlug,
+  getProviderProducts,
+  getNearbyProviders,
+  isComputerProvider,
+} from '@/lib/marketplace/queries';
 import { safeJsonLd } from '@/lib/marketplace/jsonld';
 import { localeAlternates } from '@/i18n/routing';
 
@@ -42,6 +50,14 @@ export default async function ProviderPage({
   if (!provider) notFound();
 
   const t = await getTranslations({ locale, namespace: 'providers' });
+  const tn = await getTranslations({ locale, namespace: 'nav' });
+  const [products, nearby] = await Promise.all([
+    getProviderProducts(provider).catch(() => []),
+    getNearbyProviders(provider).catch(() => []),
+  ]);
+  const productsTitle = isComputerProvider(provider)
+    ? t('productsComputer')
+    : t('productsMobile');
   const hours = (provider.hours as { openingHours?: Array<{ day?: string; hours?: string }> } | null)
     ?.openingHours;
   const mapsUrl = provider.lat != null
@@ -88,6 +104,14 @@ export default async function ProviderPage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <PublicHeader />
       <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
+        <div className="mb-5">
+          <Breadcrumbs
+            locale={locale}
+            title={provider.name}
+            currentPath={`/providers/${provider.slug}`}
+            parent={{ name: tn('shops'), href: '/providers' }}
+          />
+        </div>
         <div className="flex items-start gap-4">
           <span className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-primary/10 text-primary">
             {provider.image_url ? (
@@ -203,6 +227,29 @@ export default async function ProviderPage({
           <Suspense>
             <ProviderClaimClient providerId={provider.id} slug={provider.slug} />
           </Suspense>
+        )}
+
+        {products.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-lg font-bold">{productsTitle}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t('productsNote')}</p>
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              {products.map((item) => (
+                <CatalogCard key={item.id} item={item} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {nearby.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-lg font-bold">{t('nearbyTitle')}</h2>
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
+              {nearby.map((p) => (
+                <ProviderCard key={p.id} provider={p} />
+              ))}
+            </div>
+          </section>
         )}
       </main>
     </div>

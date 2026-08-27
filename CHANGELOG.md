@@ -8,6 +8,7 @@ Every PR must add an entry under **[Unreleased]**.
 ## [Unreleased]
 
 ### Added
+- **Richer provider pages** — a shop's page is no longer a dead end: breadcrumbs (Home › Shops › shop, with BreadcrumbList JSON-LD), a "Phones & accessories" (or "Laptops & computers") strip of relevant SoukHub catalog products, and a "Shops nearby" section of similar shops sorted by distance. The Breadcrumbs component now takes a generic parent crumb for reuse across page types
 - **Souky, the AI assistant** — the shopping assistant is now named **Souky** ("ask anything"), and gains a **UAE-market web-search fallback**: when a product isn't in SoukHub's catalog or the wider market feed, Souky runs a Gemini google-search-grounded lookup of the local UAE market and returns real options with prices and sources, clearly flagged as external (not SoukHub stock) — e.g. keypad phones for kids now return Nokia 105/150 options instead of a dead end
 - **Rotating promo carousel + per-category banners**: the home page now rotates through the live event banner plus an auto-generated banner for each product category (phones, laptops, tablets, audio, wearables, gaming) — auto-advancing, arrow/dot navigable, pauses on hover, respects reduced motion. Banner art no longer includes the SoukHub wordmark (it already runs on SoukHub). `pnpm banners:generate --categories`
 - **Sticky search header on every page**: the top bar (logo + search) stays pinned while scrolling on the home page and all public pages, so search is always reachable; the home nav search hands the query to the AI agent

@@ -337,7 +337,11 @@
     "googleReviewsSource": "Mga review mula sa Google",
     "kindAll": "Lahat ng tindahan",
     "kindMobile": "Mga mobile phone",
-    "kindComputer": "Computer at laptop"
+    "kindComputer": "Computer at laptop",
+    "productsMobile": "Mga telepono at accessories",
+    "productsComputer": "Mga laptop at computer",
+    "productsNote": "Available sa SoukHub — delivery sa buong UAE",
+    "nearbyTitle": "Mga tindahan malapit"
   },
   "delivery": {
     "deliverTo": "Ihatid sa:",
