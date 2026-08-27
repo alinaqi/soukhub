@@ -10,8 +10,14 @@
  */
 import { readFileSync } from 'node:fs';
 import { config } from 'dotenv';
+import { generateCreative, bannerPrompt } from '../src/lib/marketplace/sketch';
+import { getActiveEvent, listUpcomingEvents, type RetailEvent } from '../src/lib/marketplace/events-service';
+import { getBannerForEvent, persistBannerImage, saveBanner } from '../src/lib/marketplace/banners-service';
+
 config({ path: '.env.local' });
 
+// The Supabase clients read process.env lazily (at call time, inside main),
+// so resolving prod creds here — before any of them run — is sufficient.
 if (process.env.TARGET === 'production') {
   const env = readFileSync('.env.local', 'utf8');
   process.env.NEXT_PUBLIC_SUPABASE_URL =
@@ -21,12 +27,6 @@ if (process.env.TARGET === 'production') {
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY =
     env.match(/^# NEXT_PUBLIC_SUPABASE_ANON_KEY=(.+)$/m)?.[1]?.trim() ?? '';
 }
-
-// imported after env resolution so the Supabase clients read the right creds
-const { generateCreative, bannerPrompt } = await import('../src/lib/marketplace/sketch');
-const { getActiveEvent, listUpcomingEvents } = await import('../src/lib/marketplace/events-service');
-type RetailEvent = import('../src/lib/marketplace/events-service').RetailEvent;
-const { getBannerForEvent, persistBannerImage, saveBanner } = await import('../src/lib/marketplace/banners-service');
 
 const args = process.argv.slice(2);
 const force = args.includes('--force');
