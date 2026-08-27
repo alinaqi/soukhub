@@ -11,18 +11,17 @@ const INTERVAL = 5000;
  * hover, respects reduced motion, and is keyboard/arrow navigable. */
 export function BannerCarousel({ banners }: { banners: PromoBanner[] }) {
   const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
   const count = banners.length;
 
   const go = useCallback((next: number) => setIndex((next % count + count) % count), [count]);
 
-  // Auto-advance. Under reduced-motion we still rotate but the slide swap is
-  // instant (motion-reduce:transition-none below), honouring the intent.
+  // Auto-advance every 5s — steady (no hover-pause, so it always rotates).
+  // Under reduced-motion the swap is instant (motion-reduce:transition-none).
   useEffect(() => {
-    if (count <= 1 || paused) return;
+    if (count <= 1) return;
     const id = setInterval(() => setIndex((i) => (i + 1) % count), INTERVAL);
     return () => clearInterval(id);
-  }, [count, paused, index]);
+  }, [count]);
 
   if (count === 0) return null;
 
@@ -30,8 +29,6 @@ export function BannerCarousel({ banners }: { banners: PromoBanner[] }) {
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-12 lg:px-8">
       <div
         className="relative overflow-hidden rounded-2xl border border-border"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
         role="region"
         aria-roledescription="carousel"
         aria-label="Promotions"
