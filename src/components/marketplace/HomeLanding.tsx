@@ -59,6 +59,7 @@ export function HomeLanding({
   sellerDeals = [],
   activeEvent = null,
   eventDeals = [],
+  eventBannerImage = null,
   providers = [],
 }: {
   listings: PublicListing[];
@@ -68,6 +69,7 @@ export function HomeLanding({
   sellerDeals?: SellerDeal[];
   activeEvent?: RetailEvent | null;
   eventDeals?: PublicCatalogItem[];
+  eventBannerImage?: string | null;
   providers?: PublicProvider[];
 }) {
   const tcat = useTranslations('catalog');
@@ -151,7 +153,7 @@ export function HomeLanding({
         </div>
       </section>
 
-      {activeEvent && <EventBanner event={activeEvent} />}
+      {activeEvent && <EventBanner event={activeEvent} bannerImage={eventBannerImage} />}
 
       {activeEvent && eventDeals.length > 0 && (
         <section className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">

@@ -4,12 +4,40 @@ import { Link } from '@/i18n/navigation';
 import type { RetailEvent } from '@/lib/marketplace/events-service';
 
 /** Highlights the live retail-calendar event (Back to School, White Friday…)
- * and routes to its category's deals. Server-rendered on the home page. */
-export function EventBanner({ event }: { event: RetailEvent }) {
+ * and routes to its category's deals. Server-rendered on the home page.
+ * When a Sketch-generated banner image exists for the event, it leads with
+ * the artwork; otherwise it falls back to the text strip. */
+export function EventBanner({
+  event,
+  bannerImage,
+}: {
+  event: RetailEvent;
+  bannerImage?: string | null;
+}) {
   const t = useTranslations('events');
   const locale = useLocale();
   const name = locale === 'ar' && event.name_ar ? event.name_ar : event.name;
   const href = event.category ? `/search?category=${event.category}` : '/search';
+
+  if (bannerImage) {
+    return (
+      <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+        <Link
+          href={href}
+          className="group block overflow-hidden rounded-2xl border border-border transition hover:border-accent/60"
+          aria-label={`${name} — ${t('shopDeals')}`}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={bannerImage}
+            alt={name}
+            className="h-auto w-full object-cover transition group-hover:scale-[1.01]"
+            loading="eager"
+          />
+        </Link>
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">

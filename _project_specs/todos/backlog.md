@@ -2304,3 +2304,6 @@ Deterministic scoring (fit/TCO/condition/trust/timing, per-use-case weights in c
 ## TODO-072: Agent evaluation suite (spec §9)
 Scenario suite (personas × languages) with graders: intent, question count, no-hallucination, honesty, simplicity. Gate: 100% honesty/no-hallucination.
 - Validation: suite runs in CI on assistant prompt/tool changes.
+
+## TODO-073: Scheduled banner regeneration (cron)
+Run pnpm banners:generate on a schedule so banners refresh as the retail calendar rolls over (new active event → new banner). Pair with TODO-067 catalog re-ingestion cron. Consider per-locale Arabic creatives once Sketch Arabic text is reliable.
